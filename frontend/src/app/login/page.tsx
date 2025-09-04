@@ -16,12 +16,12 @@ export default function LoginPage() {
         e.preventDefault()
         setLoading(true)
         const formData = new FormData(e.currentTarget)
-        const identifier = formData.get('identifier') as string
+        const email = formData.get('email') as string
         const password = formData.get('password') as string
 
         const res = await signIn('credentials', {
             redirect: false,
-            identifier,
+            email,
             password,
         })
 
@@ -30,7 +30,7 @@ export default function LoginPage() {
         if (res?.error) {
             setError('Invalid username or password')
         } else {
-            router.push('/')
+            router.push('/success')
         }
     }
 
@@ -58,7 +58,7 @@ export default function LoginPage() {
                 <h3 className="text-sm font-medium mb-1">Username</h3>
                 <Input
                     type="text"
-                    name="identifier"
+                    name="email"
                     placeholder="Username"
                     className="w-full p-2 py-5 border rounded mb-2"
                 />
