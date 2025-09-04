@@ -73,6 +73,7 @@ export const loginController = async (req: Request, res: Response) => {
 			role,
 			email: user_email,
 			display_name,
+			token,
 		});
 	} catch (err) {
 		return res.status(500).json({ message: 'Login failed', error: err });
