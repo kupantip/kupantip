@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createPost, getPosts, addAttachment, deletePost } from '../models/post.model';
+import { createPost, getPosts, addAttachment, deletePost, updatePost } from '../models/post.model';
 import path from 'path';
 
 
@@ -84,5 +84,37 @@ export const deletePostController = async (req: Request, res: Response) => {
     return res.status(200).json({ message: 'Post deleted (soft)', post: deletedPost });
   } catch (err) {
     return res.status(500).json({ message: 'Failed to delete post', error: err });
+  }
+};
+
+
+export const updatePostController = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { post_id } = req.params;
+    const { title, body_md, category_id } = req.body;
+
+    if (!title && !body_md && !category_id) {
+      return res.status(400).json({ message: 'At least one field is required to update' });
+    }
+
+    const updated = await updatePost(
+      post_id,
+      req.user.user_id,
+      title,
+      body_md,
+      category_id
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Post not found or not authorized' });
+    }
+
+    return res.status(200).json({ message: 'Post updated', post: updated });
+  } catch (err) {
+    return res.status(500).json({ message: 'Failed to update post', error: err });
   }
 };

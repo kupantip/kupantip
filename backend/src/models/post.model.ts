@@ -78,6 +78,7 @@ export const addAttachment = async (
 };
 
 
+
 export const deletePost = async (post_id: string, user_id: string) => {
   const pool = await getDbConnection();
   const result = await pool
@@ -89,6 +90,38 @@ export const deletePost = async (post_id: string, user_id: string) => {
       SET deleted_at = GETDATE()
       OUTPUT INSERTED.*
       WHERE id = @post_id AND author_id = @user_id AND deleted_at IS NULL
+    `);
+
+  return result.recordset[0];
+};
+
+
+
+export const updatePost = async (
+  post_id: string,
+  author_id: string,
+  title?: string,
+  body_md?: string,
+  category_id?: string
+) => {
+  const pool = await getDbConnection();
+
+  const result = await pool
+    .request()
+    .input('post_id', post_id)
+    .input('author_id', author_id)
+    .input('title', title || null)
+    .input('body_md', body_md || null)
+    .input('category_id', category_id || null)
+    .query(`
+      UPDATE [dbo].[post]
+      SET 
+        title = ISNULL(@title, title),
+        body_md = ISNULL(@body_md, body_md),
+        category_id = @category_id,
+        updated_at = GETDATE()
+      OUTPUT INSERTED.*
+      WHERE id = @post_id AND author_id = @author_id AND deleted_at IS NULL
     `);
 
   return result.recordset[0];
