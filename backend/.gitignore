@@ -144,3 +144,5 @@ vite.config.ts.timestamp-*
 minio-data/
 
 mssql/
+
+uploads/

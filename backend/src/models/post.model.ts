@@ -54,3 +54,22 @@ export const getPosts = async (category_id?: string) => {
 
   return result.recordset;
 };
+
+export const addAttachment = async (
+  post_id: string,
+  url: string,
+  mime_type: string | null
+) => {
+  const pool = await getDbConnection();
+  const result = await pool
+    .request()
+    .input('post_id', post_id)
+    .input('url', url)
+    .input('mime_type', mime_type)
+    .query(`
+      INSERT INTO [dbo].[attachment] (post_id, url, mime_type)
+      OUTPUT INSERTED.*
+      VALUES (@post_id, @url, @mime_type)
+    `);
+  return result.recordset[0];
+};

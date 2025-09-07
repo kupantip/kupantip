@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { createPost, getPosts } from '../models/post.model';
+import { createPost, getPosts, addAttachment } from '../models/post.model';
+import path from 'path';
 
 
 export const createPostController = async (req: Request, res: Response) => {
@@ -14,18 +15,33 @@ export const createPostController = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Title is required' });
     }
 
-    // mock url ตอนนี้ ถ้า frontend ไม่ส่งมาก็ใส่ลิงก์ placeholder ไปก่อน
-    const finalUrl = url || `https://example.com/posts/${Date.now()}`;
-
+    // 1. สร้าง post
     const post = await createPost(
       req.user.user_id,
       title,
       body_md || null,
-      finalUrl,
+      url || null,
       category_id || null
     );
 
-    return res.status(201).json({ message: 'Post created', post });
+    // 2. ถ้ามีไฟล์แนบ → เพิ่ม attachment
+    const files = req.files as Express.Multer.File[];
+    let attachments: any[] = [];
+
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const fileUrl = `/uploads/${file.filename}`;
+        const ext = path.extname(file.originalname).toLowerCase().replace('.', ''); // jpg/png/gif
+        const attachment = await addAttachment(post.id, fileUrl, ext);
+        attachments.push(attachment);
+      }
+    }
+
+    return res.status(201).json({
+      message: 'Post created',
+      post,
+      attachments,
+    });
   } catch (err) {
     return res
       .status(500)
