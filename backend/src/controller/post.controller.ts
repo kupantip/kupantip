@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createPost, getPosts, addAttachment } from '../models/post.model';
+import { createPost, getPosts, addAttachment, deletePost } from '../models/post.model';
 import path from 'path';
 
 
@@ -60,5 +60,29 @@ export const getPostsController = async (req: Request, res: Response) => {
     return res.status(200).json(posts);
   } catch (err) {
     return res.status(500).json({ message: 'Failed to fetch posts', error: err });
+  }
+};
+
+export const deletePostController = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { post_id } = req.params;
+
+    if (!post_id) {
+      return res.status(400).json({ message: 'Post ID is required' });
+    }
+
+    const deletedPost = await deletePost(post_id, req.user.user_id);
+
+    if (!deletedPost) {
+      return res.status(404).json({ message: 'Post not found or not authorized' });
+    }
+
+    return res.status(200).json({ message: 'Post deleted (soft)', post: deletedPost });
+  } catch (err) {
+    return res.status(500).json({ message: 'Failed to delete post', error: err });
   }
 };
