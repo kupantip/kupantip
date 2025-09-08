@@ -13,6 +13,16 @@ import userRoute from './routes/user.route';
 import postRoute from './routes/post.route';
 import categoryRoutes from './routes/category.route';
 import * as z from 'zod';
+import { getDbConnection } from './database/mssql.database';
+
+(async () => {
+	const cnt = await getDbConnection();
+	if (!cnt.connected) {
+		process.exit(1);
+	}
+
+	console.log('Database Connected Success');
+})();
 
 const app = express();
 app.use(helmet());
