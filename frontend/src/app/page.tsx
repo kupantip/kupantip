@@ -361,10 +361,10 @@ function CTA() {
           <p className="mt-2 text-white/80">Start posting, learn faster, and connect with people who get it.</p>
           <div className="mt-6 flex justify-center gap-3">
             <Button asChild className="rounded-2xl px-5 h-11 bg-white text-gray-900 hover:bg-white/90">
-              <a href="/auth/register">Create free account</a>
+              <a href="/register">Create free account</a>
             </Button>
             <Button asChild className="rounded-2xl px-5 h-11 border border-white bg-transparent text-white hover:bg-white/10">
-              <a href="/auth/login">Sign in</a>
+              <a href="/login">Sign in</a>
             </Button>
           </div>
         </div>
