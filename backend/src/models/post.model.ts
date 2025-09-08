@@ -36,12 +36,19 @@ export const getPosts = async (category_id?: string) => {
       p.updated_at,
       u.display_name as author_name,
       c.label as category_label,
-      c.id as category_id
+      c.id as category_id,
+      (
+        SELECT a.id, a.url, a.mime_type, a.created_at
+        FROM [dbo].[attachment] a
+        WHERE a.post_id = p.id
+        FOR JSON PATH
+      ) as attachments
     FROM [dbo].[post] p
     LEFT JOIN [dbo].[app_user] u ON p.author_id = u.id
     LEFT JOIN [dbo].[category] c ON p.category_id = c.id
     WHERE p.deleted_at IS NULL
   `;
+
 
   if (category_id) {
     query += ` AND p.category_id = @category_id`;
@@ -54,7 +61,10 @@ export const getPosts = async (category_id?: string) => {
 
   const result = await request.query(query);
 
-  return result.recordset;
+  return result.recordset.map((row: any) => ({
+    ...row,
+    attachments: row.attachments ? JSON.parse(row.attachments) : [],
+  }));
 };
 
 
@@ -79,19 +89,24 @@ export const addAttachment = async (
 
 
 
-export const deletePost = async (post_id: string, user_id: string) => {
+export const deletePost = async (post_id: string, user_id?: string) => {
   const pool = await getDbConnection();
-  const result = await pool
-    .request()
-    .input('post_id', sql.UniqueIdentifier, post_id)
-    .input('user_id', sql.UniqueIdentifier, user_id)
-    .query(`
-      UPDATE [dbo].[post]
-      SET deleted_at = GETDATE()
-      OUTPUT INSERTED.*
-      WHERE id = @post_id AND author_id = @user_id AND deleted_at IS NULL
-    `);
+  let query = `
+    UPDATE [dbo].[post]
+    SET deleted_at = GETDATE()
+    OUTPUT INSERTED.*
+    WHERE id = @post_id AND deleted_at IS NULL
+  `;
 
+  const request = pool.request().input('post_id', sql.UniqueIdentifier, post_id);
+
+  if (user_id) {
+    // ถ้าไม่ใช่ admin → ต้องตรวจสอบว่าเป็นเจ้าของโพส
+    query += ` AND author_id = @user_id`;
+    request.input('user_id', sql.UniqueIdentifier, user_id);
+  }
+
+  const result = await request.query(query);
   return result.recordset[0];
 };
 
