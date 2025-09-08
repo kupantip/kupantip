@@ -1,4 +1,9 @@
-import express from 'express';
+import express, {
+	ErrorRequestHandler,
+	Request,
+	Response,
+	NextFunction,
+} from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -7,6 +12,7 @@ import initRoute from './routes/init';
 import userRoute from './routes/user.route';
 import postRoute from './routes/post.route';
 import categoryRoutes from './routes/category.route';
+import * as z from 'zod';
 
 const app = express();
 app.use(helmet());
@@ -19,6 +25,32 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 app.use('/api/v1/init', initRoute);
 app.use('/api/v1/user', userRoute);
 app.use('/api/v1/post', postRoute);
-app.use('/api/v1/categories', categoryRoutes); // For testing สำหรับ get(/post) 
+app.use('/api/v1/categories', categoryRoutes); // For testing สำหรับ get(/post)
+
+app.use(
+	(
+		err: ErrorRequestHandler,
+		req: Request,
+		res: Response,
+		next: NextFunction
+	) => {
+		if (err instanceof z.ZodError) {
+			const errors = err.issues.map((issue) => ({
+				path: issue.path.join('.'),
+				code: issue.code,
+				message: issue.message,
+				expected: (issue as any).expected,
+				received: (issue as any).received,
+			}));
+
+			res.status(400).json({
+				message: 'Validation failed',
+				errors,
+			});
+			return;
+		}
+		res.status(500).json({ message: err.message });
+	}
+);
 
 export default app;
