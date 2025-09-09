@@ -35,6 +35,7 @@ jobs:
             #     docker push ${{ secrets.DOCKER_USER }}/kupantip-frontend:latest
 
     deploy:
+        needs: build
         runs-on: [self-hosted, indeed]
 
         steps:
