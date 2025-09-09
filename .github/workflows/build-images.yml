@@ -36,7 +36,7 @@ jobs:
 
     deploy:
         needs: build
-        runs-on: [self-hosted, indeed]
+        runs-on: [self-hosted]
 
         steps:
             - name: 🚨 Checkout Repo
