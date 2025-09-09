@@ -1,0 +1,6 @@
+services:
+    backend:
+        image: xeei/kupantip-backend:latest
+        container_name: kupantip-backend
+        ports:
+            - '${PORT:-8000}:8000'
