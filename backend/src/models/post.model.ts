@@ -24,8 +24,9 @@ export const createPost = async (
   return result.recordset[0];
 };
 
-export const getPosts = async (category_id?: string) => {
+export const getPosts = async (category_id?: string, user_id?: string) => {
   const pool = await getDbConnection();
+
   let query = `
     SELECT 
       p.id,
@@ -35,10 +36,11 @@ export const getPosts = async (category_id?: string) => {
       p.created_at,
       p.updated_at,
       u.display_name as author_name,
+      u.id as author_id,
       c.label as category_label,
       c.id as category_id,
       (
-        SELECT a.id, a.url, a.mime_type, a.created_at
+        SELECT a.id, a.url, a.mime_type
         FROM [dbo].[attachment] a
         WHERE a.post_id = p.id
         FOR JSON PATH
@@ -49,18 +51,21 @@ export const getPosts = async (category_id?: string) => {
     WHERE p.deleted_at IS NULL
   `;
 
+  const request = pool.request();
 
   if (category_id) {
     query += ` AND p.category_id = @category_id`;
+    request.input('category_id', category_id);
   }
 
-  const request = pool.request();
-  if (category_id) {
-    request.input('category_id', category_id);
+  if (user_id) {
+    query += ` AND p.author_id = @user_id`;
+    request.input('user_id', user_id);
   }
 
   const result = await request.query(query);
 
+  // parse JSON attachments
   return result.recordset.map((row: any) => ({
     ...row,
     attachments: row.attachments ? JSON.parse(row.attachments) : [],

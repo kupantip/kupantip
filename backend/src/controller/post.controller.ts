@@ -21,8 +21,10 @@ const postIdParamSchema = z.object({ // use for updatePostController
   post_id: z.string().uuid(),
 });
 
-const getCategorySchema = z.object({
+// Filter by category_id and/or user_id
+const getFilterSchema = z.object({
   category_id: z.string().uuid().optional(),
+  user_id: z.string().uuid().optional(),
 });
 
 
@@ -76,19 +78,19 @@ export const createPostController = async (req: Request, res: Response, next: Ne
   }
 };
 
-// GET /posts?category_id=...
+
 export const getPostsController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    getCategorySchema.parse(req.params);
-    const { category_id } = req.query;
+    getFilterSchema.parse(req.params);
+    const { category_id, user_id } = req.query;
 
     const posts = await getPosts(
-      category_id ? String(category_id) : undefined
+      category_id ? String(category_id) : undefined,
+      user_id ? String(user_id) : undefined
     );
 
     return res.status(200).json(posts);
   } catch (err) {
-    // return res.status(500).json({ message: 'Failed to fetch posts', error: err });
     next(err);
   }
 };

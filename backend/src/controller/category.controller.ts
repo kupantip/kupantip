@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { createCategory, getCategories } from '../models/category.model';
 import * as z from 'zod';
-import { ca } from 'zod/v4/locales/index.cjs';
 
 const categorySchema = z.object({
   label: z.string().min(1, 'Label is required'),
