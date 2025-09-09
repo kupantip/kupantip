@@ -1,10 +1,85 @@
-export default function SignupPage() {
+"use client";
+
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+
+export default function RedditSignUp() {
+  const [formData, setFormData] = useState({
+    email: "",
+    username: "",
+    password: "",
+  });
+
+  const handleChange = (e : React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e : React.ChangeEvent<HTMLFormElement>) => {
+    e.preventDefault();
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="p-6 bg-white shadow-md rounded-lg w-96">
-        <h1 className="text-xl font-bold mb-4">Create an Account</h1>
-        {/* Later: form for username/email/password */}
-        <p>Signup form goes here</p>
+      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6 text-center">Sign up</h1>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <Input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            className="border rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <Input
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+            required
+            className="border rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <Input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            className="border rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            className="bg-emerald-900 text-white font-bold py-2 rounded-lg hover:bg-emerald-950"
+          >
+            Sign Up
+          </button>
+        </form>
+
+        <div className="my-4 flex items-center">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="px-2 text-gray-500 text-sm">OR</span>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
+
+        {/* <button className="w-full border flex items-center justify-center gap-2 py-2 rounded-lg mb-2 hover:bg-gray-50">
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+          Continue with Google
+        </button>
+        <button className="w-full border flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-gray-50">
+          <img src="https://www.svgrepo.com/show/506383/apple.svg" alt="Apple" className="w-7 h-7" />
+          Continue with Apple
+        </button> */}
+
+        <p className="text-sm text-center mt-4">
+          Already have an account?{" "}
+          <a href="/login" className="text-blue-500 hover:underline">
+            Log In
+          </a>
+        </p>
       </div>
     </div>
   );
