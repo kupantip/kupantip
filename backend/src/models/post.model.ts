@@ -1,3 +1,16 @@
+type PostRow = {
+  id: string;
+  title: string;
+  body_md: string | null;
+  url: string | null;
+  created_at: Date;
+  updated_at: Date;
+  author_name: string;
+  author_id: string;
+  category_label: string | null;
+  category_id: string | null;
+  attachments: string;
+};
 import { getDbConnection } from '../database/mssql.database';
 import sql from 'mssql';
 
@@ -66,7 +79,7 @@ export const getPosts = async (category_id?: string, user_id?: string) => {
   const result = await request.query(query);
 
   // parse JSON attachments
-  return result.recordset.map((row: any) => ({
+  return result.recordset.map((row: PostRow) => ({
     ...row,
     attachments: row.attachments ? JSON.parse(row.attachments) : [],
   }));

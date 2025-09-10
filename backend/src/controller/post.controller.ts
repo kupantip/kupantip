@@ -51,9 +51,17 @@ export const createPostController = async (req: Request, res: Response, next: Ne
       category_id || null
     );
 
+    interface Attachment {
+      id: string;
+      post_id: string;
+      url: string;
+      mime_type: string | null;
+      created_at: Date;
+}
+
     // 2. ถ้ามีไฟล์แนบ → เพิ่ม attachment
     const files = req.files as Express.Multer.File[];
-    let attachments: any[] = [];
+    const attachments: Attachment[] = [];
 
     if (files && files.length > 0) {
       for (const file of files) {
@@ -96,6 +104,7 @@ export const getPostsController = async (req: Request, res: Response, next: Next
 };
 
 export const deletePostController = async (req: Request, res: Response, next: NextFunction) => {
+
   try {
     postIdParamSchema.parse(req.params);
 
@@ -104,29 +113,33 @@ export const deletePostController = async (req: Request, res: Response, next: Ne
     }
 
     const { post_id } = req.params;
-
     if (!post_id) {
       return res.status(400).json({ message: 'Post ID is required' });
     }
 
-    let deletedPost;
+    // Check existence BEFORE deleting
+    const pool = await getDbConnection();
+    const checkPost = await pool
+      .request()
+      .input('post_id', post_id)
+      .query(`SELECT author_id FROM [dbo].[post] WHERE id = @post_id AND deleted_at IS NULL`);
+    if (checkPost.recordset.length === 0) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
 
+    let deletedPost;
     if (req.user.role === 'admin') {
-      // admin ลบได้ทุกโพส
       deletedPost = await deletePost(post_id);
     } else {
-      // ผู้ใช้ทั่วไป ลบโพสตัวเองเท่านั้น
       deletedPost = await deletePost(post_id, req.user.user_id);
     }
 
     if (!deletedPost) {
-      if (req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Forbidden: Not authorized to delete this post' });
-      }
-      return res.status(404).json({ message: 'Post not found' });
+      // User tried to delete someone else's post
+      return res.status(403).json({ message: 'Forbidden: Not authorized to delete this post' });
     }
 
-    return res.status(200).json({ message: 'Post deleted (soft)', post: deletedPost });
+    return res.status(200).json({ message: 'Post deleted', post: deletedPost });
   } catch (err) {
     next(err);
   }

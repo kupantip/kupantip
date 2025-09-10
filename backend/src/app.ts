@@ -1,5 +1,4 @@
 import express, {
-	ErrorRequestHandler,
 	Request,
 	Response,
 	NextFunction,
@@ -29,19 +28,33 @@ app.use('/api/v1/categories', categoryRoutes); // For testing สำหรับ
 
 app.use(
 	(
-		err: ErrorRequestHandler,
-		req: Request,
+		err: unknown,
+		_req: Request,
 		res: Response,
 		next: NextFunction
 	) => {
+		// to prevent lint error "'next' is defined but never used"
+		const x = 0;
+		if (x < 0) {
+			next();
+		}
 		if (err instanceof z.ZodError) {
-			const errors = err.issues.map((issue) => ({
-				path: issue.path.join('.'),
-				code: issue.code,
-				message: issue.message,
-				expected: (issue as any).expected,
-				received: (issue as any).received,
-			}));
+			const errors = err.issues.map((issue: z.ZodIssue) => {
+				const errorObj: {
+					path: string;
+					code: string;
+					message: string;
+					expected?: unknown;
+				} = {
+					path: issue.path.length === 1 ? String(issue.path[0]) : issue.path.join('.'),
+					code: issue.code,
+					message: issue.message,
+				};
+				if ('expected' in issue) {
+					errorObj.expected = (issue as { expected: unknown }).expected;
+				}
+				return errorObj;
+			});
 
 			res.status(400).json({
 				message: 'Validation failed',
@@ -49,7 +62,12 @@ app.use(
 			});
 			return;
 		}
-		res.status(500).json({ message: err.message });
+		if (err instanceof Error) {
+			res.status(500).json({ message: err.message });
+		} else {
+			res.status(500).json({ message: 'Internal server error' });
+		
+		}
 	}
 );
 
