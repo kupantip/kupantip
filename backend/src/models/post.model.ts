@@ -119,7 +119,7 @@ export const deletePost = async (post_id: string, user_id?: string) => {
   const request = pool.request().input('post_id', sql.UniqueIdentifier, post_id);
 
   if (user_id) {
-    // ถ้าไม่ใช่ admin → ต้องตรวจสอบว่าเป็นเจ้าของโพส
+    // If not admin → check if user is the post owner
     query += ` AND author_id = @user_id`;
     request.input('user_id', sql.UniqueIdentifier, user_id);
   }
