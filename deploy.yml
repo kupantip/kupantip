@@ -4,3 +4,9 @@ services:
         container_name: kupantip-backend
         ports:
             - '${PORT:-8000}:8000'
+        networks:
+          - kupantip-net
+
+networks:
+  kupantip-net:
+    external: true
