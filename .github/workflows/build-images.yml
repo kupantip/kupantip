@@ -25,7 +25,7 @@ jobs:
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
 
-            - name: Build Images
+            - name: Build Images & Tag & push Backend
               uses: docker/build-push-action@v6
               with:
                 context: ./backend
@@ -34,10 +34,10 @@ jobs:
               # run: |
               #   docker compose build
 
-            - name: Tag & push Backend
-              run: |
-                docker tag kupantip-backend:latest ${{ secrets.DOCKER_USER }}/kupantip-backend:latest
-                docker push ${{ secrets.DOCKER_USER }}/kupantip-backend:latest
+            # - name: Tag & push Backend
+            #   run: |
+            #     docker tag kupantip-backend:latest ${{ secrets.DOCKER_USER }}/kupantip-backend:latest
+            #     docker push ${{ secrets.DOCKER_USER }}/kupantip-backend:latest
 
             # - name: Tag & push Frontend
             #   run: |
