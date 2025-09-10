@@ -3,13 +3,13 @@ import path from 'path';
 import fs from 'fs';
 import { Request, Response, NextFunction } from 'express';
 
-// สร้างโฟลเดอร์ uploads ถ้ายังไม่มี
+// Create uploads folder if it doesn't exist
 const uploadDir = path.join(__dirname, '../../uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// เก็บไฟล์ใน uploads/
+// Store files in uploads/
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
@@ -20,7 +20,7 @@ const storage = multer.diskStorage({
   },
 });
 
-// รองรับเฉพาะ jpeg/png/gif
+// Support only jpeg/png/gif
 const allowedExt = ['.jpg', '.jpeg', '.png', '.gif'];
 const fileFilter = (
   req: Request,
@@ -35,16 +35,16 @@ const fileFilter = (
   }
 };
 
-// ใช้ memory เก็บ size ของแต่ละไฟล์
+// Use memory to store size of each file
 let totalSize = 0;
 
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // กันไฟล์เดียว >10MB ด้วย
-}).array('files', 5); // สูงสุด 5 ไฟล์
+  limits: { fileSize: 10 * 1024 * 1024 }, // no size > 10MB
+}).array('files', 5); // Maximum 5 files
 
-// Middleware wrapper เช็คขนาดรวมไม่เกิน 10MB
+// Middleware wrapper check total size not exceed 10MB
 export const uploadWithLimit = (req: Request, res: Response, next: NextFunction) => {
   totalSize = 0;
   upload(req, res, (err: unknown) => {

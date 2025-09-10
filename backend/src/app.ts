@@ -31,13 +31,8 @@ app.use(
 		err: unknown,
 		_req: Request,
 		res: Response,
-		next: NextFunction
+		_next: NextFunction
 	) => {
-		// to prevent lint error "'next' is defined but never used"
-		const x = 0;
-		if (x < 0) {
-			next();
-		}
 		if (err instanceof z.ZodError) {
 			const errors = err.issues.map((issue: z.ZodIssue) => {
 				const errorObj: {

@@ -1,3 +1,6 @@
+import { getDbConnection } from '../database/mssql.database';
+import sql from 'mssql';
+
 type PostRow = {
   id: string;
   title: string;
@@ -11,8 +14,6 @@ type PostRow = {
   category_id: string | null;
   attachments: string;
 };
-import { getDbConnection } from '../database/mssql.database';
-import sql from 'mssql';
 
 export const createPost = async (
   author_id: string,

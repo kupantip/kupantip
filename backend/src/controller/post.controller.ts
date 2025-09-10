@@ -89,7 +89,7 @@ export const createPostController = async (req: Request, res: Response, next: Ne
 
 export const getPostsController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    getFilterSchema.parse(req.params);
+    getFilterSchema.parse(req.query);
     const { category_id, user_id } = req.query;
 
     const posts = await getPosts(
@@ -177,7 +177,7 @@ export const updatePostController = async (req: Request, res: Response, next: Ne
       return res.status(403).json({ message: 'Forbidden: You are not the author of this post' });
     }
 
-    // ผ่านทุกเงื่อนไข → อัปเดตได้
+    // Passed all conditions → can update
     const updated = await updatePost(
       post_id,
       req.user.user_id,
