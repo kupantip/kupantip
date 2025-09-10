@@ -3,5 +3,3 @@ mssql/
 monio-data/
 dist/
 .github/
-
-*.env
