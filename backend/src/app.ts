@@ -5,6 +5,16 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import initRoute from './routes/init';
 import userRoute from './routes/user.route';
+import { getDbConnection } from './database/mssql.database';
+
+(async () => {
+	const cnt = await getDbConnection();
+	if (!cnt.connected) {
+		process.exit(1);
+	}
+
+	console.log('Database Connected Success');
+})();
 
 const app = express();
 app.use(helmet());

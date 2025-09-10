@@ -48,6 +48,13 @@ jobs:
                 username: ${{ secrets.DOCKER_USER }}
                 password: ${{ secrets.DOCKER_TOKEN }}
 
+            - name: Write .env file
+              shell: bash
+              run: |
+                cd backend
+                printf '%s' "${{ secrets.BACKEND_ENV }}" > .env
+                chmod 600 .env
+
             - name: Deploy Backend
               run: |
-                docker compose -f deploy.yml up -d 
+                docker compose -f deploy.yml up -d --build
