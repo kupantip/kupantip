@@ -6,7 +6,7 @@ import path from 'path';
 
 const postSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  body_md: z.string().optional(),
+  body_md: z.string(),
   url: z.string().url().optional(),
   category_id: z.string().uuid().optional(),
 });
