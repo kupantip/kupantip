@@ -38,9 +38,6 @@ export const createPostController = async (req: Request, res: Response, next: Ne
 
     const { title, body_md, url, category_id } = req.body;
 
-    if (!title) {
-      return res.status(400).json({ message: 'Title is required' });
-    }
 
     // 1. สร้าง post
     const post = await createPost(
@@ -113,9 +110,6 @@ export const deletePostController = async (req: Request, res: Response, next: Ne
     }
 
     const { post_id } = req.params;
-    if (!post_id) {
-      return res.status(400).json({ message: 'Post ID is required' });
-    }
 
     // Check existence BEFORE deleting
     const pool = await getDbConnection();
