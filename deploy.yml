@@ -6,7 +6,8 @@ services:
             - '${PORT:-8000}:8000'
         networks:
           - kupantip-net
-
+        env_file:
+          - ./backend/.env
 networks:
   kupantip-net:
     external: true
