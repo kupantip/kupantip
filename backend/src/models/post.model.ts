@@ -152,7 +152,7 @@ export const updatePost = async (
       SET 
         title = ISNULL(@title, title),
         body_md = ISNULL(@body_md, body_md),
-        category_id = @category_id,
+        category_id = ISNULL(@category_id, category_id),
         updated_at = GETDATE()
       OUTPUT INSERTED.*
       WHERE id = @post_id AND author_id = @author_id AND deleted_at IS NULL

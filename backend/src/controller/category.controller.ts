@@ -24,7 +24,7 @@ export const createCategoryController = async (req: Request, res: Response, next
         .json({ message: `Category "${label}" already exists` });
     }
 
-    const category = await createCategory(label, color_hex || null);
+    const category = await createCategory(label, color_hex);
 
     return res.status(201).json({ message: 'Category created', category });
   } catch (err) {

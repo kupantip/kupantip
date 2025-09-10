@@ -63,8 +63,8 @@ export const createPostController = async (req: Request, res: Response, next: Ne
     if (files && files.length > 0) {
       for (const file of files) {
         const fileUrl = `/uploads/${file.filename}`;
-        const ext = path.extname(file.originalname).toLowerCase().replace('.', ''); // jpg/png/gif
-        const attachment = await addAttachment(post.id, fileUrl, ext);
+        const mimeType = file.mimetype; // jpg/png/gif/jpeg
+        const attachment = await addAttachment(post.id, fileUrl, mimeType);
         attachments.push(attachment);
       }
     }
