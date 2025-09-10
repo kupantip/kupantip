@@ -1,5 +1,10 @@
-import * as models from '../models/init.models';
+// import * as models from '../models/init.models';
 import { Request, Response, NextFunction } from 'express';
+import * as z from 'zod';
+
+const get_post = z.object({
+	category_id: z.string(),
+});
 
 const init = async (
 	req: Request,
@@ -7,14 +12,11 @@ const init = async (
 	next: NextFunction
 ): Promise<void> => {
 	try {
-		const data = await models.init();
-		// console.log(data);
-		console.log(data.recordset[0].One);
-		res.status(200).json({
-			message: `Hi init`,
-			data: data,
-		});
+		const { category_id } = req.query;
+		get_post.parse({ category_id });
+		res.json({ message: 'Request OK' });
 	} catch (error) {
+		// other unexpected errors
 		next(error);
 	}
 };
