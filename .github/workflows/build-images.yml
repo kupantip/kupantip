@@ -2,7 +2,7 @@ name: Docker Image CI
 
 on:
     push:
-        branches: [ "main", "deployment-setup" ]
+        branches: [ "main" ]
     workflow_dispatch:
 
 jobs:
@@ -64,7 +64,7 @@ jobs:
               run: |
                 printf '%s' "${{ secrets.FRONTEND_ENV }}" > frontend/.env.production
                 chmod 600 frontend/.env.production
-                
+
             - name: Deploy Backend
               shell: bash
               run: |
