@@ -16,8 +16,9 @@ services:
             - '${PORT:-3000}:3000'
         networks:
           - kupantip-net
-        env_file:
-          - ./fronend/.env.production
+        volumes:
+          - ./fronend/.env.production:.env.production
+
 networks:
   kupantip-net:
       external: true

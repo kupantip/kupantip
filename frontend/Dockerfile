@@ -11,7 +11,6 @@ ENV HOST=0.0.0.0
 ENV PORT=3000
 ENV NODE_ENV=production
 COPY --from=builder /app/next.config.ts ./
-COPY --from=builder /app/.env.production ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/package*.json ./
