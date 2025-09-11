@@ -25,6 +25,10 @@ const getCommentsByPostIdSchema = z.object({
 	post_id: z.string().uuid(),
 });
 
+const deleteCommentSchema = z.object({
+	comment_id: z.string().uuid(),
+});
+
 export const getCommentsByPostId = async (
     req: Request,
     res: Response,
@@ -59,8 +63,6 @@ export const createComment = async (
 		const { post_id } = req.query;
 		const { body_md, parent_id } = req.body;
 
-		
-
 		const data: t.CommentReq = {
 			post_id,
 			body_md,
@@ -77,7 +79,21 @@ export const createComment = async (
 				res.status(404).json({ message: "Post not found" });
 				return;
 			}
+		if (parent_id) {
+			const pool = await getDbConnection();
+			const result = await pool
+		
+				.request()
+				.input('parent_id', parent_id)
+				.query(`SELECT 1 FROM [dbo].[comment] WHERE id = @parent_id AND deleted_at IS NULL`);
 
+			// true = found, false = not found
+			if (result.recordset.length <= 0) {
+				res.status(404).json({ message: "Parent comment_id not found" });
+				return;
+			}
+		}
+	
 		const comment = await models.create_comment(data);
 
 		if (comment) {
@@ -89,5 +105,26 @@ export const createComment = async (
 		next(error);
 	}
 };
+
+export const deleteComment = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+    try {
+        deleteCommentSchema.parse(req.params);
+        const { comment_id } = req.params;
+        const user_id = req.user?.user_id;
+        const result = await models.deleteComment(comment_id, user_id);
+        if (!result.success) {
+            res.status(404).json({ message: result.message });
+            return;
+        }
+        res.json({ message: result.message });
+    } catch (error) {
+        next(error);
+    }
+};
+
 
 

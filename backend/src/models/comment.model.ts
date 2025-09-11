@@ -124,3 +124,24 @@ export const getCommentsByPostId = async (post_id: string): Promise<CommentWithA
         throw error;
     }
 };
+
+export const deleteComment = async (comment_id: string, user_id?: string): Promise<{ success: boolean; message: string }> => {
+    const cnt: ConnectionPool = await getDbConnection();
+    // Only allow author or admin to delete
+    let query = `
+        UPDATE [KUPantipDB].[dbo].[comment]
+        SET deleted_at = GETDATE()
+        OUTPUT INSERTED.*
+        WHERE id = @comment_id AND deleted_at IS NULL
+    `;
+    const request = cnt.request().input('comment_id', comment_id);
+    if (user_id) {
+        query += ' AND author_id = @user_id';
+        request.input('user_id', user_id);
+    }
+    const result = await request.query(query);
+    if (result.recordset.length === 0) {
+        return { success: false, message: 'Comment not found or not authorized' };
+    }
+    return { success: true, message: 'Comment deleted' };
+};

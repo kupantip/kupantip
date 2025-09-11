@@ -5,5 +5,6 @@ const router = Router({ strict: true });
 
 router.post('/', authMiddleware, controller.createComment);
 router.get('/', controller.getCommentsByPostId);
+router.delete('/:comment_id', authMiddleware, controller.deleteComment);
 
 export default router;
