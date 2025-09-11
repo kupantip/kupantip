@@ -53,11 +53,11 @@ jobs:
                 username: ${{ secrets.DOCKER_USER }}
                 password: ${{ secrets.DOCKER_TOKEN }}
 
-            - name: Write .env file
+            - name: Write .env file Backend
               shell: bash
               run: |
-                printf '%s' "${{ secrets.FRONTEND_ENV }}" > frontend/.env.production
-                chmod 600 frontend/.env.production
+                printf '%s' "${{ secrets.BACKEND_ENV }}" > backend/.env
+                chmod 600 backend/.env
 
             - name: Deploy Backend
               shell: bash
@@ -113,6 +113,12 @@ jobs:
                 echo "❌ Timed out waiting for backend to become healthy"
                 docker compose -f deploy.yml logs backend || true
                 exit 1
+
+            - name: Write .env file for Frontend
+              shell: bash
+              run: |
+                printf '%s' "${{ secrets.FRONTEND_ENV }}" > frontend/.env.production
+                chmod 600 frontend/.env.production
 
             - name: Deploy Frontend
               shell: bash
