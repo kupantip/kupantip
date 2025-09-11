@@ -12,7 +12,8 @@ export interface LoginResponse {
 }
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
-  const res = await fetch('http://localhost:8000/api/v1/user/login', {
+  const BACKEND_URL = process.env.BACKEND_URL
+  const res = await fetch(`${BACKEND_URL}/user/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

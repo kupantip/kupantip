@@ -121,8 +121,13 @@
   }
 }
 
-:root {
-  --color-green-primary: #006c68;
+@theme {
+  --color-green-1: #016c69;
+  --color-green-2: #03bd77;
+  --color-green-3: #b2bb1c;
+  --color-purple-1: #292742;
+  --color-purple-2: #2c2a48;
+  --color-purple-3: #3d3962;
 }
 
 @layer base {

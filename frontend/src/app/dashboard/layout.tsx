@@ -1,9 +1,15 @@
 // app/dashboard/layout.tsx
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import { AppSidebar } from '@/components/app-sidebar'
-import { Search } from 'lucide-react'
+import { AppSidebar } from '@/components/dashboard/app-sidebar'
+import { Search, Settings } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 export default function DashboardLayout({
     children,
@@ -15,7 +21,12 @@ export default function DashboardLayout({
             {/* Top bar */}
             <header className="fixed top-0 left-0 w-full h-16 bg-white shadow flex items-center px-4 z-50">
                 {/* Logo */}
-                <div className="font-bold text-xl text-red-600">MyApp</div>
+                <Image
+                    src="/dashboard/logo.svg"
+                    alt="logo"
+                    width={80}
+                    height={80}
+                />
 
                 {/* Center search bar */}
                 <div className="flex-1 mx-[calc(28%)]">
@@ -31,10 +42,21 @@ export default function DashboardLayout({
 
                 {/* Right side buttons */}
                 <div className="flex items-center gap-4">
-                    <Button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                    <Button className="px-4 py-2 bg-green-2 text-white rounded-lg hover:bg-green-600">
                         Log In
                     </Button>
                 </div>
+
+                <Tooltip>
+                    <TooltipTrigger>
+                        <Button className='rounded-full'>
+                            <Settings />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Settings</p>
+                    </TooltipContent>
+                </Tooltip>
             </header>
 
             {/* Sidebar + main content */}

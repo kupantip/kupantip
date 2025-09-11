@@ -266,6 +266,7 @@ function Sidebar({
         </div>
     )
 }
+import { Menu } from'lucide-react';
 
 function SidebarTrigger({
     className,
@@ -275,9 +276,9 @@ function SidebarTrigger({
     const { toggleSidebar } = useSidebar()
 
     return (
-        <div className="relative flex items-center">
+        <div className="relative flex items-center transform pl-1">
             {/* Vertical line behind the button */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 top-0 h-full w-[1px] bg-gray-200 z-0" />
+            <div className="relative left-1/2 transform -translate-x-1/2 top-0 h-full w-[1px] bg-gray-200 z-0" />
 
             <Button
                 data-sidebar="trigger"
@@ -292,7 +293,7 @@ function SidebarTrigger({
                 {...props}
             >
                 <div className="border border-gray-400 rounded-2xl p-[0.4rem] inline-flex z-10 bg-white hover:bg-gray-400">
-                    <PanelLeftIcon className="h-6 w-6 z-10" />
+                    <Menu className="h-6 w-6 z-10" />
                 </div>
                 <span className="sr-only">Toggle Sidebar</span>
             </Button>
@@ -517,7 +518,7 @@ const sidebarMenuButtonVariants = cva(
             variant: 'default',
             size: 'default',
         },
-    }
+    } 
 )
 
 function SidebarMenuButton({
