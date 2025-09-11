@@ -31,18 +31,13 @@ jobs:
                 context: ./backend
                 push: true
                 tags: ${{ secrets.DOCKER_USER }}/kupantip-backend:latest
-              # run: |
-              #   docker compose build
 
-            # - name: Tag & push Backend
-            #   run: |
-            #     docker tag kupantip-backend:latest ${{ secrets.DOCKER_USER }}/kupantip-backend:latest
-            #     docker push ${{ secrets.DOCKER_USER }}/kupantip-backend:latest
-
-            # - name: Tag & push Frontend
-            #   run: |
-            #     docker tag kupantip-frontend:latest ${{ secrets.DOCKER_USER }}/kupantip-frontend:latest
-            #     docker push ${{ secrets.DOCKER_USER }}/kupantip-frontend:latest
+            - name: Build Images & Tag & push Frontend
+              uses: docker/build-push-action@v6
+              with:
+                context: ./frontend
+                push: true
+                tags: ${{ secrets.DOCKER_USER }}/kupantip-frontend:latest
 
     deploy:
         needs: build
@@ -119,3 +114,42 @@ jobs:
                 docker compose -f deploy.yml logs backend || true
                 exit 1
 
+            - name: Deploy Frontend
+              shell: bash
+              run: |
+                set -euo pipefail
+
+                # Start or update the frontend service
+                docker compose -f deploy.yml pull frontend
+                docker compose -f deploy.yml up -d --pull always frontend
+
+                # Get the container id for the frontend service
+                CID="$(docker compose -f deploy.yml ps -q frontend)"
+                if [ -z "${CID}" ]; then
+                  echo "❌ Could not find frontend container id"
+                  docker compose -f deploy.yml logs frontend || true
+                  exit 1
+                fi
+
+                echo "⏳ Waiting for frontend to respond..."
+                # Wait up to ~90s for the frontend to respond on port 3000
+                for i in {1..30}; do
+                  # Running state
+                  RUNNING="$(docker inspect -f '{{.State.Running}}' "$CID" || echo 'false')"
+                  if [ "$RUNNING" != "true" ]; then
+                    echo "❌ Container is not running"
+                    docker compose -f deploy.yml logs frontend || true
+                    exit 1
+                  fi
+
+                  if curl -fs http://localhost:3000/ > /dev/null; then
+                      echo "✅ frontend is responding"
+                      exit 0
+                  fi
+
+                  sleep 3
+                done
+
+                echo "❌ Timed out waiting for frontend to respond"
+                docker compose -f deploy.yml logs frontend || true
+                exit 1

@@ -7,3 +7,12 @@ services:
         container_name: kupantip-backend
         ports:
             - '${PORT:-8000}:8000'
+
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        image: kupantip-frontend
+        container_name: kupantip-frontend
+        ports:
+            - '${PORT:-3000}:3000'

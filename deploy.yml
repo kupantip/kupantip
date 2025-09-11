@@ -8,6 +8,16 @@ services:
           - kupantip-net
         env_file:
           - ./backend/.env
+
+    frontend:
+        image: xeei/kupantip-frontend:latest
+        container_name: kupantip-frontend
+        ports:
+            - '${PORT:-3000}:3000'
+        networks:
+          - kupantip-net
+        env_file:
+          - ./fronend/.env.production
 networks:
   kupantip-net:
       external: true
