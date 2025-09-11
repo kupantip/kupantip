@@ -17,7 +17,7 @@ services:
         networks:
           - kupantip-net
         volumes:
-          - ./fronend/.env.production:.env.production
+          - fronend/.env.production:.env.production
 
 networks:
   kupantip-net:
