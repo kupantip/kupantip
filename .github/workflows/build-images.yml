@@ -56,8 +56,8 @@ jobs:
             - name: Write .env file
               shell: bash
               run: |
-                printf '%s' "${{ secrets.BACKEND_ENV }}" > backend/.env
-                chmod 600 backend/.env
+                printf '%s' "${{ secrets.FRONTEND_ENV }}" > frontend/.env.production
+                chmod 600 frontend/.env.production
 
             - name: Deploy Backend
               shell: bash
