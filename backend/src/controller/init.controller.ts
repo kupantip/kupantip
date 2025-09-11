@@ -1,4 +1,4 @@
-import * as models from '../models/init.models';
+// import * as models from '../models/init.models';
 import { Request, Response, NextFunction } from 'express';
 import * as z from 'zod';
 
@@ -14,7 +14,7 @@ const init = async (
 	try {
 		const { category_id } = req.query;
 		get_post.parse({ category_id });
-		res.json({ massage: 'Request OK' });
+		res.json({ message: 'Request OK' });
 	} catch (error) {
 		// other unexpected errors
 		next(error);
