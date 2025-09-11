@@ -61,10 +61,61 @@ jobs:
             - name: Write .env file
               shell: bash
               run: |
-                cd backend
-                printf '%s' "${{ secrets.BACKEND_ENV }}" > .env
-                chmod 600 .env
+                printf '%s' "${{ secrets.BACKEND_ENV }}" > backend/.env
+                chmod 600 backend/.env
 
             - name: Deploy Backend
+              shell: bash
               run: |
+                set -euo pipefail
+
+                # Start or update the backend service
+                docker compose -f deploy.yml pull backend
                 docker compose -f deploy.yml up -d --pull always backend
+
+                # Get the container id for the backend service
+                CID="$(docker compose -f deploy.yml ps -q backend)"
+                if [ -z "${CID}" ]; then
+                  echo "❌ Could not find backend container id"
+                  docker compose -f deploy.yml logs backend || true
+                  exit 1
+                fi
+
+                echo "⏳ Waiting for backend healthcheck..."
+                # Wait up to ~90s for health=healthy
+                for i in {1..30}; do
+                  # Running state
+                  RUNNING="$(docker inspect -f '{{.State.Running}}' "$CID" || echo 'false')"
+                  if [ "$RUNNING" != "true" ]; then
+                    echo "❌ Container is not running"
+                    docker compose -f deploy.yml logs backend || true
+                    exit 1
+                  fi
+
+                  # Health state (may not exist immediately)
+                  HEALTH="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$CID" || echo 'none')"
+                  case "$HEALTH" in
+                    healthy)
+                      echo "✅ Backend is healthy"
+                      exit 0
+                      ;;
+                    unhealthy)
+                      echo "❌ Backend is unhealthy"
+                      docker compose -f deploy.yml logs backend || true
+                      exit 1
+                      ;;
+                    none)
+                      # no healthcheck yet; keep waiting
+                      ;;
+                    *)
+                      # starting, etc.; keep waiting
+                      ;;
+                  esac
+
+                  sleep 3
+                done
+
+                echo "❌ Timed out waiting for backend to become healthy"
+                docker compose -f deploy.yml logs backend || true
+                exit 1
+
