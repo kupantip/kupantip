@@ -59,6 +59,12 @@ jobs:
                 printf '%s' "${{ secrets.BACKEND_ENV }}" > backend/.env
                 chmod 600 backend/.env
 
+            - name: Write .env file for Frontend
+              shell: bash
+              run: |
+                printf '%s' "${{ secrets.FRONTEND_ENV }}" > frontend/.env.production
+                chmod 600 frontend/.env.production
+                
             - name: Deploy Backend
               shell: bash
               run: |
@@ -114,11 +120,7 @@ jobs:
                 docker compose -f deploy.yml logs backend || true
                 exit 1
 
-            - name: Write .env file for Frontend
-              shell: bash
-              run: |
-                printf '%s' "${{ secrets.FRONTEND_ENV }}" > frontend/.env.production
-                chmod 600 frontend/.env.production
+
 
             - name: Deploy Frontend
               shell: bash
