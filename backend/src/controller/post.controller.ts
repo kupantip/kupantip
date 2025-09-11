@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { getDbConnection } from '../database/mssql.database';
 import { createPost, getPosts, addAttachment, deletePost, updatePost } from '../models/post.model';
 import * as z from 'zod';
-import path from 'path';
 
 const postSchema = z.object({
   title: z.string().min(1, 'Title is required'),

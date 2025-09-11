@@ -125,23 +125,52 @@ export const getCommentsByPostId = async (post_id: string): Promise<CommentWithA
     }
 };
 
-export const deleteComment = async (comment_id: string, user_id?: string): Promise<{ success: boolean; message: string }> => {
+export const deleteComment = async (
+    comment_id: string,
+    user_id?: string,
+    role?: string,
+    post_owner_id?: string
+): Promise<{ success: boolean; message: string }> => {
     const cnt: ConnectionPool = await getDbConnection();
-    // Only allow author or admin to delete
-    let query = `
-        UPDATE [KUPantipDB].[dbo].[comment]
-        SET deleted_at = GETDATE()
-        OUTPUT INSERTED.*
-        WHERE id = @comment_id AND deleted_at IS NULL
-    `;
-    const request = cnt.request().input('comment_id', comment_id);
-    if (user_id) {
-        query += ' AND author_id = @user_id';
-        request.input('user_id', user_id);
+    // Check if comment exists
+    const check = await cnt.request().input('comment_id', comment_id)
+        .query('SELECT author_id, post_id, deleted_at FROM [KUPantipDB].[dbo].[comment] WHERE id = @comment_id');
+    if (check.recordset.length === 0) {
+        return { success: false, message: 'Comment not found' };
     }
-    const result = await request.query(query);
+    const comment = check.recordset[0];
+    if (comment.deleted_at) {
+        return { success: false, message: 'Comment already deleted' };
+    }
+    // Check permission: author, admin, or post owner
+    if (
+        role !== 'admin' &&
+        user_id !== comment.author_id &&
+        user_id !== post_owner_id
+    ) {
+        return { success: false, message: 'Not authorized to delete this comment' };
+    }
+    // Delete
+    await cnt.request()
+        .input('comment_id', comment_id)
+        .query('UPDATE [KUPantipDB].[dbo].[comment] SET deleted_at = GETDATE() OUTPUT INSERTED.* WHERE id = @comment_id');
+    return { success: true, message: 'Comment deleted' };
+};
+
+export const updateComment = async (comment_id: string, user_id: string, body_md: string): Promise<{ success: boolean; message: string; updated?: Record<string, unknown> }> => {
+    const cnt: ConnectionPool = await getDbConnection();
+    const result = await cnt.request()
+        .input('comment_id', comment_id)
+        .input('user_id', user_id)
+        .input('body_md', body_md)
+        .query(`
+            UPDATE [KUPantipDB].[dbo].[comment]
+            SET body_md = @body_md, updated_at = GETDATE()
+            OUTPUT INSERTED.*
+            WHERE id = @comment_id AND author_id = @user_id AND deleted_at IS NULL
+        `);
     if (result.recordset.length === 0) {
         return { success: false, message: 'Comment not found or not authorized' };
     }
-    return { success: true, message: 'Comment deleted' };
+    return { success: true, message: 'Comment updated', updated: result.recordset[0] };
 };
