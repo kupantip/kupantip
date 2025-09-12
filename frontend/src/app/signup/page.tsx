@@ -2,20 +2,33 @@
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { signupUser } from "../api/signup_page";
+import { useRouter } from 'next/navigation'
+import Link from "next/link";
 
-export default function RedditSignUp() {
+export default function SignUp() {
   const [formData, setFormData] = useState({
     email: "",
-    username: "",
+    handle: "",
+    display_name: "",
     password: "",
   });
+
+  const router = useRouter()
 
   const handleChange = (e : React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e : React.ChangeEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    try {
+      const result = await signupUser(formData);
+      router.push('/login');
+      console.log("Sign up success:", result);
+    } catch (error) {
+      console.error("Error signing up:", error);
+    }
   };
 
   return (
@@ -35,9 +48,18 @@ export default function RedditSignUp() {
           />
           <Input
             type="text"
-            name="username"
+            name="handle"
             placeholder="Username"
-            value={formData.username}
+            value={formData.handle}
+            onChange={handleChange}
+            required
+            className="border rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <Input
+            type="text"
+            name="display_name"
+            placeholder="Display name"
+            value={formData.display_name}
             onChange={handleChange}
             required
             className="border rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -53,7 +75,7 @@ export default function RedditSignUp() {
           />
           <button
             type="submit"
-            className="bg-emerald-900 text-white font-bold py-2 rounded-lg hover:bg-emerald-950"
+            className="bg-emerald-800 text-white font-bold py-2 rounded-lg hover:bg-emerald-900"
           >
             Sign Up
           </button>
@@ -76,9 +98,9 @@ export default function RedditSignUp() {
 
         <p className="text-sm text-center mt-4">
           Already have an account?{" "}
-          <a href="/login" className="text-blue-500 hover:underline">
+          <Link href="/login" className="text-blue-500 hover:underline ">
             Log In
-          </a>
+          </Link>
         </p>
       </div>
     </div>
