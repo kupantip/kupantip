@@ -166,19 +166,27 @@ export const deleteComment = async (
 };
 
 export const updateComment = async (comment_id: string, user_id: string, body_md: string): Promise<{ success: boolean; message: string; updated?: Record<string, unknown> }> => {
-    const cnt: ConnectionPool = await getDbConnection();
-    const result = await cnt.request()
-        .input('comment_id', comment_id)
-        .input('user_id', user_id)
-        .input('body_md', body_md)
-        .query(`
-            UPDATE [KUPantipDB].[dbo].[comment]
-            SET body_md = @body_md, updated_at = GETDATE()
-            OUTPUT INSERTED.*
-            WHERE id = @comment_id AND author_id = @user_id AND deleted_at IS NULL
-        `);
-    if (result.recordset.length === 0) {
-        return { success: false, message: 'Comment not found or not authorized' };
+    try {
+        const cnt: ConnectionPool = await getDbConnection();
+        const result = await cnt.request()
+            .input('comment_id', comment_id)
+            .input('user_id', user_id)
+            .input('body_md', body_md)
+            .query(`
+                UPDATE [KUPantipDB].[dbo].[comment]
+                SET body_md = @body_md, updated_at = GETDATE()
+                OUTPUT INSERTED.*
+                WHERE id = @comment_id AND author_id = @user_id AND deleted_at IS NULL
+            `);
+        if (result.recordset.length === 0) {
+            return { success: false, message: 'Comment not found or not authorized' };
+        }
+        return { success: true, message: 'Comment updated', updated: result.recordset[0] };
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error('Error in updateComment:', error.message);
+            throw new Error(error.message);
+        }
+        throw error;
     }
-    return { success: true, message: 'Comment updated', updated: result.recordset[0] };
 };
