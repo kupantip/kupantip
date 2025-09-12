@@ -12,7 +12,7 @@ export interface LoginResponse {
 }
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
-  const res = await fetch('http://localhost:8000/api/v1/user/login', {
+  const res = await fetch(`http://kupantip-backend:8000/api/v1/user/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

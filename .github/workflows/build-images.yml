@@ -1,0 +1,163 @@
+name: Docker Image CI
+
+on:
+    push:
+        branches: [ "main" ]
+    workflow_dispatch:
+
+jobs:
+    build:
+
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: 🚨 Checkout Repo
+              uses: actions/checkout@v4
+
+            - name: Login to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                username: ${{ secrets.DOCKER_USER }}
+                password: ${{ secrets.DOCKER_TOKEN }}
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build Images & Tag & push Backend
+              uses: docker/build-push-action@v6
+              with:
+                context: ./backend
+                push: true
+                tags: ${{ secrets.DOCKER_USER }}/kupantip-backend:latest
+
+            - name: Build Images & Tag & push Frontend
+              uses: docker/build-push-action@v6
+              with:
+                context: ./frontend
+                push: true
+                tags: ${{ secrets.DOCKER_USER }}/kupantip-frontend:latest
+
+    deploy:
+        needs: build
+        runs-on: self-hosted
+
+        steps:
+            - name: 🚨 Checkout Repo
+              uses: actions/checkout@v4
+
+            - name: Login to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                username: ${{ secrets.DOCKER_USER }}
+                password: ${{ secrets.DOCKER_TOKEN }}
+
+            - name: Write .env file Backend
+              shell: bash
+              run: |
+                printf '%s' "${{ secrets.BACKEND_ENV }}" > backend/.env
+                chmod 600 backend/.env
+
+            - name: Write .env file for Frontend
+              shell: bash
+              run: |
+                printf '%s' "${{ secrets.FRONTEND_ENV }}" > frontend/.env.production
+                chmod 600 frontend/.env.production
+
+            - name: Deploy Backend
+              shell: bash
+              run: |
+                set -euo pipefail
+
+                # Start or update the backend service
+                docker compose -f deploy.yml pull backend
+                docker compose -f deploy.yml up -d --pull always backend
+
+                # Get the container id for the backend service
+                CID="$(docker compose -f deploy.yml ps -q backend)"
+                if [ -z "${CID}" ]; then
+                  echo "❌ Could not find backend container id"
+                  docker compose -f deploy.yml logs backend || true
+                  exit 1
+                fi
+
+                echo "⏳ Waiting for backend healthcheck..."
+                # Wait up to ~90s for health=healthy
+                for i in {1..30}; do
+                  # Running state
+                  RUNNING="$(docker inspect -f '{{.State.Running}}' "$CID" || echo 'false')"
+                  if [ "$RUNNING" != "true" ]; then
+                    echo "❌ Container is not running"
+                    docker compose -f deploy.yml logs backend || true
+                    exit 1
+                  fi
+
+                  # Health state (may not exist immediately)
+                  HEALTH="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$CID" || echo 'none')"
+                  case "$HEALTH" in
+                    healthy)
+                      echo "✅ Backend is healthy"
+                      exit 0
+                      ;;
+                    unhealthy)
+                      echo "❌ Backend is unhealthy"
+                      docker compose -f deploy.yml logs backend || true
+                      exit 1
+                      ;;
+                    none)
+                      # no healthcheck yet; keep waiting
+                      ;;
+                    *)
+                      # starting, etc.; keep waiting
+                      ;;
+                  esac
+
+                  sleep 3
+                done
+
+                echo "❌ Timed out waiting for backend to become healthy"
+                docker compose -f deploy.yml logs backend || true
+                exit 1
+
+
+
+            - name: Deploy Frontend
+              shell: bash
+              run: |
+                set -euo pipefail
+
+                # Start or update the frontend service
+                docker compose -f deploy.yml pull frontend
+                docker compose -f deploy.yml up -d --pull always frontend
+
+                # Get the container id for the frontend service
+                CID="$(docker compose -f deploy.yml ps -q frontend)"
+                if [ -z "${CID}" ]; then
+                  echo "❌ Could not find frontend container id"
+                  docker compose -f deploy.yml logs frontend || true
+                  exit 1
+                fi
+
+                echo "⏳ Waiting for frontend to respond..."
+                # Wait up to ~90s for the frontend to respond on port 3000
+                for i in {1..30}; do
+                  # Running state
+                  RUNNING="$(docker inspect -f '{{.State.Running}}' "$CID" || echo 'false')"
+                  if [ "$RUNNING" != "true" ]; then
+                    echo "❌ Container is not running"
+                    docker compose -f deploy.yml logs frontend || true
+                    exit 1
+                  fi
+
+                  if curl -fs http://localhost:3000/ > /dev/null; then
+                      echo "✅ frontend is responding"
+                      exit 0
+                  fi
+
+                  sleep 3
+                done
+
+                echo "❌ Timed out waiting for frontend to respond"
+                docker compose -f deploy.yml logs frontend || true
+                exit 1
