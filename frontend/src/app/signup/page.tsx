@@ -87,15 +87,6 @@ export default function SignUp() {
           <div className="flex-grow border-t border-gray-300"></div>
         </div>
 
-        {/* <button className="w-full border flex items-center justify-center gap-2 py-2 rounded-lg mb-2 hover:bg-gray-50">
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-          Continue with Google
-        </button>
-        <button className="w-full border flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-gray-50">
-          <img src="https://www.svgrepo.com/show/506383/apple.svg" alt="Apple" className="w-7 h-7" />
-          Continue with Apple
-        </button> */}
-
         <p className="text-sm text-center mt-4">
           Already have an account?{" "}
           <Link href="/login" className="text-blue-500 hover:underline ">
