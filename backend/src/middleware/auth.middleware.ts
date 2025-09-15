@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
+import { JwtPayload } from '../types/express/index.t';
 
 export const authMiddleware = (
 	req: Request,
@@ -12,8 +13,7 @@ export const authMiddleware = (
 		return res.status(401).json({ message: 'No token provided' });
 	}
 	try {
-		const decoded = jwt.verify(token, String(env.jwtSecret));
-		// เพิ่มข้อมูล user ลง req เช่น req.user = decoded;
+		const decoded = jwt.verify(token, String(env.jwtSecret)) as JwtPayload;
 		req.user = decoded;
 		next();
 	} catch (err) {

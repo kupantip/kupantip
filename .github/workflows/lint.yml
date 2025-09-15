@@ -6,6 +6,9 @@ on:
     pull_request:
         branches: [main]
     workflow_dispatch: {}
+defaults:
+  run:
+    working-directory: ./backend
 
 jobs:
     lint:
@@ -13,9 +16,6 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
-
-            - name: Cd Backend
-              run: cd backend
 
             - uses: actions/cache@v3
               with:
