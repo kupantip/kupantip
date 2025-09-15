@@ -48,7 +48,7 @@ export default function DashboardLayout({
                 </div>
 
                 <Tooltip>
-                    <TooltipTrigger>
+                    <TooltipTrigger asChild>
                         <Button className='rounded-full'>
                             <Settings />
                         </Button>
