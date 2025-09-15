@@ -58,7 +58,10 @@ export const getPosts = async (category_id?: string, user_id?: string) => {
         FROM [dbo].[attachment] a
         WHERE a.post_id = p.id
         FOR JSON PATH
-      ) as attachments
+      ) as attachments,
+      datediff(minute, p.created_at, getdate()) as minutes_since_posted,
+      (SELECT COUNT(*) FROM [dbo].[comment] cm WHERE cm.post_id = p.id) as comment_count,
+      (SELECT COUNT(*) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id) as vote_count
     FROM [dbo].[post] p
     LEFT JOIN [dbo].[app_user] u ON p.author_id = u.id
     LEFT JOIN [dbo].[category] c ON p.category_id = c.id
