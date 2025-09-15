@@ -79,7 +79,8 @@ export const getCommentsByPostId = async (post_id: string): Promise<CommentWithA
                     c.created_at,
                     c.updated_at,
                     c.deleted_at,
-                    u.display_name as author_name
+                    u.display_name as author_name,
+                    datediff(minute, c.created_at, getdate()) as minutes_since_commented
                 FROM [KUPantipDB].[dbo].[comment] c
                 LEFT JOIN [KUPantipDB].[dbo].[app_user] u ON c.author_id = u.id
                 WHERE c.post_id = @post_id AND c.deleted_at IS NULL
