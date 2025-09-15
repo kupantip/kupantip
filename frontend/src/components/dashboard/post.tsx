@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -9,15 +10,31 @@ import {
     ArrowDown,
     Ellipsis,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import * as t from '@/types/dashboard/post'
+
+const daySincePosted = (minutes: number) => {
+    if (minutes < 60) {
+        return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`
+    } else if (minutes < 1440) {
+        const hours = Math.floor(minutes / 60)
+        return `${hours} hour${hours !== 1 ? 's' : ''} ago`
+    } else {
+        const days = Math.floor(minutes / 1440)
+        return `${days} day${days !== 1 ? 's' : ''} ago`
+    }
+}
 
 type PostProps = {
     post: t.Post
+    currentPage: string
 }
 
-export default function Post({ post }: PostProps) {
-    const handlePost = async () => {
-        console.log('Click on a post:', post.id)
+export default function Post({ post, currentPage }: PostProps) {
+    const router = useRouter()
+
+    const handlePostClick = () => {
+        router.push(`/${currentPage}/${post.id}`)
     }
 
     const handleUpVote = async (e: React.MouseEvent) => {
@@ -35,18 +52,13 @@ export default function Post({ post }: PostProps) {
         console.log('Comment on:', post.id)
     }
 
-    const handleShare = async (e: React.MouseEvent) => {
-        e.stopPropagation()
-        console.log('Share on:', post.id)
-    }
-
     return (
         <Card
-            className="w-full border rounded-lg shadow-sm hover:bg-gray-100"
-            onClick={handlePost}
+            className="w-full border rounded-lg shadow-sm hover:bg-gray-100 px-5"
+            onClick={handlePostClick}
         >
             {/* Header */}
-            <CardHeader className="flex flex-row items-center gap-2 p-3 py-1">
+            <CardHeader className="flex flex-row items-center gap-2 pt-1 px-3">
                 <Avatar className="w-8 h-8">
                     <AvatarImage src="/chicken.png" alt={post.author_name} />
                     <AvatarFallback>
@@ -58,7 +70,7 @@ export default function Post({ post }: PostProps) {
                         {post.author_name}
                     </span>
                     <span className="text-xs text-gray-500">
-                        {new Date(post.created_at).toLocaleDateString()}
+                        <span>{daySincePosted(post.minutes_since_posted)}</span>
                     </span>
                 </div>
                 {/* <button className="ml-auto bg-purple-2 text-white text-xs px-3 py-1 rounded-lg hover:bg-purple-1">
@@ -90,7 +102,7 @@ export default function Post({ post }: PostProps) {
                             className="w-6 h-6 p-1 rounded-full border border-gray-200 hover:bg-gray-300"
                             onClick={handleUpVote}
                         />
-                        <span>3.1k</span>
+                        <span>{post.vote_count}</span>
                         <ArrowDown
                             className="w-6 h-6 p-1 rounded-full border border-gray-200 hover:bg-gray-300"
                             onClick={handleDownVote}
@@ -102,7 +114,7 @@ export default function Post({ post }: PostProps) {
                         onClick={handleOpenComment}
                     >
                         <MessageSquare className="w-4 h-4" />
-                        <span>187</span>
+                        <span>{post.comment_count}</span>
                     </div>
 
                     {/* <div

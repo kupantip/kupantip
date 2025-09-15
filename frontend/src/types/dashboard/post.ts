@@ -16,25 +16,26 @@ export interface Post {
   category_label: string | null;
   category_id: string | null;
   attachments: Attachment[];
+  minutes_since_posted: number;
+  comment_count: number;
+  vote_count: number
 }
 
+export type Comment = {
+  id: string
+  post_id: string
+  author_id: string
+  parent_id: string | null
+  body_md: string
+  created_at: string // ISO date string
+  updated_at: string // ISO date string
+  deleted_at: string | null
+  author_name: string
+  replies: Comment[] // recursive type
+  minutes_since_commented: number
+}
 
-// {
-//     "id": "A505433E-F36B-1410-84CA-00F2EA0D0522",
-//     "title": "ผมรัก gpt",
-//     "body_md": null,
-//     "url": "http://example.com",
-//     "created_at": "2025-09-10T09:00:05.840Z",
-//     "updated_at": "2025-09-10T09:00:05.840Z",
-//     "author_name": "paranyuGPT",
-//     "author_id": "A005433E-F36B-1410-84CA-00F2EA0D0522",
-//     "category_label": null,
-//     "category_id": null,
-//     "attachments": [
-//         {
-//             "id": "A605433E-F36B-1410-84CA-00F2EA0D0522",
-//             "url": "/uploads/1757494782163-480090381.png",
-//             "mime_type": "png"
-//         }
-//     ]
-// }
+export type CommentsResponse = {
+  message: string
+  comments: Comment[] | []
+}
