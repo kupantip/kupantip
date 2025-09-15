@@ -38,7 +38,7 @@ export const createPost = async (
   return result.recordset[0];
 };
 
-export const getPosts = async (category_id?: string, user_id?: string) => {
+export const getPosts = async (category_id?: string, user_id?: string, post_id?: string) => {
   const pool = await getDbConnection();
 
   let query = `
@@ -78,6 +78,11 @@ export const getPosts = async (category_id?: string, user_id?: string) => {
   if (user_id) {
     query += ` AND p.author_id = @user_id`;
     request.input('user_id', user_id);
+  }
+
+  if (post_id) {
+    query += ` AND p.id = @post_id`;
+    request.input('post_id', post_id);
   }
 
   const result = await request.query(query);
