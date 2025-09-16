@@ -1,5 +1,5 @@
 // app/dashboard/layout.tsx
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/dashboard/app-sidebar';
 import { Search, Settings } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,6 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '@/components/ui/tooltip';
-import Link from 'next/link';
 
 export default function DashboardLayout({
 	children,
@@ -65,9 +64,14 @@ export default function DashboardLayout({
 
 			{/* Sidebar + main content */}
 			<div className="flex pt-16">
-				<AppSidebar />
-				<SidebarTrigger />
-				<main className="flex-1 p-4">{children}</main>
+				{/* Sticky sidebar container */}
+				<div className="sticky top-16 h-[calc(100vh-4rem)] shrink-0 overflow-hidden">
+					<AppSidebar />
+				</div>
+
+				<main className="flex-1 p-4 min-h-[calc(100vh-4rem)]">
+					{children}
+				</main>
 			</div>
 		</SidebarProvider>
 	);
