@@ -87,9 +87,6 @@ export const createPostController = async (
 			attachments,
 		});
 	} catch (err) {
-		// return res
-		//   .status(500)
-		//   .json({ message: 'Failed to create post', error: err });
 		next(err);
 	}
 };
@@ -101,11 +98,13 @@ export const getPostsController = async (
 ) => {
 	try {
 		getFilterSchema.parse(req.query);
-		const { category_id, user_id } = req.query;
+		const { category_id, user_id, post_id } = req.query;
 
 		const posts = await getPosts(
 			category_id ? String(category_id) : undefined,
-			user_id ? String(user_id) : undefined
+			user_id ? String(user_id) : undefined,
+			post_id ? String(post_id) : undefined
+			
 		);
 
 		return res.status(200).json(posts);

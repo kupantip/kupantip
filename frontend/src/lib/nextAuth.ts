@@ -32,6 +32,7 @@ export const authOptions: NextAuthOptions = {
                         name: res.display_name ?? res.email,
                         email: res.email,
                         role: res.role,
+                        token: res.token
                     }
                 } catch (err) {
                     return null
