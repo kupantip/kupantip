@@ -38,7 +38,7 @@ export const createPost = async (
   return result.recordset[0];
 };
 
-export const getPosts = async (category_id?: string, user_id?: string) => {
+export const getPosts = async (category_id?: string, user_id?: string, post_id?: string) => {
   const pool = await getDbConnection();
 
   let query = `
@@ -58,7 +58,10 @@ export const getPosts = async (category_id?: string, user_id?: string) => {
         FROM [dbo].[attachment] a
         WHERE a.post_id = p.id
         FOR JSON PATH
-      ) as attachments
+      ) as attachments,
+      datediff(minute, p.created_at, getdate()) as minutes_since_posted,
+      (SELECT COUNT(*) FROM [dbo].[comment] cm WHERE cm.post_id = p.id) as comment_count,
+      (SELECT COUNT(*) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id) as vote_count
     FROM [dbo].[post] p
     LEFT JOIN [dbo].[app_user] u ON p.author_id = u.id
     LEFT JOIN [dbo].[category] c ON p.category_id = c.id
@@ -75,6 +78,11 @@ export const getPosts = async (category_id?: string, user_id?: string) => {
   if (user_id) {
     query += ` AND p.author_id = @user_id`;
     request.input('user_id', user_id);
+  }
+
+  if (post_id) {
+    query += ` AND p.id = @post_id`;
+    request.input('post_id', post_id);
   }
 
   const result = await request.query(query);
