@@ -1,6 +1,6 @@
 // app/dashboard/layout.tsx
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/dashboard/app-sidebar';
+import { AppSidebar } from '@/components/dashboard/AppSideBar';
 import { Search, Settings } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '@/components/ui/tooltip';
+import Link from 'next/link';
 
 export default function DashboardLayout({
 	children,
@@ -27,7 +28,6 @@ export default function DashboardLayout({
 					width={80}
 					height={80}
 				/>
-
 				{/* Center search bar */}
 				<div className="flex-1 mx-[calc(28%)]">
 					<div className="relative">
@@ -39,17 +39,14 @@ export default function DashboardLayout({
 						/>
 					</div>
 				</div>
-
-				{/* Right side buttons */}
-				<a>
-					{' '}
-					<div className="flex items-center gap-4">
+				{/* Right side buttons */}{' '}
+				<div className="flex items-center gap-4">
+					<Link href="/login">
 						<Button className="px-4 py-2 bg-green-2 text-white rounded-lg hover:bg-green-600">
 							Log In
 						</Button>
-					</div>
-				</a>
-
+					</Link>
+				</div>
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<button className="ml-5">
