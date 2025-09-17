@@ -4,25 +4,26 @@ import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { v4 as uuidv4 } from "uuid";
+import { createPost } from "../api/create-post_page";
 
-export default function CreatePost() {
-  const [tab, setTab] = useState<"text" | "media" | "link">("text");
-  const [data, setData] = useState({
+export default function CreatePostPage() {
+  const [tab, setTab] = useState<"text" | "media">("text");
+  const [formData, setFormData] = useState({
     title: "",
     body_md: "",
     url: "",
     category_id: "",
-    files: [] as File[],
+    files: [] as File[]
   });
 
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-  };
+  const router = useRouter()
 
   const onDrop = (acceptedFiles: File[]) => {
-    setData((prev) => ({
+    setFormData((prev) => ({
       ...prev,
       files: [...prev.files, ...acceptedFiles],
     }));
@@ -34,14 +35,32 @@ export default function CreatePost() {
       "image/*": [],
       "video/*": [],
     },
-  });
+  });  
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const postId = uuidv4();
+    const postUrl = `http://post/${postId}`;
+
+    try {
+      const res = await createPost({ ...formData, url: postUrl});
+      router.push("/dashboard")
+      setMessage("Post created! ID: " + res.id);
+    } catch (err: any) {
+      console.log("Error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto p-4 bg-white rounded-md shadow">
       <h1 className="text-2xl font-bold mb-4">Create Post</h1>
-
       <div className="flex gap-4 border-b mb-4 bg-white">
         <button
+          type="button"
           onClick={() => setTab("text")}
           className={`py-2 px-4 transition-colors duration-200 ${
             tab === "text"
@@ -53,6 +72,7 @@ export default function CreatePost() {
         </button>
 
         <button
+          type="button"
           onClick={() => setTab("media")}
           className={`py-2 px-4 transition-colors duration-200 ${
             tab === "media"
@@ -62,44 +82,33 @@ export default function CreatePost() {
         >
           Images & Video
         </button>
-
-        <button
-          onClick={() => setTab("link")}
-          className={`py-2 px-4 transition-colors duration-200 ${
-            tab === "link"
-              ? "border-b-4 border-blue-500 font-semibold"
-              : "font-semibold hover:bg-gray-100"
-          }`}
-        >
-          Link
-        </button>
       </div>
-
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="text"
+          name="title"
           placeholder="Title"
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
           className="border rounded-xl p-3"
-          value={data.title}
-          onChange={(e) => setData({ ...data, title: e.target.value })}
           required
         />
 
         <select
           className="border rounded-xl p-3"
-          value={data.category_id}
-          onChange={(e) => setData({ ...data, category_id: e.target.value })}
+          value={formData.category_id}
+          onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
         >
           <option value="">Select Category</option>
-          <option value="64D7423E-F36B-1410-84C9-00F2EA0D0522">Anime</option>
+          <option value="64D7423E-F36B-1410-84C9-00F2EA0D0522">Game</option>
         </select>
 
         {tab === "text" && (
           <textarea
             placeholder="Body text (optional)"
             className="border p-3 rounded-xl h-40"
-            value={data.body_md}
-            onChange={(e) => setData({ ...data, body_md: e.target.value })}
+            value={formData.body_md}
+            onChange={(e) => setFormData({ ...formData, body_md: e.target.value })}
           />
         )}
 
@@ -112,7 +121,7 @@ export default function CreatePost() {
               }`}
             >
               <input {...getInputProps()} />
-              {data.files.length === 0 ? (
+              {formData.files.length === 0 ? (
                 <p>
                   {isDragActive
                     ? "Drop files here..."
@@ -120,7 +129,7 @@ export default function CreatePost() {
                 </p>
               ) : (
                 <div className="grid grid-cols-3 gap-4 w-full">
-                  {data.files.map((file, i) => (
+                  {formData.files.map((file, i) => (
                     <div key={i} className="relative group">
                       {file.type.startsWith("image/") ? (
                         <img
@@ -140,7 +149,7 @@ export default function CreatePost() {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setData((prev) => ({
+                          setFormData((prev) => ({
                             ...prev,
                             files: prev.files.filter((_, idx) => idx !== i),
                           }));
@@ -155,46 +164,27 @@ export default function CreatePost() {
               )}
             </div>
             <textarea
-              placeholder="Body text (optional)"
+              placeholder="Body text"
               className="border p-3 rounded-xl h-40"
-              value={data.body_md}
-              onChange={(e) => setData({ ...data, body_md: e.target.value })}
+              value={formData.body_md}
+              onChange={(e) => setFormData({ ...formData, body_md: e.target.value })}
             />
           </div>
         )}
 
-        {/* Link Tab */}
-        {tab === "link" && (
-          <div className="flex flex-col gap-4">
-            <input
-              type="url"
-              placeholder="Link URL"
-              className="border p-3 rounded-xl"
-              value={data.url}
-              onChange={(e) => setData({ ...data, url: e.target.value })}
-            />
-            <textarea
-              placeholder="Body text (optional)"
-              className="border p-3 rounded-xl h-40"
-              value={data.body_md}
-              onChange={(e) => setData({ ...data, body_md: e.target.value })}
-            />
-          </div>
-        )}
-
-        {/* Buttons */}
         <div className="flex justify-end gap-2">
-          <Button className="bg-emerald-800 rounded-full hover:bg-emerald-900">
-            Save Draft
-          </Button>
           <Button
             type="submit"
+            disabled={loading}
             className="bg-emerald-800 rounded-full hover:bg-emerald-900"
           >
             Post
           </Button>
         </div>
       </form>
+
+      {message && <p className="mt-4">{message}</p>}
     </div>
   );
 }
+

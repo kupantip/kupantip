@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000/api/v1/user/signup"
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_HOST
 
 interface SignupData {
     email: string;
@@ -9,7 +9,7 @@ interface SignupData {
 
 export async function signupUser(data: SignupData) {
   try {
-    const res = await fetch(`${API_BASE_URL}`, {
+    const res = await fetch(`${API_BASE_URL}/user/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
