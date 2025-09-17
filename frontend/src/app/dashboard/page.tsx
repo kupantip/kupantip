@@ -39,7 +39,7 @@ export default function DashboardPage() {
 	return (
 		<div className="w-full flex gap-4 px-20 mt-10">
 			<div className="w-4/5 flex flex-col gap-4">
-				<Link href="/post">
+				<Link href="dashboard/post">
 					<Button className='w-full'>Post</Button>
 				</Link>
 
