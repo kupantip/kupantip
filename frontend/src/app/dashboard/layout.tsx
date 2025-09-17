@@ -1,6 +1,6 @@
 // app/dashboard/layout.tsx
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/dashboard/app-sidebar';
+import { AppSidebar } from '@/components/dashboard/AppSideBar';
 import { Search, Settings } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
