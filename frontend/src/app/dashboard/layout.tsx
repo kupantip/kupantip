@@ -41,7 +41,7 @@ export default function DashboardLayout({
 				</div>
 				{/* Right side buttons */}{' '}
 				<div className="flex items-center gap-4">
-					<Link href="dashboard/post">
+					<Link href="dashboard/create-post">
 						<Button className="w-full">Post</Button>
 					</Link>
 					<Link href="/login">
