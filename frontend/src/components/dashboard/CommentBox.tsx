@@ -15,18 +15,27 @@ interface Content {
 interface CommentBoxProps {
 	className?: string;
 	postId: string;
+	parentId: string;
 }
 
-export default function CommentBox({ className, postId }: CommentBoxProps) {
+export default function CommentBox({ className, postId, parentId }: CommentBoxProps) {
 	const [comment, setComment] = useState('');
 	const [showActions, setShowActions] = useState(false);
+
+	if (!postId) {
+		postId = ''
+	}
+
+	if (!parentId) {
+		parentId = ''
+	}
 
 	async function handlePostComment() {
 		try {
 			const success = await postComment({
 				content: {
-          post_id: postId,
-					parent_id: '',
+					post_id: postId,
+					parent_id: parentId,
 					body_md: comment,
 				},
 			});
@@ -61,8 +70,8 @@ export default function CommentBox({ className, postId }: CommentBoxProps) {
 				{/* Left action icons */}
 				<div className="flex gap-3 text-gray-500">
 					<Image size={16} className="cursor-pointer" />
-					<Film size={16} className="cursor-pointer" />
-					<Type size={16} className="cursor-pointer" />
+					{/* <Film size={16} className="cursor-pointer" />
+					<Type size={16} className="cursor-pointer" /> */}
 				</div>
 
 				{/* Right buttons */}
