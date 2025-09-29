@@ -54,11 +54,11 @@ export default function Post({ post, currentPage }: PostProps) {
 
 	return (
 		<Card
-			className="w-full border rounded-lg shadow-sm hover:bg-gray-100 px-5"
+			className="w-full border rounded-lg shadow-sm hover:bg-gray-100 px-5 gap-2"
 			onClick={handlePostClick}
 		>
 			{/* Header */}
-			<CardHeader className="flex flex-row items-center gap-2 pt-1 px-3">
+			<CardHeader className="flex flex-row items-center gap-2 pt-1 px-3 pb-0">
 				<Avatar className="w-8 h-8">
 					<AvatarImage src="/chicken.png" alt={post.author_name} />
 					<AvatarFallback>
@@ -84,7 +84,8 @@ export default function Post({ post, currentPage }: PostProps) {
 
 			{/* Content */}
 			<CardContent className="px-3 pb-1 w-[50vw]">
-				<div className="text-base font-medium mb-2">{post.title}</div>
+				<div className="text-base mb-2 font-semibold text-[1.3em]">{post.title}</div>
+				<div className='text-base'>{post.body_md}</div>
 				{post.attachments.length > 0 && (
 					<div className="border rounded-md overflow-hidden">
 						<img
