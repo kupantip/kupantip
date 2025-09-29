@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { signupUser } from "../api/signup_page";
+import { signupUser } from "../../services/user/signup_page";
 import { useRouter } from 'next/navigation'
 import Link from "next/link";
 
