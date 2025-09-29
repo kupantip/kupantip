@@ -221,7 +221,7 @@ export default function InnerPost({ post }: PostProps) {
             </div>
 
             {/* CommentBox centered */}
-            <CommentBox className="w-full max-w-2xl mb-4" />
+            <CommentBox className="w-full max-w-2xl mb-4" postId={post.id}/>
 
             {/* Comments section centered */}
             <div className="w-full max-w-2xl border-l border-gray-200 pl-5 mt-2">

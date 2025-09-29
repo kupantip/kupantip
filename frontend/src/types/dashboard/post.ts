@@ -40,3 +40,4 @@ export type CommentsResponse = {
   message: string
   comments: Comment[] | []
 }
+
