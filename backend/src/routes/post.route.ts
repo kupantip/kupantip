@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.middleware';
-import { createPostController, getPostsController, deletePostController, updatePostController } from '../controller/post.controller';
+import {
+	createPostController,
+	getPostsController,
+	deletePostController,
+	updatePostController,
+} from '../controller/post.controller';
 import { uploadWithLimit } from '../middleware/upload.middleware';
 
 const router = Router();
