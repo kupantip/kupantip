@@ -11,6 +11,7 @@ import {
 	TooltipTrigger,
 } from '@/components/ui/tooltip';
 import Link from 'next/link';
+import NavButtons from '@/components/NavButton';
 
 export default function DashboardLayout({
 	children,
