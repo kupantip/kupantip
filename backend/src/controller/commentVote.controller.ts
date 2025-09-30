@@ -22,7 +22,7 @@ export const voteCommentController = async (
 	try {
 		const { comment_id } = req.params;
 		const { value } = req.body; // -1 | 1
-		const user = (req as any).user;
+		const user = req.user;
 		if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
 		commentVoteSchema.parse({ value });
@@ -48,7 +48,7 @@ export const deleteVoteCommentController = async (
 ) => {
 	try {
 		const { comment_id } = req.params;
-		const user = (req as any).user;
+		const user = req.user;
 		if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
 		const result = await deleteCommentVote(user.user_id, comment_id);

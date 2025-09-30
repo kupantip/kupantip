@@ -19,7 +19,7 @@ export const votePostController = async (
 	try {
 		const { post_id } = req.params;
 		const { value } = req.body; // -1 | 1
-		const user = (req as any).user;
+		const user = req.user;
 		if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
 		postVoteSchema.parse({ value });
@@ -45,7 +45,7 @@ export const deleteVotePostController = async (
 ) => {
 	try {
 		const { post_id } = req.params;
-		const user = (req as any).user;
+		const user = req.user;
 		if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
 		const result = await deletePostVote(user.user_id, post_id);
