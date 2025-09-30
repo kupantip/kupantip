@@ -13,11 +13,12 @@ type PostRow = {
 	category_label: string | null;
 	category_id: string | null;
 	attachments: string;
-	minutes_since_commented: number;
+	minutes_since_posted: number;
 	comment_count: number;
 	like_count: number;
 	dislike_count: number;
 	vote_count: number;
+	vote_score: number;
 };
 
 export const createPost = async (
@@ -66,18 +67,19 @@ export const getPosts = async (
         WHERE a.post_id = p.id
         FOR JSON PATH
       ) as attachments,
-      datediff(minute, p.created_at, getdate()) as minutes_since_posted,
-      (SELECT COUNT(*) FROM [dbo].[comment] cm WHERE cm.post_id = p.id) as comment_count,
-      (SELECT SUM(pv.value) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id) as vote_count,
+      DATEDIFF(minute, p.created_at, GETDATE()) AS minutes_since_posted,
+      (SELECT COUNT(*) FROM [dbo].[comment] cm WHERE cm.post_id = p.id AND cm.deleted_at IS NULL) AS comment_count,
+	  (SELECT COUNT(*) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id AND pv.value IN (1,-1)) AS vote_count,
+	  COALESCE((SELECT SUM(pv.value) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id),0) AS vote_score,
 	  ISNULL((
 		SELECT SUM(CASE WHEN pv.value = 1 THEN 1 ELSE 0 END)
 		FROM [KUPantipDB].[dbo].[post_vote] pv
 		WHERE pv.post_id = p.id
 		), 0) AS like_count,
-	   ISNULL((
-			SELECT SUM(CASE WHEN pv.value = -1 THEN 1 ELSE 0 END)
-			FROM [KUPantipDB].[dbo].[post_vote] pv
-			WHERE pv.post_id = p.id
+	  ISNULL((
+		SELECT SUM(CASE WHEN pv.value = -1 THEN 1 ELSE 0 END)
+		FROM [KUPantipDB].[dbo].[post_vote] pv
+		WHERE pv.post_id = p.id
 		), 0) AS dislike_count
     FROM [dbo].[post] p
     LEFT JOIN [dbo].[app_user] u ON p.author_id = u.id

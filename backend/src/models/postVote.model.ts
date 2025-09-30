@@ -60,19 +60,3 @@ export const upsertPostVote = async (
 
 	return result.recordset[0] as PostVoteResult;
 };
-
-// export const getUserPostVote = async (
-// 	user_id: string,
-// 	post_id: string
-// ): Promise<number> => {
-// 	const pool = await getDbConnection();
-// 	const r = await pool
-// 		.request()
-// 		.input('user_id', sql.VarChar, user_id)
-// 		.input('post_id', sql.VarChar, post_id)
-// 		.query(
-// 			'SELECT value FROM dbo.post_vote WHERE user_id=@user_id AND post_id=@post_id'
-// 		);
-
-// 	return r.recordset.length ? r.recordset[0].value : 0;
-// };
