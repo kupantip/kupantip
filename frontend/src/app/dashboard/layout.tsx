@@ -11,6 +11,7 @@ import {
 	TooltipTrigger,
 } from '@/components/ui/tooltip';
 import Link from 'next/link';
+import NavButtons from '@/components/NavButton';
 
 export default function DashboardLayout({
 	children,
@@ -39,17 +40,9 @@ export default function DashboardLayout({
 						/>
 					</div>
 				</div>
-				{/* Right side buttons */}{' '}
-				<div className="flex items-center gap-4">
-					<Link href="dashboard/post">
-						<Button className="w-full">Post</Button>
-					</Link>
-					<Link href="/login">
-						<Button className="px-4 py-2 bg-green-2 text-white rounded-lg hover:bg-green-600">
-							Log In
-						</Button>
-					</Link>
-				</div>
+				{/* Right side buttons */}
+				<div className='w-20 mr-30'><NavButtons /></div>
+				
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<button className="ml-5">

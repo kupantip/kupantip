@@ -31,8 +31,11 @@ export type Comment = {
   updated_at: string // ISO date string
   deleted_at: string | null
   author_name: string
-  replies: Comment[] // recursive type
   minutes_since_commented: number
+  reply_count: number
+  vote_count: number
+  replies: Comment[] // recursive type
+  
 }
 
 export type CommentsResponse = {

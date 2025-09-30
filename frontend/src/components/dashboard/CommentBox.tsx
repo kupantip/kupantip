@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Image, Type, Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { postComment } from '@/hooks/dashboard/postComment';
+import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
 
 interface Content {
 	parent_id: string;
@@ -18,16 +20,23 @@ interface CommentBoxProps {
 	parentId: string;
 }
 
-export default function CommentBox({ className, postId, parentId }: CommentBoxProps) {
+export default function CommentBox({
+	className,
+	postId,
+	parentId,
+}: CommentBoxProps) {
+	const { data: session, status } = useSession();
+	const isLoggedIn = status === 'authenticated';
+
 	const [comment, setComment] = useState('');
 	const [showActions, setShowActions] = useState(false);
 
 	if (!postId) {
-		postId = ''
+		postId = '';
 	}
 
 	if (!parentId) {
-		parentId = ''
+		parentId = '';
 	}
 
 	async function handlePostComment() {
@@ -40,12 +49,14 @@ export default function CommentBox({ className, postId, parentId }: CommentBoxPr
 				},
 			});
 
-			if (success) {
+			if (success && isLoggedIn) {
+				toast.message('Comment Succuss')
 				console.log('Comment posted successfully!');
 				setComment('');
 				setShowActions(false);
 			}
 		} catch (err) {
+			toast.error('Please login first');
 			console.error('Failed to post comment:', err);
 		}
 	}
