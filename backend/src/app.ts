@@ -8,6 +8,7 @@ import userRoute from './routes/user.route';
 import postRoute from './routes/post.route';
 import categoryRoutes from './routes/category.route';
 import commentRoutes from './routes/comment.route';
+import postVoteRoutes from './routes/postVote.route';
 import * as z from 'zod';
 import { getDbConnection } from './database/mssql.database';
 
@@ -22,7 +23,12 @@ import { getDbConnection } from './database/mssql.database';
 
 const app = express();
 app.use(helmet());
-app.use(cors());
+app.use(
+	cors({
+		origin: 'http://localhost:3000',
+		credentials: true,
+	})
+);
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(cookieParser());
@@ -35,6 +41,7 @@ apiV1.use('/user', userRoute);
 apiV1.use('/post', postRoute);
 apiV1.use('/categories', categoryRoutes);
 apiV1.use('/comment', commentRoutes);
+apiV1.use('/post-vote', postVoteRoutes);
 
 app.use('/api/v1', apiV1);
 

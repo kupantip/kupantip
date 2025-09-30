@@ -16,7 +16,7 @@ type PostRow = {
 	minutes_since_commented: number;
 	comment_count: number;
 	like_count: number;
-    dislike_count: number;
+	dislike_count: number;
 	vote_count: number;
 };
 
@@ -68,7 +68,7 @@ export const getPosts = async (
       ) as attachments,
       datediff(minute, p.created_at, getdate()) as minutes_since_posted,
       (SELECT COUNT(*) FROM [dbo].[comment] cm WHERE cm.post_id = p.id) as comment_count,
-      (SELECT COUNT(*) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id) as vote_count,
+      (SELECT SUM(pv.value) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id) as vote_count,
 	  ISNULL((
 		SELECT SUM(CASE WHEN pv.value = 1 THEN 1 ELSE 0 END)
 		FROM [KUPantipDB].[dbo].[post_vote] pv

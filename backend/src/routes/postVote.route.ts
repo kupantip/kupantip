@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.middleware';
-import {
-	votePostController,
-} from '../controller/postVote.controller';
+import { votePostController } from '../controller/postVote.controller';
 
 const router = Router();
 
