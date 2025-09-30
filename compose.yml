@@ -1,18 +1,45 @@
 services:
-    backend:
-        build:
-            context: ./backend
-            dockerfile: Dockerfile
-        image: kupantip-backend
-        container_name: kupantip-backend
-        ports:
-            - '${PORT:-8000}:8000'
+  db:
+    platform: "linux/amd64"
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    entrypoint: ["/bin/bash", "/usr/src/app/entrypoint.sh"]
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SQL_PASSWORD}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./mssql/data:/var/opt/mssql/data
+      - ./mssql/log:/var/opt/mssql/log
+      - ./mssql/secrets:/var/opt/mssql/secrets
+      - ./init-db.sql:/usr/src/app/init-db.sql
+      - ./entrypoint.sh:/usr/src/app/entrypoint.sh
+    env_file:
+      - path: .env
+        required: true
 
-    frontend:
-        build:
-            context: ./frontend
-            dockerfile: Dockerfile
-        image: kupantip-frontend
-        container_name: kupantip-frontend
-        ports:
-            - '${PORT:-3000}:3000'
+  backend:
+    platform: "linux/amd64"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: xeei/kupantip-backend
+    container_name: kupantip-backend
+    ports:
+      - "${PORT:-8000}:8000"
+    depends_on:
+      - db
+    environment:
+      SQL_SERVER: db
+    env_file:
+      - path: .env
+        required: true
+
+  frontend:
+    platform: "linux/amd64"
+    image: xeei/kupantip-frontend
+    container_name: kupantip-frontend
+    ports:
+      - "80:3000"
+    depends_on:
+      - backend

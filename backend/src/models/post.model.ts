@@ -2,46 +2,53 @@ import { getDbConnection } from '../database/mssql.database';
 import sql from 'mssql';
 
 type PostRow = {
-  id: string;
-  title: string;
-  body_md: string | null;
-  url: string | null;
-  created_at: Date;
-  updated_at: Date;
-  author_name: string;
-  author_id: string;
-  category_label: string | null;
-  category_id: string | null;
-  attachments: string;
+	id: string;
+	title: string;
+	body_md: string | null;
+	url: string | null;
+	created_at: Date;
+	updated_at: Date;
+	author_name: string;
+	author_id: string;
+	category_label: string | null;
+	category_id: string | null;
+	attachments: string;
+	minutes_since_commented: number;
+	comment_count: number;
+	like_count: number;
+    dislike_count: number;
+	vote_count: number;
 };
 
 export const createPost = async (
-  author_id: string,
-  title: string,
-  body_md: string | null,
-  url: string | null,
-  category_id: string | null
+	author_id: string,
+	title: string,
+	body_md: string | null,
+	url: string | null,
+	category_id: string | null
 ) => {
-  const pool = await getDbConnection();
-  const result = await pool
-    .request()
-    .input('author_id', author_id)
-    .input('title', title)
-    .input('body_md', body_md)
-    .input('url', url)
-    .input('category_id', category_id)
-    .query(`
+	const pool = await getDbConnection();
+	const result = await pool
+		.request()
+		.input('author_id', author_id)
+		.input('title', title)
+		.input('body_md', body_md)
+		.input('url', url)
+		.input('category_id', category_id).query(`
       INSERT INTO [dbo].[post] (author_id, title, body_md, url, category_id)
       OUTPUT INSERTED.*
-      VALUES (@author_id, @title, @body_md, @url, @category_id)`
-    );
-  return result.recordset[0];
+      VALUES (@author_id, @title, @body_md, @url, @category_id)`);
+	return result.recordset[0];
 };
 
-export const getPosts = async (category_id?: string, user_id?: string, post_id?: string) => {
-  const pool = await getDbConnection();
+export const getPosts = async (
+	category_id?: string,
+	user_id?: string,
+	post_id?: string
+) => {
+	const pool = await getDbConnection();
 
-  let query = `
+	let query = `
     SELECT 
       p.id,
       p.title,
@@ -61,101 +68,106 @@ export const getPosts = async (category_id?: string, user_id?: string, post_id?:
       ) as attachments,
       datediff(minute, p.created_at, getdate()) as minutes_since_posted,
       (SELECT COUNT(*) FROM [dbo].[comment] cm WHERE cm.post_id = p.id) as comment_count,
-      (SELECT COUNT(*) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id) as vote_count
+      (SELECT COUNT(*) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id) as vote_count,
+	  ISNULL((
+		SELECT SUM(CASE WHEN pv.value = 1 THEN 1 ELSE 0 END)
+		FROM [KUPantipDB].[dbo].[post_vote] pv
+		WHERE pv.post_id = p.id
+		), 0) AS like_count,
+	   ISNULL((
+			SELECT SUM(CASE WHEN pv.value = -1 THEN 1 ELSE 0 END)
+			FROM [KUPantipDB].[dbo].[post_vote] pv
+			WHERE pv.post_id = p.id
+		), 0) AS dislike_count
     FROM [dbo].[post] p
     LEFT JOIN [dbo].[app_user] u ON p.author_id = u.id
     LEFT JOIN [dbo].[category] c ON p.category_id = c.id
     WHERE p.deleted_at IS NULL
   `;
 
-  const request = pool.request();
+	const request = pool.request();
 
-  if (category_id) {
-    query += ` AND p.category_id = @category_id`;
-    request.input('category_id', category_id);
-  }
+	if (category_id) {
+		query += ` AND p.category_id = @category_id`;
+		request.input('category_id', category_id);
+	}
 
-  if (user_id) {
-    query += ` AND p.author_id = @user_id`;
-    request.input('user_id', user_id);
-  }
+	if (user_id) {
+		query += ` AND p.author_id = @user_id`;
+		request.input('user_id', user_id);
+	}
 
-  if (post_id) {
-    query += ` AND p.id = @post_id`;
-    request.input('post_id', post_id);
-  }
+	if (post_id) {
+		query += ` AND p.id = @post_id`;
+		request.input('post_id', post_id);
+	}
 
-  const result = await request.query(query);
+	const result = await request.query(query);
 
-  // parse JSON attachments
-  return result.recordset.map((row: PostRow) => ({
-    ...row,
-    attachments: row.attachments ? JSON.parse(row.attachments) : [],
-  }));
+	// parse JSON attachments
+	return result.recordset.map((row: PostRow) => ({
+		...row,
+		attachments: row.attachments ? JSON.parse(row.attachments) : [],
+	}));
 };
 
-
 export const addAttachment = async (
-  post_id: string,
-  url: string,
-  mime_type: string | null
+	post_id: string,
+	url: string,
+	mime_type: string | null
 ) => {
-  const pool = await getDbConnection();
-  const result = await pool
-    .request()
-    .input('post_id', post_id)
-    .input('url', url)
-    .input('mime_type', mime_type)
-    .query(`
+	const pool = await getDbConnection();
+	const result = await pool
+		.request()
+		.input('post_id', post_id)
+		.input('url', url)
+		.input('mime_type', mime_type).query(`
       INSERT INTO [dbo].[attachment] (post_id, url, mime_type)
       OUTPUT INSERTED.*
       VALUES (@post_id, @url, @mime_type)
     `);
-  return result.recordset[0];
+	return result.recordset[0];
 };
 
-
-
 export const deletePost = async (post_id: string, user_id?: string) => {
-  const pool = await getDbConnection();
-  let query = `
+	const pool = await getDbConnection();
+	let query = `
     UPDATE [dbo].[post]
     SET deleted_at = GETDATE()
     OUTPUT INSERTED.*
     WHERE id = @post_id AND deleted_at IS NULL
   `;
 
-  const request = pool.request().input('post_id', sql.UniqueIdentifier, post_id);
+	const request = pool
+		.request()
+		.input('post_id', sql.UniqueIdentifier, post_id);
 
-  if (user_id) {
-    // If not admin → check if user is the post owner
-    query += ` AND author_id = @user_id`;
-    request.input('user_id', sql.UniqueIdentifier, user_id);
-  }
+	if (user_id) {
+		// If not admin → check if user is the post owner
+		query += ` AND author_id = @user_id`;
+		request.input('user_id', sql.UniqueIdentifier, user_id);
+	}
 
-  const result = await request.query(query);
-  return result.recordset[0];
+	const result = await request.query(query);
+	return result.recordset[0];
 };
 
-
-
 export const updatePost = async (
-  post_id: string,
-  author_id: string,
-  title?: string,
-  body_md?: string,
-  category_id?: string
+	post_id: string,
+	author_id: string,
+	title?: string,
+	body_md?: string,
+	category_id?: string
 ) => {
-  const pool = await getDbConnection();
+	const pool = await getDbConnection();
 
-  const result = await pool
-    .request()
-    .input('post_id', post_id)
-    .input('author_id', author_id)
-    .input('title', title || null)
-    .input('body_md', body_md || null)
-    .input('category_id', category_id || null)
-    .query(`
+	const result = await pool
+		.request()
+		.input('post_id', post_id)
+		.input('author_id', author_id)
+		.input('title', title || null)
+		.input('body_md', body_md || null)
+		.input('category_id', category_id || null).query(`
       UPDATE [dbo].[post]
       SET 
         title = ISNULL(@title, title),
@@ -166,5 +178,5 @@ export const updatePost = async (
       WHERE id = @post_id AND author_id = @author_id AND deleted_at IS NULL
     `);
 
-  return result.recordset[0];
+	return result.recordset[0];
 };
