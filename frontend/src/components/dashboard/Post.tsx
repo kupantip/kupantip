@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as t from '@/types/dashboard/post';
+import { deletePost } from '@/services/user/delete_post';
 
 const daySincePosted = (minutes: number) => {
 	if (minutes < 60) {
@@ -32,6 +33,7 @@ type PostProps = {
 
 export default function Post({ post, currentPage }: PostProps) {
 	const router = useRouter();
+	const [menuOpen, setMenuOpen] = useState(false)
 
 	const handlePostClick = () => {
 		router.push(`/${currentPage}/${post.id}`);
@@ -51,6 +53,18 @@ export default function Post({ post, currentPage }: PostProps) {
 		e.stopPropagation();
 		console.log('Comment on:', post.id);
 	};
+
+	const handleDelete = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setMenuOpen(false);
+		console.log('Delete on', post.id);
+		try {
+			const res = await deletePost(post.id)
+			console.log("Delete post", post.id," success")
+		} catch (err : any){
+			console.log("Delete Error", err.message);
+		}
+	}
 
 	return (
 		<Card
@@ -76,10 +90,39 @@ export default function Post({ post, currentPage }: PostProps) {
 				{/* <button className="ml-auto bg-purple-2 text-white text-xs px-3 py-1 rounded-lg hover:bg-purple-1">
                     Join
                 </button> */}
+				<div className="ml-auto relative">
+					<button 
+						className="p-1 rounded-lg hover:bg-gray-200"
+						onClick={(e) => {
+							e.stopPropagation();
+							setMenuOpen(!menuOpen);
+						}}>
+						<Ellipsis />
+					</button>
+					{menuOpen && (
+						<div
+							className="absolute mt-2 w-24 right-0 bg-white shadow rounded-lg"
+						>
+							<button
+								className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+								onClick={(e) => {
+									e.stopPropagation();
+									setMenuOpen(false);
+									console.log('Edit post', post.id)
+								}}
+							>
+								Edit
+							</button>
+							<button
+								className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+								onClick={handleDelete}
+							>
+								Delete
+							</button>
+						</div>
+					)}					
+				</div>
 
-				<button className="ml-auto p-1 rounded-lg hover:bg-gray-200">
-					<Ellipsis />
-				</button>
 			</CardHeader>
 
 			{/* Content */}
