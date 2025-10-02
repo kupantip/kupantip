@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -13,6 +13,8 @@ import {
 import { useRouter } from 'next/navigation';
 import * as t from '@/types/dashboard/post';
 import { deletePost } from '@/services/user/delete_post';
+import { upvotePost, downvotePost, deletevotePost } from '@/services/user/vote';
+
 
 const daySincePosted = (minutes: number) => {
 	if (minutes < 60) {
@@ -33,20 +35,66 @@ type PostProps = {
 
 export default function Post({ post, currentPage }: PostProps) {
 	const router = useRouter();
+	const [userVote, setUserVote] = useState<number>(0);
 	const [menuOpen, setMenuOpen] = useState(false)
 
 	const handlePostClick = () => {
 		router.push(`/${currentPage}/${post.id}`);
 	};
 
+	useEffect(() => {
+		const storedVotes = JSON.parse(localStorage.getItem('userVotes') || '{}');
+		setUserVote(storedVotes[post.id] || 0);
+	}, [post.id]);
+
+	const updateLocalStorage = (newVote: number) => {
+		const storedVotes = JSON.parse(localStorage.getItem('userVotes') || '{}');
+		const updatedVotes = { ...storedVotes, [post.id]: newVote };
+		localStorage.setItem('userVotes', JSON.stringify(updatedVotes));
+	};
+
 	const handleUpVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
-		console.log('Upvote on:', post.id);
+		let newVote = userVote
+		
+		if(userVote === 1){
+			newVote = 0;
+			try{
+				await deletevotePost(post.id);
+				console.log("Undo UpVote success");
+			} catch (err : any){}
+		}else{
+			newVote = 1
+			try{
+				await upvotePost(post.id);
+				console.log("UpVote Post Success",post.id);
+			} catch (err : any){}
+		}
+		
+		setUserVote(newVote);
+		updateLocalStorage(newVote);
 	};
 
 	const handleDownVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
-		console.log('Downvote on:', post.id);
+		let newVote = userVote
+		
+		if(userVote === -1){
+			newVote = 0;
+			try{
+				await deletevotePost(post.id);
+				console.log("Undo DownVote success");
+			} catch (err : unknown){}
+		}else{
+			newVote = -1
+			try{
+				await downvotePost(post.id);
+				console.log("DownVote Post Success",post.id);
+			} catch (err : unknown){}
+		}
+		
+		setUserVote(newVote);
+		updateLocalStorage(newVote);
 	};
 
 	const handleOpenComment = async (e: React.MouseEvent) => {
@@ -54,15 +102,21 @@ export default function Post({ post, currentPage }: PostProps) {
 		console.log('Comment on:', post.id);
 	};
 
+	const handleEdit = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setMenuOpen(false);
+		console.log("Edit on", post.id)
+	}
+
 	const handleDelete = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		setMenuOpen(false);
-		console.log('Delete on', post.id);
 		try {
-			const res = await deletePost(post.id)
+			await deletePost(post.id)
 			console.log("Delete post", post.id," success")
-		} catch (err : any){
-			console.log("Delete Error", err.message);
+			router.push(`/${currentPage}`)
+		} catch (err : unknown){
+			console.log("Delete Failed");
 		}
 	}
 
@@ -105,11 +159,7 @@ export default function Post({ post, currentPage }: PostProps) {
 						>
 							<button
 								className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
-								onClick={(e) => {
-									e.stopPropagation();
-									setMenuOpen(false);
-									console.log('Edit post', post.id)
-								}}
+								onClick={handleEdit}
 							>
 								Edit
 							</button>
@@ -143,12 +193,14 @@ export default function Post({ post, currentPage }: PostProps) {
 				<div className="flex flex-wrap gap-1 items-center text-sm text-gray-600 pt-3">
 					<div className="flex items-center gap-1 bg-gray-200 px-2 py-1 rounded-xl h-8">
 						<ArrowUp
-							className="w-6 h-6 p-1 rounded-full border border-gray-200 hover:bg-gray-300"
+							className={`w-6 h-6 p-1 rounded-full border border-gray-200 hover:bg-gray-300 cursor-pointer
+								${userVote === 1 ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
 							onClick={handleUpVote}
 						/>
 						<span>{post.vote_count}</span>
 						<ArrowDown
-							className="w-6 h-6 p-1 rounded-full border border-gray-200 hover:bg-gray-300"
+							className={`w-6 h-6 p-1 rounded-full border border-gray-200 hover:bg-gray-300 cursor-pointer
+								${userVote === -1 ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
 							onClick={handleDownVote}
 						/>
 					</div>

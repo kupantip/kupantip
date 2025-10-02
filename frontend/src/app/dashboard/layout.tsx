@@ -42,10 +42,10 @@ export default function DashboardLayout({
 				{/* Right side buttons */}{' '}
 				<div className="flex items-center gap-4">
 					<Link href="dashboard/create-post">
-						<Button className="w-full">Post</Button>
+						<Button className="w-full cursor-pointer">Post</Button>
 					</Link>
 					<Link href="/login">
-						<Button className="px-4 py-2 bg-green-2 text-white rounded-lg hover:bg-green-600">
+						<Button className="px-4 py-2 bg-green-2 text-white rounded-lg hover:bg-green-600 cursor-pointer">
 							Log In
 						</Button>
 					</Link>
