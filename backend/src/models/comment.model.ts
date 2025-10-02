@@ -3,16 +3,22 @@ import { ConnectionPool } from 'mssql';
 import * as t from '../types/comment.t';
 
 type CommentWithAuthor = {
-    id: string;
-    post_id: string;
-    author_id: string;
-    parent_id: string | null;
-    body_md: string;
-    created_at: Date;
-    updated_at: Date | null;
-    deleted_at: Date | null;
-    author_name: string;
-    replies?: CommentWithAuthor[];
+	id: string;
+	post_id: string;
+	author_id: string;
+	parent_id: string | null;
+	body_md: string;
+	created_at: Date;
+	updated_at: Date | null;
+	deleted_at: Date | null;
+	author_name: string;
+	replies?: CommentWithAuthor[];
+	reply_count: number;
+	minutes_since_commented: number;
+	like_count: number;
+	dislike_count: number;
+	vote_count: number;
+	vote_score: number;
 };
 
 export const create_comment = async (data: t.CommentReq) => {
@@ -80,7 +86,25 @@ export const getCommentsByPostId = async (post_id: string): Promise<CommentWithA
                     c.updated_at,
                     c.deleted_at,
                     u.display_name as author_name,
-                    datediff(minute, c.created_at, getdate()) as minutes_since_commented
+                    datediff(minute, c.created_at, getdate()) as minutes_since_commented,
+					(
+                        SELECT COUNT(*) 
+                        FROM [KUPantipDB].[dbo].[comment] r
+                        WHERE r.parent_id = c.id
+                        AND r.deleted_at IS NULL
+                    ) AS reply_count,
+					ISNULL((
+						SELECT SUM(CASE WHEN v.value = 1 THEN 1 ELSE 0 END)
+						FROM [KUPantipDB].[dbo].[comment_vote] v
+						WHERE v.comment_id = c.id
+					), 0) AS like_count,
+					ISNULL((
+						SELECT SUM(CASE WHEN v.value = -1 THEN 1 ELSE 0 END)
+						FROM [KUPantipDB].[dbo].[comment_vote] v
+						WHERE v.comment_id = c.id
+					), 0) AS dislike_count,
+					(SELECT COUNT(*) FROM [KUPantipDB].[dbo].[comment_vote] v WHERE v.comment_id = c.id AND v.value IN (1,-1)) AS vote_count,
+	  				COALESCE((SELECT SUM(v.value) FROM [KUPantipDB].[dbo].[comment_vote] v WHERE v.comment_id = c.id),0) AS vote_score
                 FROM [KUPantipDB].[dbo].[comment] c
                 LEFT JOIN [KUPantipDB].[dbo].[app_user] u ON c.author_id = u.id
                 WHERE c.post_id = @post_id AND c.deleted_at IS NULL
