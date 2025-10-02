@@ -32,13 +32,22 @@ export default function CreatePostPage() {
       "image/*": [],
       "video/*": [],
     },
-  });  
+  });
+
+  const createSlug = (title : string) => {
+      return title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const postId = uuidv4();
-    const postUrl = `http://post/${postId}`;
+    const slug = createSlug(formData.title);
+    const uniqueId = uuidv4()
+    const postUrl = `http://posts/${slug}/${uniqueId}`;
 
     try {
       const res = await createPost({ ...formData, url: postUrl});
