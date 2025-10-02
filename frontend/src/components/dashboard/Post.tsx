@@ -114,6 +114,7 @@ export default function Post({ post, currentPage }: PostProps) {
 		try {
 			await deletePost(post.id)
 			console.log("Delete post", post.id," success")
+			window.location.reload();
 		} catch (err : unknown){
 			console.log("Delete Failed");
 		}
@@ -196,7 +197,7 @@ export default function Post({ post, currentPage }: PostProps) {
 								${userVote === 1 ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
 							onClick={handleUpVote}
 						/>
-						<span>{post.vote_count}</span>
+						<span>{post.vote_score}</span>
 						<ArrowDown
 							className={`w-6 h-6 p-1 rounded-full border border-gray-200 hover:bg-gray-300 cursor-pointer
 								${userVote === -1 ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}

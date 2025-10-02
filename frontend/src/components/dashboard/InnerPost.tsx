@@ -112,7 +112,7 @@ export default function InnerPost({ post }: PostProps) {
                             className="w-5 h-5 p-1 rounded hover:bg-gray-200"
                             onClick={handleUpVote}
                         />
-                        <span>{post.vote_count}</span>
+                        <span>{post.vote_score}</span>
                         <ArrowDown
                             className="w-5 h-5 p-1 rounded hover:bg-gray-200"
                             onClick={handleDownVote}
