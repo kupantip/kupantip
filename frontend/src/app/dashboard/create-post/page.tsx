@@ -17,9 +17,6 @@ export default function CreatePostPage() {
     files: [] as File[]
   });
 
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-
   const router = useRouter()
 
   const onDrop = (acceptedFiles: File[]) => {
@@ -39,7 +36,6 @@ export default function CreatePostPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
     const postId = uuidv4();
     const postUrl = `http://post/${postId}`;
@@ -47,11 +43,8 @@ export default function CreatePostPage() {
     try {
       const res = await createPost({ ...formData, url: postUrl});
       router.push("/dashboard")
-      setMessage("Post created! ID: " + res.id);
     } catch (err: any) {
       console.log("Error: " + err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -100,7 +93,6 @@ export default function CreatePostPage() {
           onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
         >
           <option value="">Select Category</option>
-          <option value="64D7423E-F36B-1410-84C9-00F2EA0D0522">Game</option>
         </select>
 
         {tab === "text" && (
@@ -175,15 +167,12 @@ export default function CreatePostPage() {
         <div className="flex justify-end gap-2">
           <Button
             type="submit"
-            disabled={loading}
             className="bg-emerald-800 rounded-full hover:bg-emerald-900 cursor-pointer"
           >
             Post
           </Button>
         </div>
       </form>
-
-      {message && <p className="mt-4">{message}</p>}
     </div>
   );
 }

@@ -114,7 +114,6 @@ export default function Post({ post, currentPage }: PostProps) {
 		try {
 			await deletePost(post.id)
 			console.log("Delete post", post.id," success")
-			router.push(`/${currentPage}`)
 		} catch (err : unknown){
 			console.log("Delete Failed");
 		}
