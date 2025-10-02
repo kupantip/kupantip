@@ -44,7 +44,7 @@ export async function deletevotePost(postId: string) {
   });
 
   if (!res.ok) {
-    throw new Error(`Failed to downvote: ${res.status}`);
+    throw new Error(`Failed to deletevote: ${res.status}`);
   }
 
   return res.json();
