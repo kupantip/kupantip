@@ -13,7 +13,7 @@ import {
 import { useRouter } from 'next/navigation';
 import * as t from '@/types/dashboard/post';
 import { deletePost } from '@/services/user/delete_post';
-import { upvotePost, downvotePost, deletevotePost } from '@/services/user/vote';
+import { upvotePost, downvotePost, deletevotePost, useUserVote } from '@/services/user/vote';
 
 
 const daySincePosted = (minutes: number) => {
@@ -35,22 +35,11 @@ type PostProps = {
 
 export default function Post({ post, currentPage }: PostProps) {
 	const router = useRouter();
-	const [userVote, setUserVote] = useState<number>(0);
 	const [menuOpen, setMenuOpen] = useState(false)
+	const { userVote, updateUserVote } = useUserVote(post.id);
 
 	const handlePostClick = () => {
-		router.push(`/${currentPage}/${post.id}`);
-	};
-
-	useEffect(() => {
-		const storedVotes = JSON.parse(localStorage.getItem('userVotes') || '{}');
-		setUserVote(storedVotes[post.id] || 0);
-	}, [post.id]);
-
-	const updateLocalStorage = (newVote: number) => {
-		const storedVotes = JSON.parse(localStorage.getItem('userVotes') || '{}');
-		const updatedVotes = { ...storedVotes, [post.id]: newVote };
-		localStorage.setItem('userVotes', JSON.stringify(updatedVotes));
+		router.push(`/${currentPage}/${post.id}?userVote=${userVote}`);
 	};
 
 	const handleUpVote = async (e: React.MouseEvent) => {
@@ -71,8 +60,7 @@ export default function Post({ post, currentPage }: PostProps) {
 			} catch (err : any){}
 		}
 		
-		setUserVote(newVote);
-		updateLocalStorage(newVote);
+		updateUserVote(newVote);
 	};
 
 	const handleDownVote = async (e: React.MouseEvent) => {
@@ -92,9 +80,8 @@ export default function Post({ post, currentPage }: PostProps) {
 				console.log("DownVote Post Success",post.id);
 			} catch (err : unknown){}
 		}
-		
-		setUserVote(newVote);
-		updateLocalStorage(newVote);
+
+		updateUserVote(newVote);
 	};
 
 	const handleOpenComment = async (e: React.MouseEvent) => {

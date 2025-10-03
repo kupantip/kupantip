@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+
 const BACKEND_HOST = process.env.NEXT_PUBLIC_BACKEND_HOST;
 
 export async function upvotePost(postId: string) {
@@ -48,4 +50,23 @@ export async function deletevotePost(postId: string) {
   }
 
   return res.json();
+}
+
+export function useUserVote(postId: string) {
+  const [userVote, setUserVote] = useState<number>(0);
+
+  useEffect(() => {
+    const storedVotes = JSON.parse(localStorage.getItem("userVotes") || "{}");
+    setUserVote(storedVotes[postId] || 0);
+  }, [postId]);
+
+  const updateUserVote = (newVote: number) => {
+    const storedVotes = JSON.parse(localStorage.getItem("userVotes") || "{}");
+    const updatedVotes = { ...storedVotes, [postId]: newVote };
+    localStorage.setItem("userVotes", JSON.stringify(updatedVotes));
+    setUserVote(newVote);
+
+  };
+
+  return { userVote, updateUserVote };
 }
