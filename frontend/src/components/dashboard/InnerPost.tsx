@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react'
 import * as t from '@/types/dashboard/post'
 import { getCommentByPostId } from '@/hooks/dashboard/getCommentByPostId'
 import { Input } from '@/components/ui/input'
 import CommentBox from './CommentBox'
+import { upvotePost, downvotePost, deletevotePost, useUserVote } from '@/services/user/vote';
 
 type PostProps = {
     post: t.Post
@@ -28,6 +30,9 @@ export default function InnerPost({ post }: PostProps) {
     const [commentsData, setCommentsData] = useState<t.CommentsResponse | null>(
         null
     )
+
+    const { userVote, updateUserVote } = useUserVote(post.id);
+
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -49,13 +54,47 @@ export default function InnerPost({ post }: PostProps) {
     if (loading) return <p>Loading comments...</p>
 
     const handlePost = () => console.log('Click on a post:', post.id)
-    const handleUpVote = (e: React.MouseEvent) => {
+    const handleUpVote = async (e: React.MouseEvent) => {
         e.stopPropagation()
         console.log('Upvote on:', post.id)
+		let newVote = userVote
+		
+		if(userVote === 1){
+			newVote = 0;
+			try{
+				await deletevotePost(post.id);
+				console.log("Undo UpVote success");
+			} catch (err : any){}
+		}else{
+			newVote = 1
+			try{
+				await upvotePost(post.id);
+				console.log("UpVote Post Success",post.id);
+			} catch (err : any){}
+		}
+		
+		updateUserVote(newVote);
     }
-    const handleDownVote = (e: React.MouseEvent) => {
+    const handleDownVote = async (e: React.MouseEvent) => {
         e.stopPropagation()
         console.log('Downvote on:', post.id)
+		let newVote = userVote
+		
+		if(userVote === -1){
+			newVote = 0;
+			try{
+				await deletevotePost(post.id);
+				console.log("Undo DownVote success");
+			} catch (err : unknown){}
+		}else{
+			newVote = -1
+			try{
+				await downvotePost(post.id);
+				console.log("DownVote Post Success",post.id);
+			} catch (err : unknown){}
+		}
+		
+		updateUserVote(newVote);
     }
     const toggleComments = (e: React.MouseEvent) => {
         e.stopPropagation()
@@ -109,12 +148,14 @@ export default function InnerPost({ post }: PostProps) {
                 <div className="flex items-center gap-3 text-sm text-gray-600 mb-2">
                     <div className="flex items-center gap-1">
                         <ArrowUp
-                            className="w-5 h-5 p-1 rounded hover:bg-gray-200"
+                            className={`w-5 h-5 p-1 rounded hover:bg-gray-200 cursor-pointer
+								${userVote === 1 ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
                             onClick={handleUpVote}
                         />
                         <span>{post.vote_score}</span>
                         <ArrowDown
-                            className="w-5 h-5 p-1 rounded hover:bg-gray-200"
+                            className={`w-5 h-5 p-1 rounded hover:bg-gray-200 cursor-pointer
+								${userVote === -1 ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
                             onClick={handleDownVote}
                         />
                     </div>
