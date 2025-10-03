@@ -93,6 +93,7 @@ export default function Post({ post, currentPage }: PostProps) {
 		e.stopPropagation();
 		setMenuOpen(false);
 		console.log("Edit on", post.id)
+		router.push(`/${currentPage}/${post.id}/edit`);
 	}
 
 	const handleDelete = async (e: React.MouseEvent) => {
