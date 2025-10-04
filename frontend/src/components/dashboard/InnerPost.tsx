@@ -33,7 +33,7 @@ export default function InnerPost({ post }: PostProps) {
     )
 
     const router = useRouter();
-    const { userVote, updateUserVote } = useUserVote(post.id);
+    const { userVote, updateUserVote } = useUserVote(post.id, post.author_id);
     const [menuOpen, setMenuOpen] = useState(false)
 
     const [loading, setLoading] = useState(true)
