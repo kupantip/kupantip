@@ -50,10 +50,10 @@ export default function CreatePostPage() {
     const postUrl = `http://posts/${slug}/${uniqueId}`;
 
     try {
-      const res = await createPost({ ...formData, url: postUrl});
+      await createPost({ ...formData, url: postUrl});
       router.push("/dashboard")
-    } catch (err: any) {
-      console.log("Error: " + err.message);
+    } catch (err: unknown) {
+      console.log("Error: " + err);
     }
   };
 
