@@ -36,7 +36,7 @@ type PostProps = {
 export default function Post({ post, currentPage }: PostProps) {
 	const router = useRouter();
 	const [menuOpen, setMenuOpen] = useState(false)
-	const { userVote, updateUserVote } = useUserVote(post.id);
+	const { userVote, updateUserVote } = useUserVote(post.id, post.author_id);
 
 	const handlePostClick = () => {
 		router.push(`/${currentPage}/${post.id}?userVote=${userVote}`);
