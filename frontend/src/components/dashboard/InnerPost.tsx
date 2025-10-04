@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react'
 import * as t from '@/types/dashboard/post'
 import { getCommentByPostId } from '@/hooks/dashboard/getCommentByPostId'
 import { Input } from '@/components/ui/input'
 import CommentBox from './CommentBox'
+import { deletePost } from '@/services/user/delete_post';
 import { upvotePost, downvotePost, deletevotePost, useUserVote } from '@/services/user/vote';
 
 type PostProps = {
@@ -31,7 +32,9 @@ export default function InnerPost({ post }: PostProps) {
         null
     )
 
+    const router = useRouter();
     const { userVote, updateUserVote } = useUserVote(post.id);
+    const [menuOpen, setMenuOpen] = useState(false)
 
     const [loading, setLoading] = useState(true)
 
@@ -54,6 +57,7 @@ export default function InnerPost({ post }: PostProps) {
     if (loading) return <p>Loading comments...</p>
 
     const handlePost = () => console.log('Click on a post:', post.id)
+
     const handleUpVote = async (e: React.MouseEvent) => {
         e.stopPropagation()
         console.log('Upvote on:', post.id)
@@ -75,6 +79,7 @@ export default function InnerPost({ post }: PostProps) {
 		
 		updateUserVote(newVote);
     }
+
     const handleDownVote = async (e: React.MouseEvent) => {
         e.stopPropagation()
         console.log('Downvote on:', post.id)
@@ -96,9 +101,29 @@ export default function InnerPost({ post }: PostProps) {
 		
 		updateUserVote(newVote);
     }
+
     const toggleComments = (e: React.MouseEvent) => {
         e.stopPropagation()
         // setShowComments(!showComments)
+    }
+
+    const handleEdit = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setMenuOpen(false);
+        console.log("Edit on", post.id)
+        router.push(`/dashboard/${post.id}/edit`);
+    }
+
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setMenuOpen(false);
+        try {
+            await deletePost(post.id)
+            console.log("Delete post", post.id," success")
+            router.push("/dashboard")
+        } catch (err : unknown){
+            console.log("Delete Failed");
+        }
     }
 
     return (
@@ -127,9 +152,34 @@ export default function InnerPost({ post }: PostProps) {
                             {daySincePosted(post.minutes_since_posted)}
                         </span>
                     </div>
-                    <button className="ml-auto p-1 rounded hover:bg-gray-200">
-                        <Ellipsis />
-                    </button>
+                    <div className="ml-auto relative">
+                        <button 
+                            className="p-1 rounded-lg hover:bg-gray-200"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setMenuOpen(!menuOpen);
+                            }}>
+                            <Ellipsis />
+                        </button>
+                        {menuOpen && (
+                            <div
+                                className="absolute mt-2 w-24 right-0 bg-white shadow rounded-lg"
+                            >
+                                <button
+                                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                                    onClick={handleEdit}
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                                    onClick={handleDelete}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        )}					
+                    </div>
                 </div>
 
                 {/* Post content */}
