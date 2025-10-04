@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react'
 import * as t from '@/types/dashboard/post'
 import { getCommentByPostId } from '@/hooks/dashboard/getCommentByPostId'
 import { Input } from '@/components/ui/input'
 import CommentBox from './CommentBox'
+import { deletePost } from '@/services/user/delete_post';
+import { upvotePost, downvotePost, deletevotePost, useUserVote } from '@/services/user/vote';
 
 type PostProps = {
     post: t.Post
@@ -28,6 +31,11 @@ export default function InnerPost({ post }: PostProps) {
     const [commentsData, setCommentsData] = useState<t.CommentsResponse | null>(
         null
     )
+
+    const router = useRouter();
+    const { userVote, updateUserVote } = useUserVote(post.id, post.author_id);
+    const [menuOpen, setMenuOpen] = useState(false)
+
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -49,17 +57,73 @@ export default function InnerPost({ post }: PostProps) {
     if (loading) return <p>Loading comments...</p>
 
     const handlePost = () => console.log('Click on a post:', post.id)
-    const handleUpVote = (e: React.MouseEvent) => {
+
+    const handleUpVote = async (e: React.MouseEvent) => {
         e.stopPropagation()
         console.log('Upvote on:', post.id)
+		let newVote = userVote
+		
+		if(userVote === 1){
+			newVote = 0;
+			try{
+				await deletevotePost(post.id);
+				console.log("Undo UpVote success");
+			} catch (err : unknown){}
+		}else{
+			newVote = 1
+			try{
+				await upvotePost(post.id);
+				console.log("UpVote Post Success",post.id);
+			} catch (err : unknown){}
+		}
+		
+		updateUserVote(newVote);
     }
-    const handleDownVote = (e: React.MouseEvent) => {
+
+    const handleDownVote = async (e: React.MouseEvent) => {
         e.stopPropagation()
         console.log('Downvote on:', post.id)
+		let newVote = userVote
+		
+		if(userVote === -1){
+			newVote = 0;
+			try{
+				await deletevotePost(post.id);
+				console.log("Undo DownVote success");
+			} catch (err : unknown){}
+		}else{
+			newVote = -1
+			try{
+				await downvotePost(post.id);
+				console.log("DownVote Post Success",post.id);
+			} catch (err : unknown){}
+		}
+		
+		updateUserVote(newVote);
     }
+
     const toggleComments = (e: React.MouseEvent) => {
         e.stopPropagation()
         // setShowComments(!showComments)
+    }
+
+    const handleEdit = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setMenuOpen(false);
+        console.log("Edit on", post.id)
+        router.push(`/dashboard/${post.id}/edit`);
+    }
+
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setMenuOpen(false);
+        try {
+            await deletePost(post.id)
+            console.log("Delete post", post.id," success")
+            router.push("/dashboard")
+        } catch (err : unknown){
+            console.log("Delete Failed");
+        }
     }
 
     return (
@@ -88,9 +152,34 @@ export default function InnerPost({ post }: PostProps) {
                             {daySincePosted(post.minutes_since_posted)}
                         </span>
                     </div>
-                    <button className="ml-auto p-1 rounded hover:bg-gray-200">
-                        <Ellipsis />
-                    </button>
+                    <div className="ml-auto relative">
+                        <button 
+                            className="p-1 rounded-lg hover:bg-gray-200"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setMenuOpen(!menuOpen);
+                            }}>
+                            <Ellipsis />
+                        </button>
+                        {menuOpen && (
+                            <div
+                                className="absolute mt-2 w-24 right-0 bg-white shadow rounded-lg"
+                            >
+                                <button
+                                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                                    onClick={handleEdit}
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                                    onClick={handleDelete}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        )}					
+                    </div>
                 </div>
 
                 {/* Post content */}
@@ -109,12 +198,14 @@ export default function InnerPost({ post }: PostProps) {
                 <div className="flex items-center gap-3 text-sm text-gray-600 mb-2">
                     <div className="flex items-center gap-1">
                         <ArrowUp
-                            className="w-5 h-5 p-1 rounded hover:bg-gray-200"
+                            className={`w-5 h-5 p-1 rounded hover:bg-gray-200 cursor-pointer
+								${userVote === 1 ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
                             onClick={handleUpVote}
                         />
-                        <span>{post.vote_count}</span>
+                        <span>{post.vote_score}</span>
                         <ArrowDown
-                            className="w-5 h-5 p-1 rounded hover:bg-gray-200"
+                            className={`w-5 h-5 p-1 rounded hover:bg-gray-200 cursor-pointer
+								${userVote === -1 ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
                             onClick={handleDownVote}
                         />
                     </div>
@@ -130,7 +221,7 @@ export default function InnerPost({ post }: PostProps) {
             </div>
 
             {/* CommentBox centered */}
-            <CommentBox className="w-full max-w-2xl mb-4" />
+            <CommentBox className="w-full max-w-2xl mb-4" postId={post.id}/>
 
             {/* Comments section centered */}
             <div className="w-full max-w-2xl border-l border-gray-200 pl-5 mt-2">

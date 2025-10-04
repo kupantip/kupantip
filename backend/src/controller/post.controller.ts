@@ -104,6 +104,7 @@ export const getPostsController = async (
 			category_id ? String(category_id) : undefined,
 			user_id ? String(user_id) : undefined,
 			post_id ? String(post_id) : undefined
+			
 		);
 
 		return res.status(200).json(posts);
@@ -149,9 +150,11 @@ export const deletePostController = async (
 
 		if (!deletedPost) {
 			// User tried to delete someone else's post
-			return res.status(403).json({
-				message: 'Forbidden: Not authorized to delete this post',
-			});
+			return res
+				.status(403)
+				.json({
+					message: 'Forbidden: Not authorized to delete this post',
+				});
 		}
 
 		return res
@@ -200,9 +203,11 @@ export const updatePostController = async (
 
 		const post = checkPost.recordset[0];
 		if (post.author_id !== req.user.user_id) {
-			return res.status(403).json({
-				message: 'Forbidden: You are not the author of this post',
-			});
+			return res
+				.status(403)
+				.json({
+					message: 'Forbidden: You are not the author of this post',
+				});
 		}
 
 		// Passed all conditions → can update

@@ -7,36 +7,30 @@ import { env } from '../config/env';
 import * as z from 'zod';
 
 const passwordSchema = z
-	.string()
-	.min(6, 'Password must be at least 6 characters')
-	.regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-	.regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-	.regex(/[0-9]/, 'Password must contain at least one number')
-	.regex(
-		/[^a-zA-Z0-9]/,
-		'Password must contain at least one special character'
-	);
+  .string()
+  .min(6, 'Password must be at least 6 characters')
+  .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+  .regex(/[0-9]/, 'Password must contain at least one number')
+  .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character');
 
 export const loginSchema = z.object({
-	email: z.string().email('Invalid email address'),
-	password: passwordSchema,
+  email: z.string().email('Invalid email address'),
+  password: passwordSchema,
 });
 
 export const signupSchema = z.object({
-	email: z.string().email('Invalid email address'),
-	handle: z.string().min(1, 'Handle must be at least 1 characters'),
-	display_name: z.string().min(1, 'Display name is required'),
-	password: passwordSchema,
-	role: z.string().optional(),
+  email: z.string().email('Invalid email address'),
+  handle: z.string().min(1, 'Handle must be at least 1 characters'),
+  display_name: z.string().min(1, 'Display name is required'),
+  password: passwordSchema,
+  role: z.string().optional(),
 });
 
-export const loginController = async (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
+export const loginController = async (req: Request, res: Response, next: NextFunction) => {
+	
 	try {
-		loginSchema.parse(req.body);
+		loginSchema.parse(req.body)
 		const { email, password } = req.body;
 		const cnt = await getDbConnection();
 		// ดึง user_id, display_name จาก email
@@ -104,25 +98,15 @@ export const loginController = async (
 		});
 	} catch (err) {
 		// return res.status(500).json({ message: 'Login failed', error: err });
-		next(err);
+		next(err)
 	}
 };
 
-export const signupController = async (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
+export const signupController = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		signupSchema.parse(req.body);
 		const { email, handle, display_name, password, role } = req.body;
-		const result = await signup(
-			email,
-			handle,
-			display_name,
-			password,
-			role
-		);
+		const result = await signup(email, handle, display_name, password, role);
 		if (
 			result &&
 			typeof result === 'object' &&

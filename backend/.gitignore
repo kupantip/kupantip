@@ -146,5 +146,3 @@ minio-data/
 mssql/
 
 uploads/
-
-/src/generated/prisma
