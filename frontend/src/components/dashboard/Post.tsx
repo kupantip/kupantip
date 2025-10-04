@@ -51,13 +51,13 @@ export default function Post({ post, currentPage }: PostProps) {
 			try{
 				await deletevotePost(post.id);
 				console.log("Undo UpVote success");
-			} catch (err : any){}
+			} catch (err : unknown){}
 		}else{
 			newVote = 1
 			try{
 				await upvotePost(post.id);
 				console.log("UpVote Post Success",post.id);
-			} catch (err : any){}
+			} catch (err : unknown){}
 		}
 		
 		updateUserVote(newVote);

@@ -34,7 +34,7 @@ export function TopFilter() {
 					<SelectGroup>
 						<SelectLabel>Sort By</SelectLabel>
 						{SELECT_ITEM.map((item) => (
-							<SelectItem value={item.value}>
+							<SelectItem key={item.name} value={item.value}>
 								{item.name}
 							</SelectItem>
 						))}
