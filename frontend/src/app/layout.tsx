@@ -1,6 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from 'next';
 import './globals.css';
+import { CustomProviders } from './provider';
 
 export const metadata: Metadata = {
 	title: 'KUPantip',
@@ -14,10 +15,12 @@ export default function RootLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<html lang="en">
-			<body>
-				<main>{children}</main>
-			</body>
-		</html>
+		<CustomProviders>
+			<html lang="en">
+				<body>
+					<main>{children}</main>
+				</body>
+			</html>
+		</CustomProviders>
 	);
 }
