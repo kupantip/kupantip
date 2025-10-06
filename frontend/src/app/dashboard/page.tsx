@@ -40,7 +40,7 @@ export default function DashboardPage() {
 
 	return (
 		<div className="w-full flex gap-4 px-20 mt-2">
-			<div className="w-4/5 flex flex-col gap-4">
+			<div className="w-full flex flex-col gap-4">
 				<TopFilter />
 				{postData.map((data) => (
 					<Post key={data.id} post={data} currentPage="dashboard" />
