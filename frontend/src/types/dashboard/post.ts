@@ -19,7 +19,6 @@ export interface Post {
   minutes_since_posted: number;
   comment_count: number;
   vote_count: number
-  vote_score: number
 }
 
 export type Comment = {
@@ -40,4 +39,3 @@ export type CommentsResponse = {
   message: string
   comments: Comment[] | []
 }
-
