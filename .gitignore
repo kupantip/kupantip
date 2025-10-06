@@ -1,3 +1,6 @@
 .DS_Store
 .env
 mssql
+node_modules/
+package-lock.json
+package.json
