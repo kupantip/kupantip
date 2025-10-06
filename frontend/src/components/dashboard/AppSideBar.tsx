@@ -14,10 +14,10 @@ import { useState, useRef, useEffect } from 'react';
 const HOVER_OPEN_DELAY_MS = 250;
 
 const items = [
-	{ title: 'Home', url: '/', icon: Home },
-	{ title: 'Annoucement', url: '/annoucement', icon: Inbox },
-	{ title: 'Community', url: '/community', icon: PersonStanding },
-	{ title: 'Recruitment', url: '/recruitment', icon: BriefcaseBusiness },
+	{ title: 'Home', url: '/dashboard', icon: Home },
+	{ title: 'Annoucement', url: '/dashboard/annoucement', icon: Inbox },
+	{ title: 'Community', url: '/dashboard/community', icon: PersonStanding },
+	{ title: 'Recruitment', url: '/dashboard/recruitment', icon: BriefcaseBusiness },
 ];
 
 const topicItems = [
@@ -68,7 +68,7 @@ export function AppSidebar() {
 	return (
 		<div
 			className={`group relative h-full border-r bg-grey-1 transition-[width] duration-200 ease-out ${
-				expanded ? 'w-60' : 'w-14'
+				expanded ? 'w-60' : 'w-15'
 			}`}
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}
