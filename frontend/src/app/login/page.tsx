@@ -37,29 +37,29 @@ export default function LoginPage() {
     return (
         <div className="relative flex items-center justify-center min-h-screen">
             {/* Background image */}
-            <div className="absolute inset-0 bg-[url('/login/loginbg.jpg')] bg-[length:120%] bg-center"></div>
+            {/* <div className="absolute inset-0 bg-[url('/login/loginbg.jpg')] bg-[length:120%] bg-center"></div> */}
 
             {/* Overlay */}
-            <div className="absolute inset-0 bg-gray-900/40"></div>
+            <div className="absolute inset-0 bg-gray-300/40"></div>
 
             {/* Form */}
             <form
                 onSubmit={handleSubmit}
                 className="relative z-10 p-6 bg-white shadow-md rounded-lg w-96"
             >
-                <div className="text-[var(--color-green-primary)] text-2xl text-center font-semibold mb-2">
+                <div className="text-green-2 text-3xl text-center font-semibold mb-5">
                     KU PANTIP
                 </div>
-                <div className="text-3xl text-center font-semibold mb-8">
+                {/* <div className="text-3xl text-center font-semibold mb-8">
                     Welcome Back
-                </div>
+                </div> */}
                 {error && <p className="text-red-500 mb-2">{error}</p>}
                 <hr className="border-t border-gray-300 mb-6" />
-                <h3 className="text-sm font-medium mb-1">Username</h3>
+                <h3 className="text-sm font-medium mb-1">Email Address</h3>
                 <Input
                     type="text"
                     name="email"
-                    placeholder="Username"
+                    placeholder="Email"
                     className="w-full p-2 py-5 border rounded mb-2"
                 />
                 <h6 className="text-sm font-medium mt-4 mb-1">Password</h6>

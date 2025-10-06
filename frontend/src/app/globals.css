@@ -122,12 +122,15 @@
 }
 
 @theme {
-  --color-green-1: #016c69;
-  --color-green-2: #03bd77;
-  --color-green-3: #b2bb1c;
+  --color-green-1: #00945E;
+  --color-green-2: #006E4F;
+  --color-green-3: #E6F4EE;
   --color-purple-1: #292742;
   --color-purple-2: #2c2a48;
   --color-purple-3: #3d3962;
+  --color-grey-1: #333333;
+  --color-grey-2: #BDBDBD;
+  --color-grey-3: #F6F6F6;
 }
 
 @layer base {
