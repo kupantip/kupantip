@@ -7,6 +7,8 @@ import * as t from '@/types/dashboard/post';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
+import { RightSidebar } from '@/components/dashboard/RightSideBar';
+import { TopFilter } from '@/components/dashboard/TopFilter';
 
 export default function DashboardPage() {
 	const [postData, setPostData] = useState<t.Post[]>([]);
@@ -37,16 +39,14 @@ export default function DashboardPage() {
 	}, []);
 
 	return (
-		<div className="w-full flex gap-4 px-20 mt-10">
-			<div className="w-4/5 flex flex-col gap-4">
-				<Link href="dashboard/post">
-					<Button className='w-full'>Post</Button>
-				</Link>
-
+		<div className="w-full flex gap-4 px-20 mt-2">
+			<div className="w-full flex flex-col gap-4">
+				<TopFilter />
 				{postData.map((data) => (
 					<Post key={data.id} post={data} currentPage="dashboard" />
 				))}
 			</div>
+			<RightSidebar />
 		</div>
 	);
 }
