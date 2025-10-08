@@ -66,7 +66,6 @@ export const listReports = async (filters: {
 
 	const req = pool.request();
 
-	const where: string[] = [];
 req.input('status', sql.VarChar, filters.status);
 req.input('target_type', sql.VarChar, filters.target_type);
 req.input('report_id', sql.UniqueIdentifier, filters.report_id);
