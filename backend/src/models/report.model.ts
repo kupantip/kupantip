@@ -67,10 +67,7 @@ export const listReports = async (filters: {
 	const req = pool.request();
 
 	const where: string[] = [];
-	if (filters.status) {
-		where.push('r.status = @status');
-		req.input('status', sql.VarChar, filters.status);
-	}
+req.input('status', sql.VarChar, filters.status);
 	if (filters.target_type) {
 		where.push('r.target_type = @target_type');
 		req.input('target_type', sql.VarChar, filters.target_type);
