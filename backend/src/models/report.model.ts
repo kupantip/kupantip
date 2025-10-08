@@ -69,10 +69,7 @@ export const listReports = async (filters: {
 	const where: string[] = [];
 req.input('status', sql.VarChar, filters.status);
 req.input('target_type', sql.VarChar, filters.target_type);
-	if (filters.report_id) {
-		where.push('r.id = @report_id');
-		req.input('report_id', sql.UniqueIdentifier, filters.report_id);
-	}
+req.input('report_id', sql.UniqueIdentifier, filters.report_id);
 	if (filters.target_id) {
 		where.push('r.target_id = @target_id');
 		req.input('target_id', sql.UniqueIdentifier, filters.target_id);
