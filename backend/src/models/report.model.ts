@@ -72,7 +72,6 @@ req.input('target_type', sql.VarChar, filters.target_type);
 req.input('report_id', sql.UniqueIdentifier, filters.report_id);
 req.input('target_id', sql.UniqueIdentifier, filters.target_id);
 req.input('reporter_id', sql.UniqueIdentifier, filters.reporter_id);
-	const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';
 	const orderDir = filters.oldest_first ? 'ASC' : 'DESC';
 	const rows = await req.query(`
 	SELECT r.id, r.target_type, r.target_id, r.reporter_id, r.reason, r.created_at, r.status,
