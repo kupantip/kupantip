@@ -2,7 +2,7 @@ import { getDbConnection } from '../database/mssql.database';
 import sql from 'mssql';
 
 export type ReportTarget = 'post' | 'comment' | 'user';
-export type ReportStatus = 'pending' | 'reviewing' | 'resolved' | 'rejected';
+export type ReportStatus = 'open' | 'dismissed' | 'actioned';
 
 export interface ReportRow {
 	id: string;
@@ -49,7 +49,7 @@ export const createReport = async (params: {
 		.input('reason', sql.NVarChar, params.reason).query(`
       INSERT INTO [dbo].[report] (target_type, target_id, reporter_id, reason, status, created_at)
       OUTPUT INSERTED.*
-      VALUES (@target_type, @target_id, @reporter_id, @reason, 'pending', GETDATE())
+      VALUES (@target_type, @target_id, @reporter_id, @reason, 'open', GETDATE())
     `);
 	return result.recordset[0] as ReportRow;
 };

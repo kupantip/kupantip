@@ -19,9 +19,7 @@ const createSchema = z.object({
 const listSchema = z.object({
 	status: z
 		.string()
-		.refine((val) =>
-			['pending', 'reviewing', 'resolved', 'rejected'].includes(val)
-		)
+		.refine((val) => ['open', 'dismissed', 'actioned'].includes(val))
 		.optional(),
 	target_type: z
 		.string()
@@ -36,9 +34,7 @@ const listSchema = z.object({
 const updateSchema = z.object({
 	status: z
 		.string()
-		.refine((val) =>
-			['pending', 'reviewing', 'resolved', 'rejected'].includes(val)
-		),
+		.refine((val) => ['open', 'dismissed', 'actioned'].includes(val)),
 });
 
 export const createReportController = async (
