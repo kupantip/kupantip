@@ -69,6 +69,9 @@ export const listReportsController = async (
 	next: NextFunction
 ) => {
 	try {
+		if (req.user?.role != 'admin') {
+			return res.status(403).json({ message: 'You are not admin' });
+		}
 		const parsed = listSchema.parse(req.query);
 		const data = await listReports({
 			status: parsed.status as ReportStatus | null,

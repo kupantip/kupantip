@@ -46,7 +46,8 @@ export const createPost = async (
 export const getPosts = async (
 	category_id?: string,
 	user_id?: string,
-	post_id?: string
+	post_id?: string,
+	recent?: boolean,
 ) => {
 	const pool = await getDbConnection();
 
@@ -104,6 +105,13 @@ export const getPosts = async (
 	if (post_id) {
 		query += ` AND p.id = @post_id`;
 		request.input('post_id', post_id);
+	}
+
+
+	if (!recent) {
+		query += `\n    ORDER BY p.created_at ASC, p.id ASC`;
+	} else {
+		query += `\n    ORDER BY p.created_at DESC, p.id DESC`;
 	}
 
 	const result = await request.query(query);

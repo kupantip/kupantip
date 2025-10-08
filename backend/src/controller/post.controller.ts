@@ -31,6 +31,22 @@ const postIdParamSchema = z.object({
 const getFilterSchema = z.object({
 	category_id: z.string().uuid().optional(),
 	user_id: z.string().uuid().optional(),
+	// robust boolean: 'true'|'1' => true, 'false'|'0' => false
+	recent: z.preprocess((v) => {
+		const toBool = (s: string) => {
+			const t = s.trim().toLowerCase();
+			if (t === 'true' || t === '1') return true;
+			if (t === 'false' || t === '0') return false;
+			return undefined;
+		};
+		if (typeof v === 'boolean') return v;
+		if (typeof v === 'string') return toBool(v);
+		if (Array.isArray(v) && v.length > 0) {
+			const last = v[v.length - 1];
+			if (typeof last === 'string') return toBool(last);
+		}
+		return undefined;
+	}, z.boolean().optional()),
 });
 
 export const createPostController = async (
@@ -97,13 +113,18 @@ export const getPostsController = async (
 	next: NextFunction
 ) => {
 	try {
-		getFilterSchema.parse(req.query);
-		const { category_id, user_id, post_id } = req.query;
+		const parsed = getFilterSchema.parse(req.query);
+		const { category_id, user_id, recent } = parsed;
+		const post_id =
+			typeof req.query.post_id === 'string'
+				? req.query.post_id
+				: undefined;
 
 		const posts = await getPosts(
-			category_id ? String(category_id) : undefined,
-			user_id ? String(user_id) : undefined,
-			post_id ? String(post_id) : undefined
+			category_id,
+			user_id,
+			post_id,
+			recent ?? true
 		);
 
 		return res.status(200).json(posts);

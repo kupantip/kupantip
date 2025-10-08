@@ -55,22 +55,22 @@ export const createReport = async (params: {
 };
 
 export const listReports = async (filters: {
-	status?: ReportStatus;
-	target_type?: ReportTarget;
-	report_id?: string;
-	target_id?: string;
-	reporter_id?: string;
+	status?: ReportStatus | null;
+	target_type?: ReportTarget | null;
+	report_id?: string | null;
+	target_id?: string | null;
+	reporter_id?: string | null;
 	oldest_first?: boolean;
 }): Promise<ReportRow[]> => {
 	const pool = await getDbConnection();
 
 	const req = pool.request();
 
-req.input('status', sql.VarChar, filters.status);
-req.input('target_type', sql.VarChar, filters.target_type);
-req.input('report_id', sql.UniqueIdentifier, filters.report_id);
-req.input('target_id', sql.UniqueIdentifier, filters.target_id);
-req.input('reporter_id', sql.UniqueIdentifier, filters.reporter_id);
+	req.input('status', sql.VarChar, filters.status);
+	req.input('target_type', sql.VarChar, filters.target_type);
+	req.input('report_id', sql.UniqueIdentifier, filters.report_id);
+	req.input('target_id', sql.UniqueIdentifier, filters.target_id);
+	req.input('reporter_id', sql.UniqueIdentifier, filters.reporter_id);
 	const orderDir = filters.oldest_first ? 'ASC' : 'DESC';
 	const rows = await req.query(`
 	SELECT r.id, r.target_type, r.target_id, r.reporter_id, r.reason, r.created_at, r.status,
