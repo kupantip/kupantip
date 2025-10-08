@@ -11,6 +11,7 @@ type PostRow = {
 	author_name: string;
 	author_id: string;
 	category_label: string | null;
+	category_color: string | null;
 	category_id: string | null;
 	attachments: string;
 	minutes_since_posted: number;
@@ -45,7 +46,8 @@ export const createPost = async (
 export const getPosts = async (
 	category_id?: string,
 	user_id?: string,
-	post_id?: string
+	post_id?: string,
+	recent?: boolean,
 ) => {
 	const pool = await getDbConnection();
 
@@ -60,6 +62,7 @@ export const getPosts = async (
       u.display_name as author_name,
       u.id as author_id,
       c.label as category_label,
+	  c.color_hex as category_color,
       c.id as category_id,
       (
         SELECT a.id, a.url, a.mime_type
@@ -102,6 +105,13 @@ export const getPosts = async (
 	if (post_id) {
 		query += ` AND p.id = @post_id`;
 		request.input('post_id', post_id);
+	}
+
+
+	if (!recent) {
+		query += `\n    ORDER BY p.created_at ASC, p.id ASC`;
+	} else {
+		query += `\n    ORDER BY p.created_at DESC, p.id DESC`;
 	}
 
 	const result = await request.query(query);
