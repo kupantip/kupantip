@@ -86,19 +86,23 @@ export default function CommunityPage() {
 					{data.map((post, i) => (
 						<div
 							key={i}
-							className="py-4 px-6 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+							className="py-4 px-6 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
 						>
 							<div>
-								<h3 className="font-semibold text-gray-800 dark:text-gray-100">
+								<h3 className="font-semibold text-gray-800 dark:text-gray-100 hover:underline">
 									{post.title}
 								</h3>
 								<p className="text-sm text-gray-500">
 									{post.author} • {post.time}
 								</p>
 							</div>
-							<div className="flex items-center text-gray-400">
-								💬 <span className="ml-1 text-sm">8</span>
-							</div>
+							<Button className="flex items-center text-gray-400 cursor-pointer bg-grey-3 hover:bg-grey-2">
+								💬{' '}
+								<span className="ml-1 text-sm">
+									{/* {post.comments} */}
+									12
+								</span>
+							</Button>
 						</div>
 					))}
 				</CardContent>

@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -11,6 +12,10 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PostItem } from '@/components/dashboard/PostItem';
+
+import { getPost } from '@/hooks/dashboard/getPost';
+import * as t from '@/types/dashboard/post';
 
 export default function AnnoucementPage() {
 	const data = [
@@ -30,6 +35,26 @@ export default function AnnoucementPage() {
 			time: '2 days ago',
 		},
 	];
+
+	const [postArray, setPostArray] = useState<t.Post[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(false);
+
+	useEffect(() => {
+		const fetchPosts = async () => {
+			try {
+				const data = await getPost('Announcement');
+				setPostArray(data);
+				console.log(postArray);
+			} catch (error) {
+				setError(true);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchPosts();
+	}, []);
 
 	return (
 		<div className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
@@ -65,24 +90,30 @@ export default function AnnoucementPage() {
 			<Card className="shadow-sm overflow-hidden rounded-lg">
 				<CardHeader className="text-green-2 mb-[-20]">
 					<CardTitle className="text-lg font-semibold">
-						Latest Post
+						Latest Posts
 					</CardTitle>
 				</CardHeader>
-				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700">
+				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
 					{data.map((post, i) => (
 						<div
 							key={i}
-							className="py-4 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-800 px-2 rounded-lg transition"
+							className="py-4 px-6 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
 						>
 							<div>
-								<h3 className="font-semibold text-gray-800 dark:text-gray-100">
+								<h3 className="font-semibold text-gray-800 dark:text-gray-100 hover:underline">
 									{post.title}
 								</h3>
 								<p className="text-sm text-gray-500">
 									{post.author} • {post.time}
 								</p>
 							</div>
-							<div className="text-sm text-gray-400">💬 12</div>
+							<Button className="flex items-center text-gray-400 cursor-pointer bg-grey-3 hover:bg-grey-2">
+								💬{' '}
+								<span className="ml-1 text-sm">
+									{/* {post.comments} */}
+									12
+								</span>
+							</Button>
 						</div>
 					))}
 				</CardContent>
