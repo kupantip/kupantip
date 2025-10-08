@@ -8,7 +8,7 @@ import {
 
 const router = Router();
 
-router.get('/', listReportsController);
+router.get('/', authMiddleware, listReportsController);
 
 router.post('/', authMiddleware, createReportController);
 
