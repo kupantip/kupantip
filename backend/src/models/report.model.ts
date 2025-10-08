@@ -70,10 +70,7 @@ export const listReports = async (filters: {
 req.input('status', sql.VarChar, filters.status);
 req.input('target_type', sql.VarChar, filters.target_type);
 req.input('report_id', sql.UniqueIdentifier, filters.report_id);
-	if (filters.target_id) {
-		where.push('r.target_id = @target_id');
-		req.input('target_id', sql.UniqueIdentifier, filters.target_id);
-	}
+req.input('target_id', sql.UniqueIdentifier, filters.target_id);
 	if (filters.reporter_id) {
 		where.push('r.reporter_id = @reporter_id');
 		req.input('reporter_id', sql.UniqueIdentifier, filters.reporter_id);
