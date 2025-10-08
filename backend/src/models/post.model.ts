@@ -11,6 +11,7 @@ type PostRow = {
 	author_name: string;
 	author_id: string;
 	category_label: string | null;
+	category_color: string | null;
 	category_id: string | null;
 	attachments: string;
 	minutes_since_posted: number;
@@ -60,6 +61,7 @@ export const getPosts = async (
       u.display_name as author_name,
       u.id as author_id,
       c.label as category_label,
+	  c.color_hex as category_color,
       c.id as category_id,
       (
         SELECT a.id, a.url, a.mime_type
