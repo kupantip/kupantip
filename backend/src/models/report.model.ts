@@ -93,7 +93,11 @@ export const listReports = async (filters: {
 	SELECT r.id, r.target_type, r.target_id, r.reporter_id, r.reason, r.created_at, r.status,
 	DATEDIFF(minute, r.created_at, GETDATE()) AS minutes_since_reported
 	FROM [dbo].[report] r
-	${whereClause}
+	where r.status = COALESCE(@status, r.status)
+	and r.target_type = COALESCE(@target_type, r.target_type)
+	and r.id = COALESCE(@report_id, r.id)
+	and r.target_id = COALESCE(@target_id, r.target_id)
+	and r.reporter_id = COALESCE(@reporter_id, r.reporter_id )
 		ORDER BY r.created_at ${orderDir}
   `);
 
