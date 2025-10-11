@@ -78,7 +78,7 @@ export default function AnnoucementPage() {
 					<div>Latest Announcements and Student Notices</div>
 					<Button
 						variant="secondary"
-						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer"
+						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer hover:scale-105"
 					>
 						Follow
 					</Button>
@@ -97,6 +97,7 @@ export default function AnnoucementPage() {
 							key={i}
 							id={post.id}
 							title={post.title}
+							category={post.category_label}
 							author={post.author_name}
 							time={post.minutes_since_posted}
 							comments={post.comment_count}

@@ -14,6 +14,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Heart } from 'lucide-react';
+
+// still using mock data
 
 export default function HomePage() {
 	const hotPosts = [
@@ -82,7 +85,7 @@ export default function HomePage() {
 					</p>
 					<Button
 						variant="secondary"
-						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer"
+						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer hover:scale-105"
 					>
 						+ New Post
 					</Button>
@@ -99,9 +102,13 @@ export default function HomePage() {
 					{hotPosts.map((post, i) => (
 						<div
 							key={i}
-							className="group py-4 px-6 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+							className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
+									hover:bg-gray-100 dark:hover:bg-gray-800 
+									rounded-lg 
+									transition-all duration-300 ease-in-out 
+									hover:shadow-md"
 						>
-							<div>
+							<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
 								<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline cursor-pointer">
 									{post.title}
 								</h3>
@@ -115,12 +122,17 @@ export default function HomePage() {
 									{post.author} • {post.time}
 								</p>
 							</div>
-							<Button className="flex items-center text-gray-400 cursor-pointer bg-grey-3 hover:bg-grey-2">
-								💬{' '}
-								<span className="ml-1 text-sm">
-									{post.comments}
-								</span>
-							</Button>
+							<div className="flex flex-wrap gap-x-2">
+								<Button className='group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105'>
+									<Heart className="text-red-500" fill="currentColor" />
+								</Button>
+								<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+									💬{' '}
+									<span className="ml-1 text-sm">
+										{post.comments}
+									</span>
+								</Button>
+							</div>
 						</div>
 					))}
 				</CardContent>
