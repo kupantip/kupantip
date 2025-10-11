@@ -4,7 +4,7 @@ import PostDetail from '@/components/dashboard/PostDetail';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import * as t from '@/types/dashboard/post';
-import { getPostById } from '@/hooks/dashboard/getPostById';
+import { getPostById } from '@/services/dashboard/getPostById';
 
 import { Button } from '@/components/ui/button';
 import {

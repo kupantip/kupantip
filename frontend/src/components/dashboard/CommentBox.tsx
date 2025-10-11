@@ -7,7 +7,7 @@ import { Image, Type, Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
-import { postComment } from '@/hooks/dashboard/postComment';
+import { postComment } from '@/services/dashboard/postComment';
 
 interface Content {
 	parent_id: string;
