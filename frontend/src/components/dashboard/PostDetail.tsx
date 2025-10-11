@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
-import { getCommentByPostId } from '@/hooks/dashboard/getCommentByPostId';
+import { getCommentByPostId } from '@/services/dashboard/getCommentByPostId';
 import CommentBox from './CommentBox';
 
 type PostDetailProps = {

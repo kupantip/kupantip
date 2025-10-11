@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getPost } from '@/hooks/dashboard/getPost';
+import { getPost } from '@/services/dashboard/getPost';
 import { PostItem } from '@/components/dashboard/PostItem';
 import * as t from '@/types/dashboard/post';
 
