@@ -54,7 +54,7 @@ export default function CreatePostPage() {
     },
   });
 
-  const handleselect = (value : string) => {
+  const handleSelectCategory = (value : string) => {
     setFormData({ ...formData, category_id: value })
   }
 
@@ -79,11 +79,6 @@ export default function CreatePostPage() {
     <div 
       data-aos="fade-up"
       className="flex justify-center items-start min-h-screen bg-white p-8">
-      {/* <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-8"
-      > */}
       <div className="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-8">
         <h1 className="text-3xl font-bold mb-6 text-gray-800">Create Post</h1>
 
@@ -122,7 +117,7 @@ export default function CreatePostPage() {
           />
 
           <Select
-            onValueChange={handleselect}
+            onValueChange={handleSelectCategory}
             value={formData.category_id}
           >
             <SelectTrigger className="border border-gray-300 rounded-xl p-5 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer">
@@ -213,14 +208,13 @@ export default function CreatePostPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="bg-emerald-700 hover:bg-emerald-800 hover:shadow-md hover:scale-105 text-white rounded-full px-8 py-2 transition shadow-sm cursor-pointer"
+              className="bg-emerald-700 hover:bg-emerald-800 hover:shadow-md hover:scale-105 p-8 py-2 rounded-full cursor-pointer"
             >
               {loading ? "Posting..." : "Post"}
             </Button>
           </div>
         </form>
       </div>
-      {/* </motion.div> */}
     </div>
   );
 }
