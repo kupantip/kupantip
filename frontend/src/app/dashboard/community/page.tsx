@@ -1,0 +1,115 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { getPost } from '@/hooks/dashboard/getPost';
+import { PostItem } from '@/components/dashboard/PostItem';
+import * as t from '@/types/dashboard/post';
+
+export default function CommunityPage() {
+	const [postArray, setPostArray] = useState<t.Post[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(false);
+
+	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
+
+	useEffect(() => {
+		const fetchPosts = async () => {
+			try {
+				const data = await getPost('Community');
+				setPostArray(data);
+				console.log(postArray);
+			} catch (error) {
+				setError(true);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchPosts();
+	}, []);
+
+	return (
+		<div
+			data-aos="fade-up"
+			className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
+		>
+			{' '}
+			{/* Breadcrumb */}
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbLink href="/">Home</BreadcrumbLink>
+					</BreadcrumbItem>
+					<BreadcrumbSeparator />
+					<BreadcrumbItem>
+						<BreadcrumbPage>Community</BreadcrumbPage>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
+			{/* Header Card */}
+			<Card className="bg-green-1 text-white shadow-md border-none">
+				<CardHeader>
+					<CardTitle className="text-2xl font-bold">
+						<div className="text-2xl font-bold">Community</div>
+						<div className="text-sm font-normal pt-2">
+							1,240 Posts • 520 Followers
+						</div>
+					</CardTitle>
+				</CardHeader>
+				<CardContent className="flex items-center justify-between text-sm">
+					<div>
+						A space for students to share ideas, experiences, and
+						discussions within the university community.
+					</div>
+					<Button
+						variant="secondary"
+						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer"
+					>
+						Join
+					</Button>
+				</CardContent>
+			</Card>
+			{/* Community Discussions */}
+			<Card className="shadow-sm overflow-hidden rounded-lg">
+				<CardHeader className="text-green-2 mb-[-20]">
+					<CardTitle className="text-lg font-semibold">
+						Latest Posts
+					</CardTitle>
+				</CardHeader>
+
+				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
+					{postArray.map((post, i) => (
+						<PostItem
+							key={i}
+							id={post.id}
+							title={post.title}
+							category={post.category_label}
+							author={post.author_name}
+							time={post.minutes_since_posted}
+							comments={post.comment_count}
+						/>
+					))}
+				</CardContent>
+			</Card>
+		</div>
+	);
+}

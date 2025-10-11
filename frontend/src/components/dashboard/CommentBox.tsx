@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Image, Type, Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { postComment } from '@/hooks/dashboard/postComment';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
+import { postComment } from '@/hooks/dashboard/postComment';
 
 interface Content {
 	parent_id: string;
@@ -50,7 +50,7 @@ export default function CommentBox({
 			});
 
 			if (success && isLoggedIn) {
-				toast.message('Comment Succuss')
+				toast.message('Comment Succuss');
 				console.log('Comment posted successfully!');
 				setComment('');
 				setShowActions(false);

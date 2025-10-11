@@ -13,8 +13,8 @@ export interface Post {
   updated_at: string; // ISO date string
   author_name: string;
   author_id: string;
-  category_label: string | null;
-  category_id: string | null;
+  category_label: string;
+  category_id: string;
   attachments: Attachment[];
   minutes_since_posted: number;
   comment_count: number;
