@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
+import { User } from '@/types/dashboard/user'
 import { getCommentByPostId } from '@/services/dashboard/getCommentByPostId';
 import CommentBox from './CommentBox';
 import { deletePost } from '@/services/user/delete_post';
@@ -99,9 +100,8 @@ export default function PostDetail({ post }: PostDetailProps) {
 	const [loadingComments, setLoadingComments] = useState(true);
 
 	const { data: session} = useSession();
-	const tokenPayload = session?.accessToken ? jwtDecode<any>(session.accessToken) : null;
+	const tokenPayload = session?.accessToken ? jwtDecode<User>(session.accessToken) : null;
 	const currentUserId = tokenPayload?.user_id;
-	console.log("Current user id : ",currentUserId)
 
 	const [menuOpen, setMenuOpen] = useState(false);
 	const router = useRouter();
