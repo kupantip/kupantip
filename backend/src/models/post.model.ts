@@ -20,6 +20,8 @@ type PostRow = {
 	dislike_count: number;
 	vote_count: number;
 	vote_score: number;
+	liked_by_requesting_user: boolean;
+	disliked_by_requesting_user: boolean;
 };
 
 export const createPost = async (
@@ -48,6 +50,7 @@ export const getPosts = async (
 	user_id?: string,
 	post_id?: string,
 	recent?: boolean,
+	requesting_user_id?: string
 ) => {
 	const pool = await getDbConnection();
 
@@ -81,16 +84,36 @@ export const getPosts = async (
 		), 0) AS like_count,
 	  ISNULL((
 		SELECT SUM(CASE WHEN pv.value = -1 THEN 1 ELSE 0 END)
-		FROM [KUPantipDB].[dbo].[post_vote] pv
+		FROM [dbo].[post_vote] pv
 		WHERE pv.post_id = p.id
-		), 0) AS dislike_count
+				), 0) AS dislike_count,
+			CAST(
+				CASE 
+					WHEN @requesting_user_id IS NOT NULL AND EXISTS (
+						SELECT 1 FROM [dbo].[post_vote] pv
+						WHERE pv.post_id = p.id AND pv.user_id = @requesting_user_id AND pv.value = 1
+					) THEN 1 ELSE 0 END AS BIT
+			) AS liked_by_requesting_user,
+			CAST(
+				CASE 
+					WHEN @requesting_user_id IS NOT NULL AND EXISTS (
+						SELECT 1 FROM [dbo].[post_vote] pv
+						WHERE pv.post_id = p.id AND pv.user_id = @requesting_user_id AND pv.value = -1
+					) THEN 1 ELSE 0 END AS BIT
+			) AS disliked_by_requesting_user
     FROM [dbo].[post] p
     LEFT JOIN [dbo].[app_user] u ON p.author_id = u.id
     LEFT JOIN [dbo].[category] c ON p.category_id = c.id
     WHERE p.deleted_at IS NULL
-  `;
+	`;
 
 	const request = pool.request();
+	// Bind current user for like/dislike checks (nullable)
+	request.input(
+		'requesting_user_id',
+		sql.UniqueIdentifier,
+		requesting_user_id ?? null
+	);
 
 	if (category_id) {
 		query += ` AND p.category_id = @category_id`;
@@ -106,7 +129,6 @@ export const getPosts = async (
 		query += ` AND p.id = @post_id`;
 		request.input('post_id', post_id);
 	}
-
 
 	if (!recent) {
 		query += `\n    ORDER BY p.created_at ASC, p.id ASC`;
