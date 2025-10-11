@@ -115,17 +115,28 @@ export const getPostsController = async (
 	try {
 		const parsed = getFilterSchema.parse(req.query);
 		const { category_id, user_id, recent } = parsed;
+		let posts;
 		const post_id =
 			typeof req.query.post_id === 'string'
 				? req.query.post_id
 				: undefined;
-
-		const posts = await getPosts(
-			category_id,
-			user_id,
-			post_id,
-			recent ?? true
-		);
+		if (req.user) {
+			posts = await getPosts(
+				category_id,
+				user_id,
+				post_id,
+				recent ?? true,
+				req.user?.user_id,
+			);
+		} else {
+			posts = await getPosts(
+				category_id,
+				user_id,
+				post_id,
+				recent ?? true,
+				// req.user?.user_id,
+			);
+		}
 
 		return res.status(200).json(posts);
 	} catch (err) {
