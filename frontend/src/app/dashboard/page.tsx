@@ -1,6 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -38,13 +41,25 @@ export default function HomePage() {
 	];
 
 	const summaryStats = [
-		{ label: 'Announcements', count: 1240 },
-		{ label: 'Community Posts', count: 3480 },
-		{ label: 'Recruitment Posts', count: 640 },
+		{ label: 'Announcements', count: 1240, url: 'annoucement' },
+		{ label: 'Community Posts', count: 3480, url: 'community' },
+		{ label: 'Recruitment Posts', count: 640, url: 'recruitment' },
 	];
 
+	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
+
 	return (
-		<div className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
+		<div
+			data-aos="fade-up"
+			className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
+		>
+			{' '}
 			{/* Breadcrumb */}
 			<Breadcrumb>
 				<BreadcrumbList>
@@ -53,7 +68,6 @@ export default function HomePage() {
 					</BreadcrumbItem>
 				</BreadcrumbList>
 			</Breadcrumb>
-
 			{/* Banner Section */}
 			<Card className="bg-green-1 text-white shadow-md border-none rounded-xl">
 				<CardHeader>
@@ -74,7 +88,6 @@ export default function HomePage() {
 					</Button>
 				</CardContent>
 			</Card>
-
 			{/* Hot Posts */}
 			<Card className="shadow-sm overflow-hidden rounded-lg">
 				<CardHeader className="text-green-2 mb-[-20]">
@@ -112,13 +125,12 @@ export default function HomePage() {
 					))}
 				</CardContent>
 			</Card>
-
 			{/* Summary Section */}
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 				{summaryStats.map((item, i) => (
 					<Card
 						key={i}
-						className="text-center shadow-sm hover:shadow-md transition"
+						className="text-center shadow-sm hover:shadow-md transition hover:scale-102"
 					>
 						<CardHeader>
 							<CardTitle className="text-green-1">

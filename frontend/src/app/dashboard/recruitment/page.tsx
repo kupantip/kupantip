@@ -1,13 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+
 import {
 	Breadcrumb,
 	BreadcrumbItem,
 	BreadcrumbList,
 	BreadcrumbPage,
-    BreadcrumbLink,
-    BreadcrumbSeparator
+	BreadcrumbLink,
+	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,8 +50,19 @@ export default function RecruitmentPage() {
 		{ label: 'Applications Submitted', count: 980 },
 	];
 
+	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
+
 	return (
-		<div className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
+		<div
+			data-aos="fade-up"
+			className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
+		>
 			{/* Breadcrumb */}
 			<Breadcrumb>
 				<BreadcrumbList>
@@ -66,7 +80,12 @@ export default function RecruitmentPage() {
 			<Card className="bg-green-1 text-white shadow-md border-none rounded-xl">
 				<CardHeader>
 					<CardTitle className="text-2xl font-bold">
-						Find Your Next Opportunity 💼
+						<div className="text-2xl font-bold">
+							Find Your Next Opportunity 💼
+						</div>
+						<div className="text-sm font-normal pt-2">
+							1,240 Posts • 520 Followers
+						</div>
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="flex items-center justify-between">

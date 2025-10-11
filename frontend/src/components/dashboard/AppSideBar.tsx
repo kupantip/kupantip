@@ -109,7 +109,7 @@ export function AppSidebar() {
 							<li key={item.title}>
 								<a
 									href={item.url}
-									className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition ${
+									className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
 										expanded
 											? 'justify-start'
 											: 'justify-center'
@@ -142,7 +142,7 @@ export function AppSidebar() {
 						<li key={item.title}>
 							<a
 								href={item.url}
-								className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition ${
+								className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
 									expanded
 										? 'justify-start'
 										: 'justify-center'

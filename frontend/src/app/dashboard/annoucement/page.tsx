@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 import {
 	Breadcrumb,
@@ -18,10 +20,17 @@ import { getPost } from '@/hooks/dashboard/getPost';
 import * as t from '@/types/dashboard/post';
 
 export default function AnnoucementPage() {
-
 	const [postArray, setPostArray] = useState<t.Post[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(false);
+
+	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
 
 	useEffect(() => {
 		const fetchPosts = async () => {
@@ -40,7 +49,10 @@ export default function AnnoucementPage() {
 	}, []);
 
 	return (
-		<div className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
+		<div
+			data-aos="fade-up"
+			className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
+		>
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
@@ -55,12 +67,15 @@ export default function AnnoucementPage() {
 
 			<Card className="bg-green-1 text-white shadow-md border-none">
 				<CardHeader>
-					<CardTitle className="text-2xl font-bold">
-						Announcements
+					<CardTitle>
+						<div className="text-2xl font-bold">Announcements</div>
+						<div className="text-sm font-normal pt-2">
+							1,240 Posts • 520 Followers
+						</div>
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="flex items-center justify-between text-sm">
-					<div>1,240 Posts • 520 Followers</div>
+					<div>Latest Announcements and Student Notices</div>
 					<Button
 						variant="secondary"
 						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer"
@@ -78,7 +93,14 @@ export default function AnnoucementPage() {
 				</CardHeader>
 				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
 					{postArray.map((post, i) => (
-						<PostItem key={i} id={post.id} title={post.title} author={post.author_name} time={post.minutes_since_posted} comments={post.comment_count}/>
+						<PostItem
+							key={i}
+							id={post.id}
+							title={post.title}
+							author={post.author_name}
+							time={post.minutes_since_posted}
+							comments={post.comment_count}
+						/>
 					))}
 				</CardContent>
 			</Card>
