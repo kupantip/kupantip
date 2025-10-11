@@ -99,8 +99,9 @@ export default function PostDetail({ post }: PostDetailProps) {
 	const [loadingComments, setLoadingComments] = useState(true);
 
 	const { data: session} = useSession();
-	const tokenPayload: any = session?.accessToken ? jwtDecode(session.accessToken) : null;
+	const tokenPayload = session?.accessToken ? jwtDecode<any>(session.accessToken) : null;
 	const currentUserId = tokenPayload?.user_id;
+	console.log("Current user id : ",currentUserId)
 
 	const [menuOpen, setMenuOpen] = useState(false);
 	const router = useRouter();
