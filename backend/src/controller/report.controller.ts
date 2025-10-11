@@ -19,9 +19,7 @@ const createSchema = z.object({
 const listSchema = z.object({
 	status: z
 		.string()
-		.refine((val) =>
-			['pending', 'reviewing', 'resolved', 'rejected'].includes(val)
-		)
+		.refine((val) => ['open', 'dismissed', 'actioned'].includes(val))
 		.optional(),
 	target_type: z
 		.string()
@@ -36,9 +34,7 @@ const listSchema = z.object({
 const updateSchema = z.object({
 	status: z
 		.string()
-		.refine((val) =>
-			['pending', 'reviewing', 'resolved', 'rejected'].includes(val)
-		),
+		.refine((val) => ['open', 'dismissed', 'actioned'].includes(val)),
 });
 
 export const createReportController = async (
@@ -73,13 +69,16 @@ export const listReportsController = async (
 	next: NextFunction
 ) => {
 	try {
+		if (req.user?.role != 'admin') {
+			return res.status(403).json({ message: 'You are not admin' });
+		}
 		const parsed = listSchema.parse(req.query);
 		const data = await listReports({
-			status: parsed.status as ReportStatus | undefined,
-			target_type: parsed.target_type as ReportTarget | undefined,
-			report_id: parsed.report_id as string | undefined,
-			target_id: parsed.target_id as string | undefined,
-			reporter_id: parsed.reporter_id as string | undefined,
+			status: parsed.status as ReportStatus | null,
+			target_type: parsed.target_type as ReportTarget | null,
+			report_id: parsed.report_id as string | null,
+			target_id: parsed.target_id as string | null,
+			reporter_id: parsed.reporter_id as string | null,
 			oldest_first: parsed.oldest_first ?? false,
 		});
 		res.status(200).json(data);

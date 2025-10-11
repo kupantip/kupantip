@@ -6,6 +6,7 @@ import { signupUser } from '../api/signup_page';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+
 export default function SignUp() {
 	const [formData, setFormData] = useState({
 		email: '',

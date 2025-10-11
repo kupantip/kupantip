@@ -18,6 +18,7 @@ import { UserPen } from 'lucide-react';
 import { Bell } from 'lucide-react';
 
 import Link from 'next/link';
+import NavButtons from '@/components/NavButton';
 
 export default function DashboardLayout({
 	children,

@@ -48,7 +48,7 @@ export default function LoginPage() {
 	return (
 		<div
 			data-aos="fade-up"
-			className="min-h-screen bg-grey-3 flex items-center justify-center"
+			className="min-h-screen bg-white relative flex items-center justify-center"
 		>
 			{/* Background image */}
 			{/* <div className="absolute inset-0 bg-[url('/login/loginbg.jpg')] bg-[length:120%] bg-center"></div> */}
@@ -58,7 +58,7 @@ export default function LoginPage() {
 			{/* Form */}
 			<form
 				onSubmit={handleSubmit}
-				className="relative z-10 p-6 bg-white shadow-md rounded-lg w-96"
+				className="relative z-10 p-6 bg-grey-3 shadow-md rounded-lg w-96"
 			>
 				<div className="text-green-2 text-3xl text-center font-semibold mb-5">
 					KU PANTIP

@@ -2,7 +2,7 @@ import { getDbConnection } from '../database/mssql.database';
 import sql from 'mssql';
 
 export type ReportTarget = 'post' | 'comment' | 'user';
-export type ReportStatus = 'pending' | 'reviewing' | 'resolved' | 'rejected';
+export type ReportStatus = 'open' | 'dismissed' | 'actioned';
 
 export interface ReportRow {
 	id: string;
@@ -49,51 +49,38 @@ export const createReport = async (params: {
 		.input('reason', sql.NVarChar, params.reason).query(`
       INSERT INTO [dbo].[report] (target_type, target_id, reporter_id, reason, status, created_at)
       OUTPUT INSERTED.*
-      VALUES (@target_type, @target_id, @reporter_id, @reason, 'pending', GETDATE())
+      VALUES (@target_type, @target_id, @reporter_id, @reason, 'open', GETDATE())
     `);
 	return result.recordset[0] as ReportRow;
 };
 
 export const listReports = async (filters: {
-	status?: ReportStatus;
-	target_type?: ReportTarget;
-	report_id?: string;
-	target_id?: string;
-	reporter_id?: string;
+	status?: ReportStatus | null;
+	target_type?: ReportTarget | null;
+	report_id?: string | null;
+	target_id?: string | null;
+	reporter_id?: string | null;
 	oldest_first?: boolean;
 }): Promise<ReportRow[]> => {
 	const pool = await getDbConnection();
 
 	const req = pool.request();
 
-	const where: string[] = [];
-	if (filters.status) {
-		where.push('r.status = @status');
-		req.input('status', sql.VarChar, filters.status);
-	}
-	if (filters.target_type) {
-		where.push('r.target_type = @target_type');
-		req.input('target_type', sql.VarChar, filters.target_type);
-	}
-	if (filters.report_id) {
-		where.push('r.id = @report_id');
-		req.input('report_id', sql.UniqueIdentifier, filters.report_id);
-	}
-	if (filters.target_id) {
-		where.push('r.target_id = @target_id');
-		req.input('target_id', sql.UniqueIdentifier, filters.target_id);
-	}
-	if (filters.reporter_id) {
-		where.push('r.reporter_id = @reporter_id');
-		req.input('reporter_id', sql.UniqueIdentifier, filters.reporter_id);
-	}
-	const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';
+	req.input('status', sql.VarChar, filters.status);
+	req.input('target_type', sql.VarChar, filters.target_type);
+	req.input('report_id', sql.UniqueIdentifier, filters.report_id);
+	req.input('target_id', sql.UniqueIdentifier, filters.target_id);
+	req.input('reporter_id', sql.UniqueIdentifier, filters.reporter_id);
 	const orderDir = filters.oldest_first ? 'ASC' : 'DESC';
 	const rows = await req.query(`
 	SELECT r.id, r.target_type, r.target_id, r.reporter_id, r.reason, r.created_at, r.status,
 	DATEDIFF(minute, r.created_at, GETDATE()) AS minutes_since_reported
 	FROM [dbo].[report] r
-	${whereClause}
+	where r.status = COALESCE(@status, r.status)
+	and r.target_type = COALESCE(@target_type, r.target_type)
+	and r.id = COALESCE(@report_id, r.id)
+	and r.target_id = COALESCE(@target_id, r.target_id)
+	and r.reporter_id = COALESCE(@reporter_id, r.reporter_id )
 		ORDER BY r.created_at ${orderDir}
   `);
 
