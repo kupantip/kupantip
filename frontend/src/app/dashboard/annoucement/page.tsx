@@ -18,23 +18,6 @@ import { getPost } from '@/hooks/dashboard/getPost';
 import * as t from '@/types/dashboard/post';
 
 export default function AnnoucementPage() {
-	const data = [
-		{
-			title: 'New Campus Update: Facilities Expansion 2025',
-			author: 'Admin Team',
-			time: '3 hours ago',
-		},
-		{
-			title: 'Job Fair: Tech and Innovation Week',
-			author: 'Recruitment Dept.',
-			time: '1 day ago',
-		},
-		{
-			title: 'Student Activity Grant Applications Now Open',
-			author: 'Student Affairs',
-			time: '2 days ago',
-		},
-	];
 
 	const [postArray, setPostArray] = useState<t.Post[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -94,27 +77,8 @@ export default function AnnoucementPage() {
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
-					{data.map((post, i) => (
-						<div
-							key={i}
-							className="py-4 px-6 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
-						>
-							<div>
-								<h3 className="font-semibold text-gray-800 dark:text-gray-100 hover:underline">
-									{post.title}
-								</h3>
-								<p className="text-sm text-gray-500">
-									{post.author} • {post.time}
-								</p>
-							</div>
-							<Button className="flex items-center text-gray-400 cursor-pointer bg-grey-3 hover:bg-grey-2">
-								💬{' '}
-								<span className="ml-1 text-sm">
-									{/* {post.comments} */}
-									12
-								</span>
-							</Button>
-						</div>
+					{postArray.map((post, i) => (
+						<PostItem key={i} id={post.id} title={post.title} author={post.author_name} time={post.minutes_since_posted} comments={post.comment_count}/>
 					))}
 				</CardContent>
 			</Card>
