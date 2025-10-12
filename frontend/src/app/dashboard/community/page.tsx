@@ -82,7 +82,7 @@ export default function CommunityPage() {
 					</div>
 					<Button
 						variant="secondary"
-						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer"
+						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer hover:scale-105"
 					>
 						Join
 					</Button>

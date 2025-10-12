@@ -95,7 +95,7 @@ export default function RecruitmentPage() {
 					</p>
 					<Button
 						variant="secondary"
-						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer"
+						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer hover:scale-105"
 					>
 						+ Post Job
 					</Button>
@@ -113,10 +113,14 @@ export default function RecruitmentPage() {
 					{jobPosts.map((job, i) => (
 						<div
 							key={i}
-							className="group py-4 px-6 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
+							className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
+									hover:bg-gray-100 dark:hover:bg-gray-800 
+									rounded-lg 
+									transition-all duration-300 ease-in-out 
+									hover:shadow-md"
 						>
-							<div>
-								<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline">
+							<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
+								<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline cursor-pointer">
 									{job.title}
 								</h3>
 								<p className="text-sm text-gray-500">
@@ -136,7 +140,7 @@ export default function RecruitmentPage() {
 							<div>
 								<Button
 									variant="outline"
-									className="text-green-1 border-green-1 hover:bg-green-50"
+									className="text-green-1 border-green-1 hover:bg-green-50 hover:scale-105"
 								>
 									Apply
 								</Button>
@@ -151,7 +155,7 @@ export default function RecruitmentPage() {
 				{recruitmentStats.map((item, i) => (
 					<Card
 						key={i}
-						className="text-center shadow-sm hover:shadow-md transition"
+						className="text-center shadow-sm hover:shadow-md transition hover:scale-102"
 					>
 						<CardHeader>
 							<CardTitle className="text-green-1">
