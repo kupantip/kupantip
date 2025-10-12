@@ -84,7 +84,7 @@ export const getPosts = async (
 		), 0) AS like_count,
 	  ISNULL((
 		SELECT SUM(CASE WHEN pv.value = -1 THEN 1 ELSE 0 END)
-		FROM [KUPantipDB].[dbo].[post_vote] pv
+		FROM [dbo].[post_vote] pv
 		WHERE pv.post_id = p.id
 				), 0) AS dislike_count,
 			CAST(
