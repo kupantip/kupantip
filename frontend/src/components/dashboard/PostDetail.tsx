@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,8 +8,10 @@ import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user'
 import { getCommentByPostId } from '@/services/dashboard/getCommentByPostId';
+import { getPostById } from '@/services/dashboard/getPostById';
 import CommentBox from './CommentBox';
 import { deletePost } from '@/services/user/delete_post';
+import { upvotePost, downvotePost, deletevotePost } from '@/services/user/vote';
 import { jwtDecode } from "jwt-decode";
 import { useSession } from "next-auth/react";
 
@@ -137,11 +139,19 @@ export default function PostDetail({ post }: PostDetailProps) {
 	const handleUpVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Upvote on');
+		try{
+			await upvotePost(post.id);
+			console.log("Upvote Post Success");
+		}catch(err : unknown){}
 	};
 
 	const handleDownVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Downvote on');
+		try{
+			await downvotePost(post.id);
+			console.log("Downvote Post Success");
+		}catch(err : unknown){}
 	};
 
 	const handleEdit = async (e: React.MouseEvent) => {
@@ -162,6 +172,12 @@ export default function PostDetail({ post }: PostDetailProps) {
 			console.log('Delete Failed');
 		}
 	};
+
+	const handleReport = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		console.log('Report on', post.id);
+		router.push(`/dashboard/${post.id}/report_post`)
+	}
 
 	return (
 		<div className="flex flex-col items-center py-10">
@@ -196,7 +212,33 @@ export default function PostDetail({ post }: PostDetailProps) {
 						<Ellipsis />
 					</button>
 
-					{post.author_id === currentUserId && (
+					{post.author_id === currentUserId ? (
+						<AnimatePresence>
+						{menuOpen && (
+							<motion.div
+								ref={menuRef}
+								className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg"
+								initial={{ opacity: 0, x: 0, y: 0 }}
+								animate={{ opacity: 1}}
+								exit={{ opacity: 0}}
+								transition={{ duration: 0.15 }}
+							>
+								<button
+									className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer`}
+									onClick={handleEdit}
+								>
+									Edit
+								</button>
+								<button
+									className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-b-lg cursor-pointer"
+									onClick={handleDelete}
+								>
+									Delete
+								</button>
+							</motion.div>
+						)}					
+						</AnimatePresence>
+					) : (
 						<AnimatePresence>
 						{menuOpen && (
 							<motion.div
@@ -209,15 +251,9 @@ export default function PostDetail({ post }: PostDetailProps) {
 							>
 								<button
 									className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
-									onClick={handleEdit}
+									onClick={handleReport}
 								>
-									Edit
-								</button>
-								<button
-									className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-b-lg cursor-pointer"
-									onClick={handleDelete}
-								>
-									Delete
+									Report
 								</button>
 							</motion.div>
 						)}					
@@ -242,9 +278,15 @@ export default function PostDetail({ post }: PostDetailProps) {
 				{/* Post Actions */}
 				<div className="flex items-center gap-6 text-gray-600">
 					<div className="flex items-center gap-2">
-						<ArrowUp className="w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full" />
-						<span>{post.vote_count}</span>
-						<ArrowDown className="w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full" />
+						<ArrowUp 
+							className="w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full" 
+							onClick={handleUpVote}
+						/>
+						<span>{post.vote_score}</span>
+						<ArrowDown 
+							className="w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full"
+							onClick={handleDownVote} 
+						/>
 					</div>
 					<div className="flex items-center gap-2 cursor-pointer hover:text-blue-600">
 						<MessageSquare className="w-5 h-5" />
