@@ -40,7 +40,7 @@ export const create_comment = async (data: t.CommentReq) => {
 			.input('user_id', data.author_id)
 			.input('parent_id', data.parent_id)
 			.input('body_md', data.body_md).query(`
-			INSERT INTO [KUPantipDB].[dbo].[comment]
+			INSERT INTO [dbo].[comment]
 			(
 					[post_id]
 					,[author_id]
@@ -88,24 +88,24 @@ export const getCommentsByPostId = async (
                     datediff(minute, c.created_at, getdate()) as minutes_since_commented,
 					(
                         SELECT COUNT(*) 
-                        FROM [KUPantipDB].[dbo].[comment] r
+                        FROM [dbo].[comment] r
                         WHERE r.parent_id = c.id
                         AND r.deleted_at IS NULL
                     ) AS reply_count,
 					ISNULL((
 						SELECT SUM(CASE WHEN v.value = 1 THEN 1 ELSE 0 END)
-						FROM [KUPantipDB].[dbo].[comment_vote] v
+						FROM [dbo].[comment_vote] v
 						WHERE v.comment_id = c.id
 					), 0) AS like_count,
 					ISNULL((
 						SELECT SUM(CASE WHEN v.value = -1 THEN 1 ELSE 0 END)
-						FROM [KUPantipDB].[dbo].[comment_vote] v
+						FROM [dbo].[comment_vote] v
 						WHERE v.comment_id = c.id
 					), 0) AS dislike_count,
-					(SELECT COUNT(*) FROM [KUPantipDB].[dbo].[comment_vote] v WHERE v.comment_id = c.id AND v.value IN (1,-1)) AS vote_count,
-	  				COALESCE((SELECT SUM(v.value) FROM [KUPantipDB].[dbo].[comment_vote] v WHERE v.comment_id = c.id),0) AS vote_score
-                FROM [KUPantipDB].[dbo].[comment] c
-                LEFT JOIN [KUPantipDB].[dbo].[app_user] u ON c.author_id = u.id
+					(SELECT COUNT(*) FROM [dbo].[comment_vote] v WHERE v.comment_id = c.id AND v.value IN (1,-1)) AS vote_count,
+	  				COALESCE((SELECT SUM(v.value) FROM [dbo].[comment_vote] v WHERE v.comment_id = c.id),0) AS vote_score
+                FROM [dbo].[comment] c
+                LEFT JOIN [dbo].[app_user] u ON c.author_id = u.id
                 WHERE c.post_id = @post_id AND c.deleted_at IS NULL
                 ORDER BY 
                     CASE WHEN c.parent_id IS NULL THEN c.created_at END ASC,
@@ -162,7 +162,7 @@ export const deleteComment = async (
 			.request()
 			.input('comment_id', comment_id)
 			.query(
-				'SELECT author_id, post_id, deleted_at FROM [KUPantipDB].[dbo].[comment] WHERE id = @comment_id'
+				'SELECT author_id, post_id, deleted_at FROM [dbo].[comment] WHERE id = @comment_id'
 			);
 		if (check.recordset.length === 0) {
 			return { success: false, message: 'Comment not found' };
@@ -187,7 +187,7 @@ export const deleteComment = async (
 			.request()
 			.input('comment_id', comment_id)
 			.query(
-				'UPDATE [KUPantipDB].[dbo].[comment] SET deleted_at = GETDATE() OUTPUT INSERTED.* WHERE id = @comment_id'
+				'UPDATE [dbo].[comment] SET deleted_at = GETDATE() OUTPUT INSERTED.* WHERE id = @comment_id'
 			);
 		return { success: true, message: 'Comment deleted' };
 	} catch (error: unknown) {
@@ -215,7 +215,7 @@ export const updateComment = async (
 			.input('comment_id', comment_id)
 			.input('user_id', user_id)
 			.input('body_md', body_md).query(`
-                UPDATE [KUPantipDB].[dbo].[comment]
+                UPDATE [dbo].[comment]
                 SET body_md = @body_md, updated_at = GETDATE()
                 OUTPUT INSERTED.*
                 WHERE id = @comment_id AND author_id = @user_id AND deleted_at IS NULL

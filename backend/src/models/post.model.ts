@@ -163,6 +163,14 @@ export const addAttachment = async (
 	return result.recordset[0];
 };
 
+export const clearAttachmentsByPost = async (post_id: string) => {
+	const pool = await getDbConnection();
+	await pool.request().input('post_id', sql.UniqueIdentifier, post_id).query(`
+	  DELETE FROM [dbo].[attachment]
+	  WHERE post_id = @post_id
+	`);
+};
+
 export const deletePost = async (post_id: string, user_id?: string) => {
 	const pool = await getDbConnection();
 	let query = `
@@ -191,26 +199,31 @@ export const updatePost = async (
 	author_id: string,
 	title?: string,
 	body_md?: string,
-	category_id?: string
+	category_id?: string | null
 ) => {
 	const pool = await getDbConnection();
 
-	const result = await pool
+	// Overwrite semantics: title and body_md must be provided by controller
+	// category_id can be null to clear, or a UUID string to set; when omitted, controller passes null to clear
+	const request = pool
 		.request()
-		.input('post_id', post_id)
-		.input('author_id', author_id)
-		.input('title', title || null)
-		.input('body_md', body_md || null)
-		.input('category_id', category_id || null).query(`
-      UPDATE [dbo].[post]
-      SET 
-        title = ISNULL(@title, title),
-        body_md = ISNULL(@body_md, body_md),
-        category_id = ISNULL(@category_id, category_id),
-        updated_at = GETDATE()
-      OUTPUT INSERTED.*
-      WHERE id = @post_id AND author_id = @author_id AND deleted_at IS NULL
-    `);
+		.input('post_id', sql.UniqueIdentifier, post_id)
+		.input('author_id', sql.UniqueIdentifier, author_id)
+		.input('title', title ?? null)
+		.input('body_md', body_md ?? null)
+		// Bind category_id explicitly as UniqueIdentifier (nullable)
+		.input('category_id', sql.UniqueIdentifier, category_id ?? null);
+
+	const result = await request.query(`
+			UPDATE [dbo].[post]
+			SET 
+				title = @title,
+				body_md = @body_md,
+				category_id = @category_id,
+				updated_at = GETDATE()
+			OUTPUT INSERTED.*
+			WHERE id = @post_id AND author_id = @author_id AND deleted_at IS NULL
+		`);
 
 	return result.recordset[0];
 };
