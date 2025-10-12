@@ -17,6 +17,6 @@ router.get('/', optionalAuthMiddleware, getPostsController);
 
 router.delete('/:post_id', authMiddleware, deletePostController);
 
-router.put('/:post_id', authMiddleware, updatePostController);
+router.put('/:post_id', authMiddleware, uploadWithLimit, updatePostController);
 
 export default router;
