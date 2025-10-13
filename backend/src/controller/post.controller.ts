@@ -6,6 +6,7 @@ import {
 	addAttachment,
 	deletePost,
 	updatePost,
+	clearAttachmentsByPost,
 } from '../models/post.model';
 import * as z from 'zod';
 
@@ -16,10 +17,16 @@ const postSchema = z.object({
 	category_id: z.string().uuid().optional(),
 });
 
+// For update via multipart/form-data: overwrite semantics like create
+// - title and body_md are required
+// - if category_id is omitted or empty string => set to NULL
 const updatePostSchema = z.object({
-	title: z.string().min(1, 'Title is required').optional(),
-	body_md: z.string().optional(),
-	category_id: z.string().uuid().optional(),
+	title: z.string().min(1, 'Title is required'),
+	body_md: z.string(),
+	category_id: z
+		.union([z.string().uuid(), z.literal('')])
+		.optional()
+		.transform((v) => (v === '' ? undefined : v)),
 });
 
 const postIdParamSchema = z.object({
@@ -115,17 +122,27 @@ export const getPostsController = async (
 	try {
 		const parsed = getFilterSchema.parse(req.query);
 		const { category_id, user_id, recent } = parsed;
+		let posts;
 		const post_id =
 			typeof req.query.post_id === 'string'
 				? req.query.post_id
 				: undefined;
-
-		const posts = await getPosts(
-			category_id,
-			user_id,
-			post_id,
-			recent ?? true
-		);
+		if (req.user) {
+			posts = await getPosts(
+				category_id,
+				user_id,
+				post_id,
+				recent ?? true,
+				req.user?.user_id
+			);
+		} else {
+			posts = await getPosts(
+				category_id,
+				user_id,
+				post_id,
+				recent ?? true
+			);
+		}
 
 		return res.status(200).json(posts);
 	} catch (err) {
@@ -190,7 +207,7 @@ export const updatePostController = async (
 ) => {
 	try {
 		postIdParamSchema.parse(req.params);
-		updatePostSchema.parse(req.body);
+		const parsed = updatePostSchema.parse(req.body);
 
 		if (!req.user) {
 			return res
@@ -199,13 +216,9 @@ export const updatePostController = async (
 		}
 
 		const { post_id } = req.params;
-		const { title, body_md, category_id } = req.body;
-
-		if (!title && !body_md && !category_id) {
-			return res
-				.status(400)
-				.json({ message: 'At least one field is required to update' });
-		}
+		const { title, body_md } = parsed;
+		// When category_id is omitted or empty => set to null per business rule
+		const category_id: string | null = parsed.category_id ?? null;
 
 		const pool = await getDbConnection();
 		const checkPost = await pool
@@ -226,7 +239,7 @@ export const updatePostController = async (
 			});
 		}
 
-		// Passed all conditions → can update
+		// Overwrite main fields
 		const updated = await updatePost(
 			post_id,
 			req.user.user_id,
@@ -235,7 +248,34 @@ export const updatePostController = async (
 			category_id
 		);
 
-		return res.status(200).json({ message: 'Post updated', post: updated });
+		if (!updated) {
+			return res.status(400).json({ message: 'Update failed' });
+		}
+
+		// Replace attachments: delete all and add new ones
+		await clearAttachmentsByPost(post_id);
+		const files = req.files as Express.Multer.File[];
+		const newAttachments: Array<{
+			id: string;
+			post_id: string;
+			url: string;
+			mime_type: string | null;
+			created_at: Date;
+		}> = [];
+		if (files && files.length > 0) {
+			for (const file of files) {
+				const fileUrl = `/uploads/${file.filename}`;
+				const mimeType = file.mimetype;
+				const att = await addAttachment(post_id, fileUrl, mimeType);
+				newAttachments.push(att);
+			}
+		}
+
+		return res.status(200).json({
+			message: 'Post updated',
+			post: updated,
+			attachments: newAttachments,
+		});
 	} catch (err) {
 		next(err);
 	}

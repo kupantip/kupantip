@@ -1,11 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
+import { User } from '@/types/dashboard/user'
 import { getCommentByPostId } from '@/services/dashboard/getCommentByPostId';
+import { getPostById } from '@/services/dashboard/getPostById';
 import CommentBox from './CommentBox';
+import { deletePost } from '@/services/user/delete_post';
+import { upvotePost, downvotePost, deletevotePost } from '@/services/user/vote';
+import { jwtDecode } from "jwt-decode";
+import { useSession } from "next-auth/react";
+
 
 type PostDetailProps = {
 	post: t.Post;
@@ -92,6 +101,14 @@ export default function PostDetail({ post }: PostDetailProps) {
 	);
 	const [loadingComments, setLoadingComments] = useState(true);
 
+	const { data: session} = useSession();
+	const tokenPayload = session?.accessToken ? jwtDecode<User>(session.accessToken) : null;
+	const currentUserId = tokenPayload?.user_id;
+
+	const [menuOpen, setMenuOpen] = useState(false);
+	const router = useRouter();
+	const menuRef = useRef<HTMLDivElement>(null);
+
 	useEffect(() => {
 		const fetchComments = async () => {
 			try {
@@ -105,6 +122,62 @@ export default function PostDetail({ post }: PostDetailProps) {
 		};
 		fetchComments();
 	}, [post.id]);
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+		if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+			setMenuOpen(false);
+		}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+		document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
+
+	const handleUpVote = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		console.log('Upvote on');
+		try{
+			await upvotePost(post.id);
+			console.log("Upvote Post Success");
+		}catch(err : unknown){}
+	};
+
+	const handleDownVote = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		console.log('Downvote on');
+		try{
+			await downvotePost(post.id);
+			console.log("Downvote Post Success");
+		}catch(err : unknown){}
+	};
+
+	const handleEdit = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setMenuOpen(false);
+		console.log('Edit on', post.id);
+		router.push(`/dashboard/${post.id}/edit`);
+	};
+
+	const handleDelete = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setMenuOpen(false);
+		try {
+			await deletePost(post.id);
+			console.log('Delete post', post.id, ' success');
+			router.push(`/dashboard`);
+		} catch (err: unknown) {
+			console.log('Delete Failed');
+		}
+	};
+
+	const handleReport = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		console.log('Report on', post.id);
+		router.push(`/dashboard/${post.id}/report_post`)
+	}
 
 	return (
 		<div className="flex flex-col items-center py-10">
@@ -129,9 +202,65 @@ export default function PostDetail({ post }: PostDetailProps) {
 							{formatTime(post.minutes_since_posted)}
 						</span>
 					</div>
-					<button className="p-1 rounded hover:bg-gray-200">
+				<div className="ml-auto relative">
+					<button 
+						className="p-1 rounded-lg hover:bg-gray-200 cursor-pointer"
+						onClick={(e) => {
+							e.stopPropagation();
+							setMenuOpen(!menuOpen);
+						}}>
 						<Ellipsis />
 					</button>
+
+					{post.author_id === currentUserId ? (
+						<AnimatePresence>
+						{menuOpen && (
+							<motion.div
+								ref={menuRef}
+								className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg"
+								initial={{ opacity: 0, x: 0, y: 0 }}
+								animate={{ opacity: 1}}
+								exit={{ opacity: 0}}
+								transition={{ duration: 0.15 }}
+							>
+								<button
+									className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer`}
+									onClick={handleEdit}
+								>
+									Edit
+								</button>
+								<button
+									className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-b-lg cursor-pointer"
+									onClick={handleDelete}
+								>
+									Delete
+								</button>
+							</motion.div>
+						)}					
+						</AnimatePresence>
+					) : (
+						<AnimatePresence>
+						{menuOpen && (
+							<motion.div
+								ref={menuRef}
+								className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg"
+								initial={{ opacity: 0, x: 0, y: 0 }}
+								animate={{ opacity: 1}}
+								exit={{ opacity: 0}}
+								transition={{ duration: 0.15 }}
+							>
+								<button
+									className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
+									onClick={handleReport}
+								>
+									Report
+								</button>
+							</motion.div>
+						)}					
+						</AnimatePresence>
+					)}
+
+				</div>
 				</div>
 
 				{/* Post Content */}
@@ -149,9 +278,15 @@ export default function PostDetail({ post }: PostDetailProps) {
 				{/* Post Actions */}
 				<div className="flex items-center gap-6 text-gray-600">
 					<div className="flex items-center gap-2">
-						<ArrowUp className="w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full" />
-						<span>{post.vote_count}</span>
-						<ArrowDown className="w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full" />
+						<ArrowUp 
+							className="w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full" 
+							onClick={handleUpVote}
+						/>
+						<span>{post.vote_score}</span>
+						<ArrowDown 
+							className="w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full"
+							onClick={handleDownVote} 
+						/>
 					</div>
 					<div className="flex items-center gap-2 cursor-pointer hover:text-blue-600">
 						<MessageSquare className="w-5 h-5" />

@@ -20,6 +20,8 @@ type PostRow = {
 	dislike_count: number;
 	vote_count: number;
 	vote_score: number;
+	liked_by_requesting_user: boolean;
+	disliked_by_requesting_user: boolean;
 };
 
 export const createPost = async (
@@ -48,6 +50,7 @@ export const getPosts = async (
 	user_id?: string,
 	post_id?: string,
 	recent?: boolean,
+	requesting_user_id?: string
 ) => {
 	const pool = await getDbConnection();
 
@@ -81,16 +84,36 @@ export const getPosts = async (
 		), 0) AS like_count,
 	  ISNULL((
 		SELECT SUM(CASE WHEN pv.value = -1 THEN 1 ELSE 0 END)
-		FROM [KUPantipDB].[dbo].[post_vote] pv
+		FROM [dbo].[post_vote] pv
 		WHERE pv.post_id = p.id
-		), 0) AS dislike_count
+				), 0) AS dislike_count,
+			CAST(
+				CASE 
+					WHEN @requesting_user_id IS NOT NULL AND EXISTS (
+						SELECT 1 FROM [dbo].[post_vote] pv
+						WHERE pv.post_id = p.id AND pv.user_id = @requesting_user_id AND pv.value = 1
+					) THEN 1 ELSE 0 END AS BIT
+			) AS liked_by_requesting_user,
+			CAST(
+				CASE 
+					WHEN @requesting_user_id IS NOT NULL AND EXISTS (
+						SELECT 1 FROM [dbo].[post_vote] pv
+						WHERE pv.post_id = p.id AND pv.user_id = @requesting_user_id AND pv.value = -1
+					) THEN 1 ELSE 0 END AS BIT
+			) AS disliked_by_requesting_user
     FROM [dbo].[post] p
     LEFT JOIN [dbo].[app_user] u ON p.author_id = u.id
     LEFT JOIN [dbo].[category] c ON p.category_id = c.id
     WHERE p.deleted_at IS NULL
-  `;
+	`;
 
 	const request = pool.request();
+	// Bind current user for like/dislike checks (nullable)
+	request.input(
+		'requesting_user_id',
+		sql.UniqueIdentifier,
+		requesting_user_id ?? null
+	);
 
 	if (category_id) {
 		query += ` AND p.category_id = @category_id`;
@@ -106,7 +129,6 @@ export const getPosts = async (
 		query += ` AND p.id = @post_id`;
 		request.input('post_id', post_id);
 	}
-
 
 	if (!recent) {
 		query += `\n    ORDER BY p.created_at ASC, p.id ASC`;
@@ -141,6 +163,14 @@ export const addAttachment = async (
 	return result.recordset[0];
 };
 
+export const clearAttachmentsByPost = async (post_id: string) => {
+	const pool = await getDbConnection();
+	await pool.request().input('post_id', sql.UniqueIdentifier, post_id).query(`
+	  DELETE FROM [dbo].[attachment]
+	  WHERE post_id = @post_id
+	`);
+};
+
 export const deletePost = async (post_id: string, user_id?: string) => {
 	const pool = await getDbConnection();
 	let query = `
@@ -169,26 +199,31 @@ export const updatePost = async (
 	author_id: string,
 	title?: string,
 	body_md?: string,
-	category_id?: string
+	category_id?: string | null
 ) => {
 	const pool = await getDbConnection();
 
-	const result = await pool
+	// Overwrite semantics: title and body_md must be provided by controller
+	// category_id can be null to clear, or a UUID string to set; when omitted, controller passes null to clear
+	const request = pool
 		.request()
-		.input('post_id', post_id)
-		.input('author_id', author_id)
-		.input('title', title || null)
-		.input('body_md', body_md || null)
-		.input('category_id', category_id || null).query(`
-      UPDATE [dbo].[post]
-      SET 
-        title = ISNULL(@title, title),
-        body_md = ISNULL(@body_md, body_md),
-        category_id = ISNULL(@category_id, category_id),
-        updated_at = GETDATE()
-      OUTPUT INSERTED.*
-      WHERE id = @post_id AND author_id = @author_id AND deleted_at IS NULL
-    `);
+		.input('post_id', sql.UniqueIdentifier, post_id)
+		.input('author_id', sql.UniqueIdentifier, author_id)
+		.input('title', title ?? null)
+		.input('body_md', body_md ?? null)
+		// Bind category_id explicitly as UniqueIdentifier (nullable)
+		.input('category_id', sql.UniqueIdentifier, category_id ?? null);
+
+	const result = await request.query(`
+			UPDATE [dbo].[post]
+			SET 
+				title = @title,
+				body_md = @body_md,
+				category_id = @category_id,
+				updated_at = GETDATE()
+			OUTPUT INSERTED.*
+			WHERE id = @post_id AND author_id = @author_id AND deleted_at IS NULL
+		`);
 
 	return result.recordset[0];
 };
