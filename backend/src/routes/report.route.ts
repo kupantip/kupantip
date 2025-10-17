@@ -4,11 +4,14 @@ import {
 	createReportController,
 	listReportsController,
 	updateReportStatusController,
+	getReportsSummaryController,
 } from '../controller/report.controller';
 
 const router = Router();
 
 router.get('/', authMiddleware, listReportsController);
+
+router.get('/summary', authMiddleware, getReportsSummaryController);
 
 router.post('/', authMiddleware, createReportController);
 
