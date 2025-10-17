@@ -99,3 +99,49 @@ export const updateReportStatus = async (id: string, status: ReportStatus) => {
 	if (res.recordset.length === 0) throw new Error('REPORT_NOT_FOUND');
 	return res.recordset[0] as ReportRow;
 };
+
+export interface ReportSummary {
+	total_reports: number;
+	by_status: {
+		open: number;
+		dismissed: number;
+		actioned: number;
+	};
+	by_target_type: {
+		post: number;
+		comment: number;
+		user: number;
+	};
+}
+
+export const getReportsSummary = async (): Promise<ReportSummary> => {
+	const pool = await getDbConnection();
+
+	const result = await pool.request().query(`
+		SELECT 
+			COUNT(*) as total_reports,
+			SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as open_count,
+			SUM(CASE WHEN status = 'dismissed' THEN 1 ELSE 0 END) as dismissed_count,
+			SUM(CASE WHEN status = 'actioned' THEN 1 ELSE 0 END) as actioned_count,
+			SUM(CASE WHEN target_type = 'post' THEN 1 ELSE 0 END) as post_count,
+			SUM(CASE WHEN target_type = 'comment' THEN 1 ELSE 0 END) as comment_count,
+			SUM(CASE WHEN target_type = 'user' THEN 1 ELSE 0 END) as user_count
+		FROM [dbo].[report]
+	`);
+
+	const row = result.recordset[0];
+
+	return {
+		total_reports: row.total_reports,
+		by_status: {
+			open: row.open_count,
+			dismissed: row.dismissed_count,
+			actioned: row.actioned_count,
+		},
+		by_target_type: {
+			post: row.post_count,
+			comment: row.comment_count,
+			user: row.user_count,
+		},
+	};
+};

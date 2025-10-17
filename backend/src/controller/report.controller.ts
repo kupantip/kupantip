@@ -5,6 +5,7 @@ import {
 	ReportStatus,
 	ReportTarget,
 	updateReportStatus,
+	getReportsSummary,
 } from '../models/report.model';
 import * as z from 'zod';
 
@@ -106,6 +107,22 @@ export const updateReportStatusController = async (
 	} catch (err) {
 		if ((err as Error).message === 'REPORT_NOT_FOUND')
 			return res.status(404).json({ message: 'Report not found' });
+		next(err);
+	}
+};
+
+export const getReportsSummaryController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		if (req.user?.role != 'admin') {
+			return res.status(403).json({ message: 'You are not admin' });
+		}
+		const summary = await getReportsSummary();
+		res.status(200).json(summary);
+	} catch (err) {
 		next(err);
 	}
 };
