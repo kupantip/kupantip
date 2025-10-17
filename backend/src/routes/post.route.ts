@@ -5,6 +5,8 @@ import {
 	getPostsController,
 	deletePostController,
 	updatePostController,
+	getHotPostsController,
+	getPostSummaryStatsController,
 } from '../controller/post.controller';
 import { uploadWithLimit } from '../middleware/upload.middleware';
 import { optionalAuthMiddleware } from '../middleware/optionalAuth.middleware';
@@ -14,6 +16,10 @@ const router = Router();
 router.post('/', authMiddleware, uploadWithLimit, createPostController);
 
 router.get('/', optionalAuthMiddleware, getPostsController);
+
+router.get('/hot', optionalAuthMiddleware, getHotPostsController);
+
+router.get('/summarystats', getPostSummaryStatsController);
 
 router.delete('/:post_id', authMiddleware, deletePostController);
 

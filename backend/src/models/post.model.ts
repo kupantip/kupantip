@@ -24,6 +24,16 @@ type PostRow = {
 	disliked_by_requesting_user: boolean;
 };
 
+type CategorySummaryRow = {
+	category_id: string;
+	category_label: string;
+	category_color: string | null;
+	post_count: number;
+	total_vote_count: number;
+	total_comment: number;
+	total_engagement: number;
+};
+
 export const createPost = async (
 	author_id: string,
 	title: string,
@@ -145,6 +155,99 @@ export const getPosts = async (
 	}));
 };
 
+export const getHotPostsByCategory = async (requesting_user_id?: string) => {
+	const pool = await getDbConnection();
+
+	// Build a query that ranks posts within each category by engagement (vote_count + comment_count)
+	// and picks the top 1
+	const query = `
+		WITH Base AS (
+			SELECT 
+				p.id,
+				p.title,
+				p.body_md,
+				p.url,
+				p.created_at,
+				p.updated_at,
+				u.display_name AS author_name,
+				u.id AS author_id,
+				c.label AS category_label,
+				c.color_hex AS category_color,
+				c.id AS category_id,
+				(
+					SELECT a.id, a.url, a.mime_type
+					FROM [dbo].[attachment] a
+					WHERE a.post_id = p.id
+					FOR JSON PATH
+				) AS attachments,
+				DATEDIFF(minute, p.created_at, GETDATE()) AS minutes_since_posted,
+				(SELECT COUNT(*) FROM [dbo].[comment] cm WHERE cm.post_id = p.id AND cm.deleted_at IS NULL) AS comment_count,
+				(SELECT COUNT(*) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id AND pv.value IN (1,-1)) AS vote_count,
+				COALESCE((SELECT SUM(pv.value) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id), 0) AS vote_score,
+				CAST(
+					CASE 
+						WHEN @requesting_user_id IS NOT NULL AND EXISTS (
+							SELECT 1 FROM [dbo].[post_vote] pv
+							WHERE pv.post_id = p.id AND pv.user_id = @requesting_user_id AND pv.value = 1
+						) THEN 1 ELSE 0 END AS BIT
+				) AS liked_by_requesting_user,
+				CAST(
+					CASE 
+						WHEN @requesting_user_id IS NOT NULL AND EXISTS (
+							SELECT 1 FROM [dbo].[post_vote] pv
+							WHERE pv.post_id = p.id AND pv.user_id = @requesting_user_id AND pv.value = -1
+						) THEN 1 ELSE 0 END AS BIT
+				) AS disliked_by_requesting_user
+			FROM [dbo].[post] p
+			LEFT JOIN [dbo].[app_user] u ON p.author_id = u.id
+			LEFT JOIN [dbo].[category] c ON p.category_id = c.id
+			WHERE p.deleted_at IS NULL
+		), Ranked AS (
+			SELECT 
+				*,
+				ROW_NUMBER() OVER (
+					PARTITION BY category_id 
+					ORDER BY (vote_count + comment_count) DESC, created_at DESC, id DESC
+				) AS rn
+			FROM Base
+		)
+		SELECT 
+			id,
+			title,
+			body_md,
+			url,
+			created_at,
+			updated_at,
+			author_name,
+			author_id,
+			category_label,
+			category_color,
+			category_id,
+			attachments,
+			minutes_since_posted,
+			comment_count,
+			vote_count,
+			vote_score,
+			liked_by_requesting_user,
+			disliked_by_requesting_user
+		FROM Ranked
+		WHERE rn = 1
+		ORDER BY category_label ASC, category_id ASC`;
+
+	const request = pool.request();
+	request.input(
+		'requesting_user_id',
+		sql.UniqueIdentifier,
+		requesting_user_id ?? null
+	);
+
+	const result = await request.query(query);
+	return result.recordset.map((row: PostRow) => ({
+		...row,
+		attachments: row.attachments ? JSON.parse(row.attachments) : [],
+	}));
+};
+
 export const addAttachment = async (
 	post_id: string,
 	url: string,
@@ -226,4 +329,62 @@ export const updatePost = async (
 		`);
 
 	return result.recordset[0];
+};
+
+export const getCategorySummaryStats = async () => {
+	const pool = await getDbConnection();
+	const query = `
+			SELECT 
+				c.id AS category_id,
+				c.label AS category_label,
+				c.color_hex AS category_color,
+				ISNULL((
+					SELECT COUNT(*)
+					FROM [dbo].[post] pcount
+					WHERE pcount.deleted_at IS NULL
+						AND pcount.category_id = c.id
+				), 0) AS post_count,
+				ISNULL((
+					SELECT COUNT(*)
+					FROM [dbo].[post_vote] pv
+					INNER JOIN [dbo].[post] p ON pv.post_id = p.id
+					WHERE p.deleted_at IS NULL
+						AND p.category_id = c.id
+						AND pv.value IN (1,-1)
+				), 0) AS total_vote_count,
+				ISNULL((
+					SELECT COUNT(*)
+					FROM [dbo].[comment] cm
+					INNER JOIN [dbo].[post] p2 ON cm.post_id = p2.id
+					WHERE p2.deleted_at IS NULL
+						AND p2.category_id = c.id
+						AND cm.deleted_at IS NULL
+				), 0) AS total_comment,
+				(
+					ISNULL((
+						SELECT COUNT(*)
+						FROM [dbo].[post_vote] pv
+						INNER JOIN [dbo].[post] p ON pv.post_id = p.id
+						WHERE p.deleted_at IS NULL
+							AND p.category_id = c.id
+							AND pv.value IN (1,-1)
+					), 0)
+					+
+					ISNULL((
+						SELECT COUNT(*)
+						FROM [dbo].[comment] cm
+						INNER JOIN [dbo].[post] p2 ON cm.post_id = p2.id
+						WHERE p2.deleted_at IS NULL
+							AND p2.category_id = c.id
+							AND cm.deleted_at IS NULL
+					), 0)
+				) AS total_engagement
+			FROM [dbo].[category] c
+			ORDER BY c.label ASC, c.id ASC
+		`;
+
+	const result = (await (
+		await pool.request().query(query)
+	).recordset) as CategorySummaryRow[];
+	return result;
 };
