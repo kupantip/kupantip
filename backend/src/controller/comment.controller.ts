@@ -50,7 +50,12 @@ export const getCommentsByPostId = async (
 			return;
 		}
 
-		const comments = await models.getCommentsByPostId(post_id as string);
+		// Pass requesting_user_id for shadowban filtering (optional auth)
+		const requesting_user_id = req.user?.user_id;
+		const comments = await models.getCommentsByPostId(
+			post_id as string,
+			requesting_user_id
+		);
 		res.json({
 			message: 'Comments retrieved successfully',
 			comments,

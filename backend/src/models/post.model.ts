@@ -85,18 +85,68 @@ export const getPosts = async (
       ) as attachments,
       DATEDIFF(minute, p.created_at, GETDATE()) AS minutes_since_posted,
       (SELECT COUNT(*) FROM [dbo].[comment] cm WHERE cm.post_id = p.id AND cm.deleted_at IS NULL) AS comment_count,
-	  (SELECT COUNT(*) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id AND pv.value IN (1,-1)) AS vote_count,
-	  COALESCE((SELECT SUM(pv.value) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id),0) AS vote_score,
-	  ISNULL((
-		SELECT SUM(CASE WHEN pv.value = 1 THEN 1 ELSE 0 END)
-		FROM [dbo].[post_vote] pv
-		WHERE pv.post_id = p.id
-		), 0) AS like_count,
-	  ISNULL((
-		SELECT SUM(CASE WHEN pv.value = -1 THEN 1 ELSE 0 END)
-		FROM [dbo].[post_vote] pv
-		WHERE pv.post_id = p.id
-				), 0) AS dislike_count,
+			-- Exclude votes cast by shadowbanned users for public viewers; allow requesting user to still see their own votes
+			(SELECT COUNT(*) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id AND pv.value IN (1,-1)
+				AND (
+					NOT EXISTS (
+						SELECT 1 FROM [dbo].[user_ban] ub
+						WHERE ub.user_id = pv.user_id
+							AND ub.ban_type = 'shadowban'
+							AND ub.revoked_at IS NULL
+							AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+							AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+					)
+					OR pv.user_id = @requesting_user_id
+				)
+			) AS vote_count,
+
+			COALESCE((SELECT SUM(pv.value) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id
+				AND (
+					NOT EXISTS (
+						SELECT 1 FROM [dbo].[user_ban] ub
+						WHERE ub.user_id = pv.user_id
+							AND ub.ban_type = 'shadowban'
+							AND ub.revoked_at IS NULL
+							AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+							AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+					)
+					OR pv.user_id = @requesting_user_id
+				)
+			),0) AS vote_score,
+
+			ISNULL((
+				SELECT SUM(CASE WHEN pv.value = 1 THEN 1 ELSE 0 END)
+				FROM [dbo].[post_vote] pv
+				WHERE pv.post_id = p.id
+					AND (
+						NOT EXISTS (
+							SELECT 1 FROM [dbo].[user_ban] ub
+							WHERE ub.user_id = pv.user_id
+								AND ub.ban_type = 'shadowban'
+								AND ub.revoked_at IS NULL
+								AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+								AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+						)
+						OR pv.user_id = @requesting_user_id
+					)
+				), 0) AS like_count,
+
+			ISNULL((
+				SELECT SUM(CASE WHEN pv.value = -1 THEN 1 ELSE 0 END)
+				FROM [dbo].[post_vote] pv
+				WHERE pv.post_id = p.id
+					AND (
+						NOT EXISTS (
+							SELECT 1 FROM [dbo].[user_ban] ub
+							WHERE ub.user_id = pv.user_id
+								AND ub.ban_type = 'shadowban'
+								AND ub.revoked_at IS NULL
+								AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+								AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+						)
+						OR pv.user_id = @requesting_user_id
+					)
+								), 0) AS dislike_count,
 			CAST(
 				CASE 
 					WHEN @requesting_user_id IS NOT NULL AND EXISTS (
@@ -115,6 +165,20 @@ export const getPosts = async (
     LEFT JOIN [dbo].[app_user] u ON p.author_id = u.id
     LEFT JOIN [dbo].[category] c ON p.category_id = c.id
     WHERE p.deleted_at IS NULL
+	  -- Shadowban filter: hide posts from shadowbanned users unless viewing own posts
+	  AND (
+		-- Show if author is not shadowbanned
+		NOT EXISTS (
+		  SELECT 1 FROM [dbo].[user_ban] ub
+		  WHERE ub.user_id = p.author_id
+			AND ub.ban_type = 'shadowban'
+			AND ub.revoked_at IS NULL
+			AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+			AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+		)
+		-- OR show if requesting user is the author (shadowbanned users see their own posts)
+		OR (@requesting_user_id IS NOT NULL AND p.author_id = @requesting_user_id)
+	  )
 	`;
 
 	const request = pool.request();
@@ -181,9 +245,34 @@ export const getHotPostsByCategory = async (requesting_user_id?: string) => {
 					FOR JSON PATH
 				) AS attachments,
 				DATEDIFF(minute, p.created_at, GETDATE()) AS minutes_since_posted,
-				(SELECT COUNT(*) FROM [dbo].[comment] cm WHERE cm.post_id = p.id AND cm.deleted_at IS NULL) AS comment_count,
-				(SELECT COUNT(*) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id AND pv.value IN (1,-1)) AS vote_count,
-				COALESCE((SELECT SUM(pv.value) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id), 0) AS vote_score,
+								(SELECT COUNT(*) FROM [dbo].[comment] cm WHERE cm.post_id = p.id AND cm.deleted_at IS NULL) AS comment_count,
+								-- Votes excluding shadowbanned voters (unless the requesting user is the voter)
+								(SELECT COUNT(*) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id AND pv.value IN (1,-1)
+									AND (
+										NOT EXISTS (
+											SELECT 1 FROM [dbo].[user_ban] ub
+											WHERE ub.user_id = pv.user_id
+												AND ub.ban_type = 'shadowban'
+												AND ub.revoked_at IS NULL
+												AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+												AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+										)
+										OR pv.user_id = @requesting_user_id
+									)
+								) AS vote_count,
+								COALESCE((SELECT SUM(pv.value) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id
+									AND (
+										NOT EXISTS (
+											SELECT 1 FROM [dbo].[user_ban] ub
+											WHERE ub.user_id = pv.user_id
+												AND ub.ban_type = 'shadowban'
+												AND ub.revoked_at IS NULL
+												AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+												AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+										)
+										OR pv.user_id = @requesting_user_id
+									)
+								), 0) AS vote_score,
 				CAST(
 					CASE 
 						WHEN @requesting_user_id IS NOT NULL AND EXISTS (
@@ -202,6 +291,20 @@ export const getHotPostsByCategory = async (requesting_user_id?: string) => {
 			LEFT JOIN [dbo].[app_user] u ON p.author_id = u.id
 			LEFT JOIN [dbo].[category] c ON p.category_id = c.id
 			WHERE p.deleted_at IS NULL
+			  -- Shadowban filter: hide posts from shadowbanned users unless viewing own posts
+			  AND (
+				-- Show if author is not shadowbanned
+				NOT EXISTS (
+				  SELECT 1 FROM [dbo].[user_ban] ub
+				  WHERE ub.user_id = p.author_id
+					AND ub.ban_type = 'shadowban'
+					AND ub.revoked_at IS NULL
+					AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+					AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+				)
+				-- OR show if requesting user is the author (shadowbanned users see their own posts)
+				OR (@requesting_user_id IS NOT NULL AND p.author_id = @requesting_user_id)
+			  )
 		), Ranked AS (
 			SELECT 
 				*,
