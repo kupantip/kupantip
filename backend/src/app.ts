@@ -11,6 +11,7 @@ import commentRoutes from './routes/comment.route';
 import postVoteRoutes from './routes/postVote.route';
 import commentVoteRoutes from './routes/commentVote.route';
 import reportRoutes from './routes/report.route';
+import banRoutes from './routes/ban.route';
 import * as z from 'zod';
 import { getDbConnection } from './database/mssql.database';
 
@@ -46,6 +47,7 @@ apiV1.use('/comment', commentRoutes);
 apiV1.use('/post-vote', postVoteRoutes);
 apiV1.use('/comment-vote', commentVoteRoutes);
 apiV1.use('/report', reportRoutes);
+apiV1.use('/ban', banRoutes);
 
 app.use('/api/v1', apiV1);
 
