@@ -154,43 +154,29 @@ export const updateBan = async (
 ): Promise<BanRow | null> => {
 	const pool = await getDbConnection();
 
-	// Build SET clause dynamically based on provided fields
-	const setFields: string[] = [];
-	const request = pool
+	// Bind bit flags to indicate which fields to update (allows explicit NULL)
+	const result = await pool
 		.request()
-		.input('ban_id', sql.UniqueIdentifier, ban_id);
-
-	if ('ban_type' in updates) {
-		setFields.push('ban_type = @ban_type');
-		request.input('ban_type', sql.NVarChar(32), updates.ban_type);
-	}
-
-	if ('reason_admin' in updates) {
-		setFields.push('reason_admin = @reason_admin');
-		request.input(
+		.input('ban_id', sql.UniqueIdentifier, ban_id)
+		.input('ban_type', sql.NVarChar(32), updates.ban_type ?? null)
+		.input(
 			'reason_admin',
 			sql.NVarChar(sql.MAX),
-			updates.reason_admin
-		);
-	}
-
-	if ('reason_user' in updates) {
-		setFields.push('reason_user = @reason_user');
-		request.input('reason_user', sql.NVarChar(512), updates.reason_user);
-	}
-
-	if ('end_at' in updates) {
-		setFields.push('end_at = @end_at');
-		request.input('end_at', sql.DateTime, updates.end_at);
-	}
-
-	if (setFields.length === 0) {
-		return null;
-	}
-
-	const result = await request.query(`
+			updates.reason_admin ?? null
+		)
+		.input('reason_user', sql.NVarChar(512), updates.reason_user ?? null)
+		.input('end_at', sql.DateTime, updates.end_at ?? null)
+		.input('update_ban_type', sql.Bit, 'ban_type' in updates ? 1 : 0)
+		.input('update_reason_admin', sql.Bit, 'reason_admin' in updates ? 1 : 0)
+		.input('update_reason_user', sql.Bit, 'reason_user' in updates ? 1 : 0)
+		.input('update_end_at', sql.Bit, 'end_at' in updates ? 1 : 0)
+		.query(`
     UPDATE [dbo].[user_ban]
-    SET ${setFields.join(', ')}
+    SET 
+      ban_type = CASE WHEN @update_ban_type = 1 THEN @ban_type ELSE ban_type END,
+      reason_admin = CASE WHEN @update_reason_admin = 1 THEN @reason_admin ELSE reason_admin END,
+      reason_user = CASE WHEN @update_reason_user = 1 THEN @reason_user ELSE reason_user END,
+      end_at = CASE WHEN @update_end_at = 1 THEN @end_at ELSE end_at END
     OUTPUT INSERTED.*
     WHERE id = @ban_id AND revoked_at IS NULL
   `);
