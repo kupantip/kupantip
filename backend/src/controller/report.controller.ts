@@ -6,6 +6,7 @@ import {
 	ReportTarget,
 	updateReportStatus,
 } from '../models/report.model';
+import { logModerationAction } from '../models/moderationAction.model';
 import * as z from 'zod';
 
 const createSchema = z.object({
@@ -102,6 +103,20 @@ export const updateReportStatusController = async (
 			report_id,
 			parsed.status as ReportStatus
 		);
+
+		// Log moderation action
+		await logModerationAction({
+			actor_id: req.user.user_id,
+			target_type: 'report',
+			target_id: report_id,
+			action_type: 'report_action',
+			details: {
+				new_status: parsed.status,
+				report_target_type: report.target_type,
+				report_target_id: report.target_id,
+			},
+		});
+
 		res.status(200).json({ message: 'Report updated', report });
 	} catch (err) {
 		if ((err as Error).message === 'REPORT_NOT_FOUND')
