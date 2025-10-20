@@ -11,6 +11,7 @@ import {
 import { logModerationAction } from '../models/moderationAction.model';
 import { deletePost } from '../models/post.model';
 import { deleteComment } from '../models/comment.model';
+import { updateReportStatus } from '../models/report.model';
 import { getDbConnection } from '../database/mssql.database';
 import * as z from 'zod';
 
@@ -96,9 +97,10 @@ export const createBanController = async (
 			related_report_id: parsed.related_report_id,
 		});
 
-		// Track content deletion info
+		// Track content deletion info and report update status
 		let contentDeleted: { type: 'post' | 'comment'; id: string } | null =
 			null;
+		let reportUpdated = false;
 
 		// If ban is related to a report, check if we need to delete the reported content
 		if (parsed.related_report_id) {
@@ -158,11 +160,33 @@ export const createBanController = async (
 							});
 						}
 					}
+
+					// Update report status to 'actioned'
+					await updateReportStatus(
+						parsed.related_report_id,
+						'actioned'
+					);
+					reportUpdated = true;
+
+					// Log the report status update
+					await logModerationAction({
+						actor_id: req.user.user_id,
+						target_type: 'report',
+						target_id: parsed.related_report_id,
+						action_type: 'report_action',
+						details: {
+							new_status: 'actioned',
+							report_target_type: target_type,
+							report_target_id: target_id,
+							updated_via_ban: true,
+							ban_id: ban.id,
+						},
+					});
 				}
 			} catch (error) {
 				// Log error but don't fail the ban creation
 				console.error(
-					'Error deleting content from report:',
+					'Error processing report:',
 					error instanceof Error ? error.message : error
 				);
 			}
@@ -183,19 +207,32 @@ export const createBanController = async (
 			},
 		});
 
+		// Build response message
+		let message = 'Ban created successfully';
+		if (contentDeleted && reportUpdated) {
+			message = `Ban created successfully, reported ${contentDeleted.type} deleted, and report marked as actioned`;
+		} else if (contentDeleted) {
+			message = `Ban created successfully and reported ${contentDeleted.type} deleted`;
+		} else if (reportUpdated) {
+			message = 'Ban created successfully and report marked as actioned';
+		}
+
 		const response: {
 			message: string;
 			ban: typeof ban;
 			content_deleted?: { type: 'post' | 'comment'; id: string };
+			report_updated?: boolean;
 		} = {
-			message: contentDeleted
-				? `Ban created successfully and reported ${contentDeleted.type} deleted`
-				: 'Ban created successfully',
+			message,
 			ban,
 		};
 
 		if (contentDeleted) {
 			response.content_deleted = contentDeleted;
+		}
+
+		if (reportUpdated) {
+			response.report_updated = reportUpdated;
 		}
 
 		return res.status(201).json(response);
