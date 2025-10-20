@@ -129,13 +129,13 @@ export const getBans = async (filters: BanFilters = {}): Promise<BanRow[]> => {
     LEFT JOIN [dbo].[app_user] u ON ub.user_id = u.id
     LEFT JOIN [dbo].[app_user] creator ON ub.created_by = creator.id
     LEFT JOIN [dbo].[app_user] revoker ON ub.revoked_by = revoker.id
-    WHERE (ISNULL(@ban_id, ub.id) = ub.id)
-      AND (ISNULL(@user_id, ub.user_id) = ub.user_id)
-      AND (ISNULL(@ban_type, ub.ban_type) = ub.ban_type)
-      AND (ISNULL(@created_by, ub.created_by) = ub.created_by)
-      AND (ISNULL(@related_report_id, ub.related_report_id) = ub.related_report_id)
-      AND (ISNULL(@start_date, ub.start_at) <= ub.start_at)
-      AND (ub.start_at <= ISNULL(@end_date, ub.start_at))
+    WHERE ub.id = COALESCE(@ban_id, ub.id)
+      AND ub.user_id = COALESCE(@user_id, ub.user_id)
+      AND ub.ban_type = COALESCE(@ban_type, ub.ban_type)
+      AND ub.created_by = COALESCE(@created_by, ub.created_by)
+      AND ub.related_report_id = COALESCE(@related_report_id, ub.related_report_id)
+      AND ub.start_at >= COALESCE(@start_date, ub.start_at)
+      AND ub.start_at <= COALESCE(@end_date, ub.start_at)
       AND (${statusFilter})
     ORDER BY ub.created_at DESC
   `);
@@ -228,7 +228,7 @@ export const getUserActiveBans = async (
       AND revoked_at IS NULL
       AND start_at <= GETDATE()
       AND (end_at IS NULL OR end_at > GETDATE())
-      AND (ISNULL(@ban_type, ban_type) = ban_type)
+      AND ban_type = COALESCE(@ban_type, ban_type)
     ORDER BY created_at DESC
   `);
 
