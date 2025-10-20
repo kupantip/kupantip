@@ -167,10 +167,13 @@ export const updateBan = async (
 		.input('reason_user', sql.NVarChar(512), updates.reason_user ?? null)
 		.input('end_at', sql.DateTime, updates.end_at ?? null)
 		.input('update_ban_type', sql.Bit, 'ban_type' in updates ? 1 : 0)
-		.input('update_reason_admin', sql.Bit, 'reason_admin' in updates ? 1 : 0)
+		.input(
+			'update_reason_admin',
+			sql.Bit,
+			'reason_admin' in updates ? 1 : 0
+		)
 		.input('update_reason_user', sql.Bit, 'reason_user' in updates ? 1 : 0)
-		.input('update_end_at', sql.Bit, 'end_at' in updates ? 1 : 0)
-		.query(`
+		.input('update_end_at', sql.Bit, 'end_at' in updates ? 1 : 0).query(`
     UPDATE [dbo].[user_ban]
     SET 
       ban_type = CASE WHEN @update_ban_type = 1 THEN @ban_type ELSE ban_type END,

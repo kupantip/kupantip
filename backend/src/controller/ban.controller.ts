@@ -8,6 +8,10 @@ import {
 	BanType,
 	BanFilters,
 } from '../models/ban.model';
+import { logModerationAction } from '../models/moderationAction.model';
+import { deletePost } from '../models/post.model';
+import { deleteComment } from '../models/comment.model';
+import { getDbConnection } from '../database/mssql.database';
 import * as z from 'zod';
 
 const banTypeEnum = z.enum([
@@ -92,10 +96,109 @@ export const createBanController = async (
 			related_report_id: parsed.related_report_id,
 		});
 
-		return res.status(201).json({
-			message: 'Ban created successfully',
-			ban,
+		// Track content deletion info
+		let contentDeleted: { type: 'post' | 'comment'; id: string } | null =
+			null;
+
+		// If ban is related to a report, check if we need to delete the reported content
+		if (parsed.related_report_id) {
+			try {
+				const pool = await getDbConnection();
+				const reportResult = await pool
+					.request()
+					.input('report_id', parsed.related_report_id)
+					.query(
+						`SELECT target_type, target_id FROM [dbo].[report] WHERE id = @report_id`
+					);
+
+				if (reportResult.recordset.length > 0) {
+					const report = reportResult.recordset[0];
+					const { target_type, target_id } = report;
+
+					if (target_type === 'post') {
+						// Delete the post (admin delete, no user_id check)
+						const deletedPost = await deletePost(target_id);
+						if (deletedPost) {
+							contentDeleted = { type: 'post', id: target_id };
+							// Log the content deletion
+							await logModerationAction({
+								actor_id: req.user.user_id,
+								target_type: 'post',
+								target_id: target_id,
+								action_type: 'delete_content',
+								details: {
+									post_title: deletedPost.title,
+									author_id: deletedPost.author_id,
+									deleted_via_ban: true,
+									ban_id: ban.id,
+									related_report_id: parsed.related_report_id,
+								},
+							});
+						}
+					} else if (target_type === 'comment') {
+						// Delete the comment (admin delete, no user_id check)
+						const result = await deleteComment(
+							target_id,
+							undefined,
+							'admin'
+						);
+						if (result.success) {
+							contentDeleted = { type: 'comment', id: target_id };
+							// Log the content deletion
+							await logModerationAction({
+								actor_id: req.user.user_id,
+								target_type: 'comment',
+								target_id: target_id,
+								action_type: 'delete_content',
+								details: {
+									deleted_via_ban: true,
+									ban_id: ban.id,
+									related_report_id: parsed.related_report_id,
+								},
+							});
+						}
+					}
+				}
+			} catch (error) {
+				// Log error but don't fail the ban creation
+				console.error(
+					'Error deleting content from report:',
+					error instanceof Error ? error.message : error
+				);
+			}
+		}
+
+		// Log moderation action
+		await logModerationAction({
+			actor_id: req.user.user_id,
+			target_type: 'user',
+			target_id: parsed.user_id,
+			action_type: 'ban_create',
+			details: {
+				ban_id: ban.id,
+				ban_type: ban.ban_type,
+				reason_admin: ban.reason_admin,
+				end_at: ban.end_at,
+				related_report_id: parsed.related_report_id,
+			},
 		});
+
+		const response: {
+			message: string;
+			ban: typeof ban;
+			content_deleted?: { type: 'post' | 'comment'; id: string };
+		} = {
+			message: contentDeleted
+				? `Ban created successfully and reported ${contentDeleted.type} deleted`
+				: 'Ban created successfully',
+			ban,
+		};
+
+		if (contentDeleted) {
+			response.content_deleted = contentDeleted;
+		}
+
+		return res.status(201).json(response);
 	} catch (err) {
 		next(err);
 	}
@@ -181,6 +284,18 @@ export const updateBanController = async (
 				.json({ message: 'Ban not found or already revoked' });
 		}
 
+		// Log moderation action
+		await logModerationAction({
+			actor_id: req.user.user_id,
+			target_type: 'user',
+			target_id: updatedBan.user_id,
+			action_type: 'ban_update',
+			details: {
+				ban_id: updatedBan.id,
+				updates,
+			},
+		});
+
 		return res.status(200).json({
 			message: 'Ban updated successfully',
 			ban: updatedBan,
@@ -216,6 +331,18 @@ export const revokeBanController = async (
 				.status(404)
 				.json({ message: 'Ban not found or already revoked' });
 		}
+
+		// Log moderation action
+		await logModerationAction({
+			actor_id: req.user.user_id,
+			target_type: 'user',
+			target_id: revokedBan.user_id,
+			action_type: 'ban_revoke',
+			details: {
+				ban_id: revokedBan.id,
+				reason_admin: parsed.reason_admin,
+			},
+		});
 
 		return res.status(200).json({
 			message: 'Ban revoked successfully',

@@ -10,6 +10,7 @@ import {
 	getHotPostsByCategory,
 	getCategorySummaryStats,
 } from '../models/post.model';
+import { logModerationAction } from '../models/moderationAction.model';
 import * as z from 'zod';
 
 const postSchema = z.object({
@@ -217,6 +218,23 @@ export const deletePostController = async (
 			// User tried to delete someone else's post
 			return res.status(403).json({
 				message: 'Forbidden: Not authorized to delete this post',
+			});
+		}
+
+		// Log moderation action if admin deleted someone else's post
+		if (
+			req.user.role === 'admin' &&
+			deletedPost.author_id !== req.user.user_id
+		) {
+			await logModerationAction({
+				actor_id: req.user.user_id,
+				target_type: 'post',
+				target_id: post_id,
+				action_type: 'delete_content',
+				details: {
+					post_title: deletedPost.title,
+					author_id: deletedPost.author_id,
+				},
 			});
 		}
 

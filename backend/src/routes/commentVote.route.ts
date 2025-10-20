@@ -14,11 +14,6 @@ router.post(
 	checkBan('vote'),
 	voteCommentController
 );
-router.delete(
-	'/:comment_id',
-	authMiddleware,
-	checkBan('vote'),
-	deleteVoteCommentController
-);
+router.delete('/:comment_id', authMiddleware, deleteVoteCommentController);
 
 export default router;
