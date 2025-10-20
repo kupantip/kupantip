@@ -3,15 +3,17 @@ import * as t from '@/types/dashboard/post';
 const BACKEND_HOST = process.env.NEXT_PUBLIC_BACKEND_HOST;
 
 const postFilterMap: Record<string, string> = {
-    Announcement: '9108433E-F36B-1410-84CA-00F2EA0D0522',
-    Community: '9708433E-F36B-1410-84CA-00F2EA0D0522',
-    Recruitment: '9D08433E-F36B-1410-84CA-00F2EA0D0522'
+	Announcement: '9108433E-F36B-1410-84CA-00F2EA0D0522',
+	Community: '9708433E-F36B-1410-84CA-00F2EA0D0522',
+	Recruitment: '9D08433E-F36B-1410-84CA-00F2EA0D0522',
 };
 
 export async function getPost(filterName: string): Promise<t.Post[]> {
 	try {
-        const categoryId = postFilterMap[filterName];
-        const res = await fetch(`${BACKEND_HOST}/post?category_id=${categoryId}`);
+		const categoryId = postFilterMap[filterName];
+		const res = await fetch(
+			`${BACKEND_HOST}/post?category_id=b14b433e-f36b-1410-8feb-00cc33218f99`
+		);
 
 		if (!res.ok) {
 			throw new Error(
