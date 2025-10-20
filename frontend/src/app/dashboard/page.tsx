@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Heart } from 'lucide-react';
+import Link from 'next/link';
 
 // still using mock data
 
@@ -44,9 +45,9 @@ export default function HomePage() {
 	];
 
 	const summaryStats = [
-		{ label: 'Announcements', count: 1240, url: 'annoucement' },
-		{ label: 'Community Posts', count: 3480, url: 'community' },
-		{ label: 'Recruitment Posts', count: 640, url: 'recruitment' },
+		{ label: 'Announcements', count: 1240, url: 'dashboard/annoucement' },
+		{ label: 'Community Posts', count: 3480, url: 'dashboard/community' },
+		{ label: 'Recruitment Posts', count: 640, url: 'dashboard/recruitment' },
 	];
 
 	useEffect(() => {
@@ -123,8 +124,11 @@ export default function HomePage() {
 								</p>
 							</div>
 							<div className="flex flex-wrap gap-x-2">
-								<Button className='group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105'>
-									<Heart className="text-red-500" fill="currentColor" />
+								<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+									<Heart
+										className="text-red-500"
+										fill="currentColor"
+									/>
 								</Button>
 								<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
 									💬{' '}
@@ -140,24 +144,26 @@ export default function HomePage() {
 			{/* Summary Section */}
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 				{summaryStats.map((item, i) => (
-					<Card
-						key={i}
-						className="text-center shadow-sm hover:shadow-md transition hover:scale-102"
-					>
-						<CardHeader>
-							<CardTitle className="text-green-1">
-								{item.label}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-								{item.count.toLocaleString()}
-							</p>
-							<p className="text-sm text-gray-500 mt-1">
-								View more →
-							</p>
-						</CardContent>
-					</Card>
+					<Link href={item.url} key={i}>
+						<Card
+							key={i}
+							className="text-center shadow-sm hover:shadow-md transition hover:scale-102"
+						>
+							<CardHeader>
+								<CardTitle className="text-green-1">
+									{item.label}
+								</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+									{item.count.toLocaleString()}
+								</p>
+								<p className="text-sm text-gray-500 mt-1 hover:underline cursor-pointer">
+									View more →
+								</p>
+							</CardContent>
+						</Card>
+					</Link>
 				))}
 			</div>
 		</div>
