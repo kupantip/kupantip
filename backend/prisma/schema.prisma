@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model app_user {
+  id                                     String              @id(map: "PK__app_user__3213E83FC82FB4AF") @default(dbgenerated("newsequentialid()"), map: "DF__app_user__id__398D8EEE") @db.UniqueIdentifier
+  email                                  String              @unique(map: "UQ__app_user__AB6E61641C100918") @db.NVarChar(320)
+  handle                                 String              @unique(map: "UQ__app_user__7ED567C02725D883") @db.NVarChar(32)
+  display_name                           String              @db.NVarChar(100)
+  created_at                             DateTime            @default(now(), map: "DF__app_user__create__3A81B327") @db.DateTime
+  updated_at                             DateTime            @default(now(), map: "DF__app_user__update__3B75D760") @db.DateTime
+  comment                                comment[]
+  comment_vote                           comment_vote[]
+  moderation_action                      moderation_action[]
+  post                                   post[]
+  post_vote                              post_vote[]
+  report                                 report[]
+  user_ban_user_ban_created_byToapp_user user_ban[]          @relation("user_ban_created_byToapp_user")
+  user_ban_user_ban_revoked_byToapp_user user_ban[]          @relation("user_ban_revoked_byToapp_user")
+  user_ban_user_ban_user_idToapp_user    user_ban[]          @relation("user_ban_user_idToapp_user")
+  user_role                              user_role[]
+  user_secret                            user_secret?
+}
+
+model attachment {
+  id         String   @id(map: "PK__attachme__3213E83FF060078B") @default(dbgenerated("newsequentialid()"), map: "DF__attachment__id__5441852A") @db.UniqueIdentifier
+  post_id    String   @db.UniqueIdentifier
+  url        String   @db.NVarChar(2048)
+  mime_type  String?  @db.NVarChar(255)
+  created_at DateTime @default(now(), map: "DF__attachmen__creat__5535A963") @db.DateTime
+  post       post     @relation(fields: [post_id], references: [id], onUpdate: NoAction, map: "FK__attachmen__post___656C112C")
+}
+
+model category {
+  id        String  @id(map: "PK__category__3213E83F84440C4D") @default(dbgenerated("newsequentialid()"), map: "DF__category__id__5165187F") @db.UniqueIdentifier
+  label     String  @db.NVarChar(64)
+  color_hex String? @db.VarChar(7)
+  post      post[]
+}
+
+model comment {
+  id            String         @id(map: "PK__comment__3213E83FF74471FB") @default(dbgenerated("newsequentialid()"), map: "DF__comment__id__46E78A0C") @db.UniqueIdentifier
+  post_id       String         @db.UniqueIdentifier
+  author_id     String?        @db.UniqueIdentifier
+  parent_id     String?        @db.UniqueIdentifier
+  body_md       String?        @db.NVarChar(Max)
+  created_at    DateTime       @default(now(), map: "DF__comment__created__47DBAE45") @db.DateTime
+  updated_at    DateTime       @default(now(), map: "DF__comment__updated__48CFD27E") @db.DateTime
+  deleted_at    DateTime?      @db.DateTime
+  app_user      app_user?      @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__comment__author___5FB337D6")
+  comment       comment?       @relation("commentTocomment", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__comment__parent___60A75C0F")
+  other_comment comment[]      @relation("commentTocomment")
+  post          post           @relation(fields: [post_id], references: [id], onUpdate: NoAction, map: "FK__comment__post_id__5EBF139D")
+  comment_vote  comment_vote[]
+
+  @@index([post_id, parent_id, created_at], map: "comment_index_2")
+}
+
+model comment_vote {
+  comment_id String   @db.UniqueIdentifier
+  user_id    String   @db.UniqueIdentifier
+  value      Int      @db.SmallInt
+  created_at DateTime @default(now(), map: "DF__comment_v__creat__4E88ABD4") @db.DateTime
+  comment    comment  @relation(fields: [comment_id], references: [id], onUpdate: NoAction, map: "FK__comment_v__comme__6383C8BA")
+  app_user   app_user @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__comment_v__user___6477ECF3")
+
+  @@id([comment_id, user_id], map: "PK__comment___0C0E95F7CB1F91BD")
+}
+
+model post {
+  id          String       @id(map: "PK__post__3213E83FC621AFCE") @default(dbgenerated("newsequentialid()"), map: "DF__post__id__4222D4EF") @db.UniqueIdentifier
+  author_id   String?      @db.UniqueIdentifier
+  title       String       @db.NVarChar(300)
+  body_md     String?      @db.NVarChar(Max)
+  url         String?      @db.NVarChar(2048)
+  created_at  DateTime     @default(now(), map: "DF__post__created_at__4316F928") @db.DateTime
+  updated_at  DateTime     @default(now(), map: "DF__post__updated_at__440B1D61") @db.DateTime
+  deleted_at  DateTime?    @db.DateTime
+  category_id String?      @db.UniqueIdentifier
+  attachment  attachment[]
+  comment     comment[]
+  app_user    app_user?    @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__post__author_id__5CD6CB2B")
+  category    category?    @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__post__category_i__5DCAEF64")
+  post_vote   post_vote[]
+
+  @@index([created_at], map: "post_index_0")
+  @@index([author_id, created_at], map: "post_index_1")
+}
+
+model post_vote {
+  post_id    String   @db.UniqueIdentifier
+  user_id    String   @db.UniqueIdentifier
+  value      Int      @db.SmallInt
+  created_at DateTime @default(now(), map: "DF__post_vote__creat__4BAC3F29") @db.DateTime
+  post       post     @relation(fields: [post_id], references: [id], onUpdate: NoAction, map: "FK__post_vote__post___619B8048")
+  app_user   app_user @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__post_vote__user___628FA481")
+
+  @@id([post_id, user_id], map: "PK__post_vot__D54C64165658456C")
+}
+
+model report {
+  id          String   @id(map: "PK__report__3213E83F9893DB22") @default(dbgenerated("newsequentialid()"), map: "DF__report__id__5812160E") @db.UniqueIdentifier
+  target_type String   @db.NVarChar(16)
+  target_id   String   @db.UniqueIdentifier
+  reporter_id String   @db.UniqueIdentifier
+  reason      String   @db.NVarChar(Max)
+  created_at  DateTime @default(now(), map: "DF__report__created___59063A47") @db.DateTime
+  status      String   @default("open", map: "DF__report__status__59FA5E80") @db.NVarChar(16)
+  app_user    app_user @relation(fields: [reporter_id], references: [id], onUpdate: NoAction, map: "FK__report__reporter__66603565")
+}
+
+model user_role {
+  user_id  String   @db.UniqueIdentifier
+  role     String   @db.NVarChar(32)
+  app_user app_user @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__user_role__user___5BE2A6F2")
+
+  @@id([user_id, role], map: "PK__user_rol__31DDE51B735CAF6C")
+}
+
+model user_secret {
+  user_id       String   @id(map: "PK__user_sec__B9BE370F1DC66A08") @db.UniqueIdentifier
+  password_hash String   @db.NVarChar(255)
+  app_user      app_user @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__user_secr__user___5AEE82B9")
+}
+
+model moderation_action {
+  id          String   @id(map: "PK__moderati__3213E83F16C9F4CE") @default(dbgenerated("newsequentialid()"), map: "DF__moderation_a__id__619B8048") @db.UniqueIdentifier
+  actor_id    String   @db.UniqueIdentifier
+  target_type String   @db.NVarChar(16)
+  target_id   String   @db.UniqueIdentifier
+  action_type String   @db.NVarChar(32)
+  details     String?  @db.NVarChar(Max)
+  created_at  DateTime @default(now(), map: "DF__moderatio__creat__628FA481") @db.DateTime
+  app_user    app_user @relation(fields: [actor_id], references: [id], onUpdate: NoAction, map: "FK__moderatio__actor__72C60C4A")
+
+  @@index([actor_id, created_at], map: "moderation_action_index_6")
+  @@index([target_type, target_id, created_at], map: "moderation_action_index_7")
+}
+
+model user_ban {
+  id                                     String    @id(map: "PK__user_ban__3213E83F4C275822") @default(dbgenerated("newsequentialid()"), map: "DF__user_ban__id__5CD6CB2B") @db.UniqueIdentifier
+  user_id                                String    @db.UniqueIdentifier
+  ban_type                               String    @db.NVarChar(32)
+  reason_admin                           String?   @db.NVarChar(Max)
+  reason_user                            String?   @db.NVarChar(512)
+  start_at                               DateTime  @default(now(), map: "DF__user_ban__start___5DCAEF64") @db.DateTime
+  end_at                                 DateTime? @db.DateTime
+  created_by                             String?   @db.UniqueIdentifier
+  created_at                             DateTime  @default(now(), map: "DF__user_ban__create__5EBF139D") @db.DateTime
+  revoked_at                             DateTime? @db.DateTime
+  revoked_by                             String?   @db.UniqueIdentifier
+  related_report_id                      String?   @db.UniqueIdentifier
+  app_user_user_ban_created_byToapp_user app_user? @relation("user_ban_created_byToapp_user", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__user_ban__create__70DDC3D8")
+  app_user_user_ban_revoked_byToapp_user app_user? @relation("user_ban_revoked_byToapp_user", fields: [revoked_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__user_ban__revoke__71D1E811")
+  app_user_user_ban_user_idToapp_user    app_user  @relation("user_ban_user_idToapp_user", fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__user_ban__user_i__6FE99F9F")
+
+  @@index([user_id, ban_type, start_at], map: "user_ban_index_3")
+  @@index([end_at], map: "user_ban_index_4")
+  @@index([revoked_at], map: "user_ban_index_5")
+}
