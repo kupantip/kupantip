@@ -7,6 +7,8 @@ import {
 	deletePost,
 	updatePost,
 	clearAttachmentsByPost,
+	getHotPostsByCategory,
+	getCategorySummaryStats,
 } from '../models/post.model';
 import * as z from 'zod';
 
@@ -145,6 +147,32 @@ export const getPostsController = async (
 		}
 
 		return res.status(200).json(posts);
+	} catch (err) {
+		next(err);
+	}
+};
+
+export const getHotPostsController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const posts = await getHotPostsByCategory(req.user?.user_id);
+		return res.status(200).json(posts);
+	} catch (err) {
+		next(err);
+	}
+};
+
+export const getPostSummaryStatsController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const stats = await getCategorySummaryStats();
+		return res.status(200).json(stats);
 	} catch (err) {
 		next(err);
 	}
