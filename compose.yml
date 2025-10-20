@@ -2,7 +2,6 @@ services:
   db:
     platform: "linux/amd64"
     image: mcr.microsoft.com/mssql/server:2022-latest
-    entrypoint: ["/bin/bash", "/usr/src/app/entrypoint.sh"]
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "${SQL_PASSWORD}"
@@ -12,33 +11,60 @@ services:
       - ./mssql/data:/var/opt/mssql/data
       - ./mssql/log:/var/opt/mssql/log
       - ./mssql/secrets:/var/opt/mssql/secrets
-      - ./init-db.sql:/usr/src/app/init-db.sql
-      - ./entrypoint.sh:/usr/src/app/entrypoint.sh
     env_file:
       - path: .env
         required: true
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/opt/mssql-tools18/bin/sqlcmd",
+          "-S",
+          "localhost",
+          "-U",
+          "sa",
+          "-P",
+          "${SQL_PASSWORD}",
+          "-Q",
+          "'SELECT 1'",
+          "-C",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   backend:
     platform: "linux/amd64"
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: xeei/kupantip-backend
+    # image: xeei/kupantip-backend
     container_name: kupantip-backend
     ports:
       - "${PORT:-8000}:8000"
     depends_on:
-      - db
-    environment:
-      SQL_SERVER: db
+      db:
+        condition: service_healthy
     env_file:
       - path: .env
         required: true
+
+    command: >
+      sh -c "
+        echo '--- [Backend] Database check complete. Running Prisma push...';
+        npm run db:push && npm start
+      "
 
   frontend:
     platform: "linux/amd64"
     image: xeei/kupantip-frontend
     container_name: kupantip-frontend
+    environment:
+      - PORT=3000
+    env_file:
+      - path: .env
+        required: true
     ports:
       - "80:3000"
     depends_on:
