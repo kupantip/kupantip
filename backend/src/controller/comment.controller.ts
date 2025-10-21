@@ -1,4 +1,5 @@
 import * as models from '../models/comment.model';
+import { logModerationAction } from '../models/moderationAction.model';
 import { Request, Response, NextFunction } from 'express';
 import * as z from 'zod';
 import * as t from '../types/comment.t';
@@ -50,7 +51,12 @@ export const getCommentsByPostId = async (
 			return;
 		}
 
-		const comments = await models.getCommentsByPostId(post_id as string);
+		// Pass requesting_user_id for shadowban filtering (optional auth)
+		const requesting_user_id = req.user?.user_id;
+		const comments = await models.getCommentsByPostId(
+			post_id as string,
+			requesting_user_id
+		);
 		res.json({
 			message: 'Comments retrieved successfully',
 			comments,
@@ -127,17 +133,24 @@ export const deleteComment = async (
 		const user_id = req.user?.user_id;
 		const role = req.user?.role;
 		let post_owner_id: string | undefined = undefined;
-		// Find post owner for this comment
+		let comment_author_id: string | undefined = undefined;
+
+		// Find post owner and comment author
 		const pool = await getDbConnection();
-		const postResult = await pool
+		const commentResult = await pool
 			.request()
 			.input('comment_id', comment_id)
 			.query(
-				`SELECT p.author_id as post_owner_id FROM [KUPantipDB].[dbo].[comment] c JOIN [KUPantipDB].[dbo].[post] p ON c.post_id = p.id WHERE c.id = @comment_id`
+				`SELECT c.author_id as comment_author_id, p.author_id as post_owner_id 
+				FROM [dbo].[comment] c 
+				JOIN [dbo].[post] p ON c.post_id = p.id 
+				WHERE c.id = @comment_id`
 			);
-		if (postResult.recordset.length > 0) {
-			post_owner_id = postResult.recordset[0].post_owner_id;
+		if (commentResult.recordset.length > 0) {
+			post_owner_id = commentResult.recordset[0].post_owner_id;
+			comment_author_id = commentResult.recordset[0].comment_author_id;
 		}
+
 		const result = await models.deleteComment(
 			comment_id,
 			user_id,
@@ -148,6 +161,20 @@ export const deleteComment = async (
 			res.status(404).json({ message: result.message });
 			return;
 		}
+
+		// Log moderation action only when admin deletes someone else's comment
+		if (role === 'admin' && user_id !== comment_author_id) {
+			await logModerationAction({
+				actor_id: user_id!,
+				target_type: 'comment',
+				target_id: comment_id,
+				action_type: 'delete_content',
+				details: {
+					comment_author_id,
+				},
+			});
+		}
+
 		res.json({ message: result.message });
 	} catch (error) {
 		next(error);

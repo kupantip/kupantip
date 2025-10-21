@@ -12,6 +12,7 @@ export interface ReportRow {
 	reason: string;
 	created_at: Date;
 	status: ReportStatus;
+	reported_user_id?: string; // The author of the reported content or the reported user
 }
 
 export const createReport = async (params: {
@@ -74,14 +75,22 @@ export const listReports = async (filters: {
 	const orderDir = filters.oldest_first ? 'ASC' : 'DESC';
 	const rows = await req.query(`
 	SELECT r.id, r.target_type, r.target_id, r.reporter_id, r.reason, r.created_at, r.status,
-	DATEDIFF(minute, r.created_at, GETDATE()) AS minutes_since_reported
+	DATEDIFF(minute, r.created_at, GETDATE()) AS minutes_since_reported,
+	CASE 
+		WHEN r.target_type = 'post' THEN p.author_id
+		WHEN r.target_type = 'comment' THEN c.author_id
+		WHEN r.target_type = 'user' THEN r.target_id
+		ELSE NULL
+	END AS reported_user_id
 	FROM [dbo].[report] r
-	where r.status = COALESCE(@status, r.status)
-	and r.target_type = COALESCE(@target_type, r.target_type)
-	and r.id = COALESCE(@report_id, r.id)
-	and r.target_id = COALESCE(@target_id, r.target_id)
-	and r.reporter_id = COALESCE(@reporter_id, r.reporter_id )
-		ORDER BY r.created_at ${orderDir}
+	LEFT JOIN [dbo].[post] p ON r.target_type = 'post' AND r.target_id = p.id
+	LEFT JOIN [dbo].[comment] c ON r.target_type = 'comment' AND r.target_id = c.id
+	WHERE r.status = COALESCE(@status, r.status)
+	AND r.target_type = COALESCE(@target_type, r.target_type)
+	AND r.id = COALESCE(@report_id, r.id)
+	AND r.target_id = COALESCE(@target_id, r.target_id)
+	AND r.reporter_id = COALESCE(@reporter_id, r.reporter_id)
+	ORDER BY r.created_at ${orderDir}
   `);
 
 	return rows.recordset as ReportRow[];
