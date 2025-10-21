@@ -5,7 +5,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/dashboard/AppSideBar';
+import { AppSidebar } from '@/components/posts/AppSideBar';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import {

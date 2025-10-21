@@ -5,6 +5,7 @@ import { signup } from '../models/user.model';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { env } from '../config/env';
 import * as z from 'zod';
+import { getUserActiveBans } from '../models/ban.model';
 
 const passwordSchema = z
 	.string()
@@ -47,6 +48,11 @@ export const loginController = async (
 				'SELECT id, email, display_name FROM [dbo].[app_user] WHERE email = @email'
 			);
 		if (userResult.recordset.length === 0) {
+			res.clearCookie('token', {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+			});
 			return res.status(401).json({ message: 'Email not found' });
 		}
 		const {
@@ -62,12 +68,22 @@ export const loginController = async (
 				'SELECT password_hash FROM [dbo].[user_secret] WHERE user_id = @user_id'
 			);
 		if (secretResult.recordset.length === 0) {
+			res.clearCookie('token', {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+			});
 			return res.status(401).json({ message: 'Password not set' });
 		}
 		const passwordHash = secretResult.recordset[0].password_hash;
 		// เปรียบเทียบรหัสผ่าน
 		const match = await bcrypt.compare(password, passwordHash);
 		if (!match) {
+			res.clearCookie('token', {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+			});
 			return res.status(401).json({ message: 'Password incorrect' });
 		}
 		// ดึง role
@@ -78,6 +94,24 @@ export const loginController = async (
 				'SELECT role FROM [dbo].[user_role] WHERE user_id = @user_id'
 			);
 		const role = roleResult.recordset[0]?.role || 'user';
+
+		// Check for active suspension before allowing login
+		const suspendBans = await getUserActiveBans(user_id, 'suspend');
+		if (suspendBans.length > 0) {
+			const ban = suspendBans[0];
+			// Clear any existing token cookie to prevent using previous account
+			res.clearCookie('token', {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+			});
+			return res.status(403).json({
+				message: 'Your account is suspended',
+				reason: ban.reason_user || 'No reason provided',
+				ban_type: 'suspend',
+				end_at: ban.end_at,
+			});
+		}
 
 		// สร้าง JWT token
 

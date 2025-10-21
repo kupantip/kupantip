@@ -1,11 +1,7 @@
 'use client';
 
-import PostDetail from '@/components/dashboard/PostDetail';
+import PostDetail from '@/components/posts/PostDetail';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import * as t from '@/types/dashboard/post';
-import { getPostById } from '@/services/dashboard/getPostById';
-
 import { Button } from '@/components/ui/button';
 import {
 	Empty,
@@ -16,6 +12,7 @@ import {
 	EmptyTitle,
 } from '@/components/ui/empty';
 import { Loader2, Folder } from 'lucide-react';
+import { usePostDetail } from '@/services/post/post';
 
 export default function PostPage() {
 	const params = useParams();
@@ -23,28 +20,12 @@ export default function PostPage() {
 		? params.postId[0]
 		: params.postId;
 
-	const [post, setPost] = useState<t.Post[] | null>(null);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		if (!postId) return;
-
-		const fetchPost = async () => {
-			setLoading(true);
-			try {
-				const data: t.Post[] = await getPostById(postId);
-				setPost(data);
-			} catch (error) {
-				console.error(error);
-			} finally {
-				setLoading(false);
-			}
-		};
-		fetchPost();
-	}, [postId]);
+	const { data: post, isLoading: isLoadingPost } = usePostDetail(
+		postId || ''
+	);
 
 	// Loading state
-	if (loading) {
+	if (isLoadingPost) {
 		return (
 			<div className="flex justify-center items-center h-[60vh]">
 				<Empty>
@@ -63,7 +44,7 @@ export default function PostPage() {
 	}
 
 	// Post not found / invalid ID
-	if (!post || post.length === 0) {
+	if (!post) {
 		return (
 			<div className="flex justify-center items-center h-[60vh]">
 				<Empty>
@@ -98,5 +79,5 @@ export default function PostPage() {
 	}
 
 	// Display post
-	return <PostDetail post={post[0]} />;
+	return <PostDetail post={post} />;
 }

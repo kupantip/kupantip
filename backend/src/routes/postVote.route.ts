@@ -4,10 +4,11 @@ import {
 	votePostController,
 	deleteVotePostController,
 } from '../controller/postVote.controller';
+import { checkBan } from '../middleware/banCheck.middleware';
 
 const router = Router();
 
-router.post('/:post_id', authMiddleware, votePostController);
+router.post('/:post_id', authMiddleware, checkBan('vote'), votePostController);
 router.delete('/:post_id', authMiddleware, deleteVotePostController);
 
 export default router;

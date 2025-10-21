@@ -4,6 +4,7 @@ import {
 	loginController,
 } from '../controller/user.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { checkSuspend } from '../middleware/banCheck.middleware';
 
 const router = Router({ strict: true });
 
@@ -11,7 +12,7 @@ router.get('/', (req, res) => {
 	res.send('user route');
 });
 
-router.get('/profile', authMiddleware, (req, res) => {
+router.get('/profile', authMiddleware, checkSuspend, (req, res) => {
 	res.json({ user: req.user });
 });
 

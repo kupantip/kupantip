@@ -10,6 +10,7 @@ import {
 	getHotPostsByCategory,
 	getCategorySummaryStats,
 } from '../models/post.model';
+import { logModerationAction } from '../models/moderationAction.model';
 import * as z from 'zod';
 
 const postSchema = z.object({
@@ -56,6 +57,10 @@ const getFilterSchema = z.object({
 		}
 		return undefined;
 	}, z.boolean().optional()),
+});
+
+const getAttachmentsSchema = z.object({
+	filename: z.string().min(1, 'Filename is required'),
 });
 
 export const createPostController = async (
@@ -220,6 +225,23 @@ export const deletePostController = async (
 			});
 		}
 
+		// Log moderation action if admin deleted someone else's post
+		if (
+			req.user.role === 'admin' &&
+			deletedPost.author_id !== req.user.user_id
+		) {
+			await logModerationAction({
+				actor_id: req.user.user_id,
+				target_type: 'post',
+				target_id: post_id,
+				action_type: 'delete_content',
+				details: {
+					post_title: deletedPost.title,
+					author_id: deletedPost.author_id,
+				},
+			});
+		}
+
 		return res
 			.status(200)
 			.json({ message: 'Post deleted', post: deletedPost });
@@ -303,6 +325,30 @@ export const updatePostController = async (
 			message: 'Post updated',
 			post: updated,
 			attachments: newAttachments,
+		});
+	} catch (err) {
+		next(err);
+	}
+};
+
+export const getAttachmentsController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const filename = req.params.filename;
+
+		const parsed = getAttachmentsSchema.parse({ filename });
+
+		const options = {
+			root: 'uploads/',
+		};
+
+		res.sendFile(parsed.filename, options, (err) => {
+			if (err) {
+				res.status(404).send('File not found');
+			}
 		});
 	} catch (err) {
 		next(err);
