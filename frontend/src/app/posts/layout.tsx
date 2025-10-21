@@ -40,7 +40,7 @@ export default function DashboardLayout({
 						<div className="w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
 							<Bell className="w-5 h-5 text-white cursor-pointer" />
 						</div>
-						<Link href="/dashboard/create-post">
+						<Link href="/posts/create">
 							<Button className="group w-20 bg-transparent text-white rounded-lg hover:bg-transparent flex items-center gap-2 cursor-pointer hover:scale-105">
 								<CirclePlus className="mt-[0.2em]" />
 								<div className="group-hover:underline">

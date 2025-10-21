@@ -67,7 +67,7 @@ export default function CreatePostPage() {
 
     try {
       await createPost({ ...formData, url: postUrl });
-      router.push("/dashboard");
+      router.push("/posts");
     } catch (err: unknown) {
       console.error("Error: ", err);
     } finally {
