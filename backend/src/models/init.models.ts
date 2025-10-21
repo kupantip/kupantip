@@ -13,7 +13,7 @@ export const init = async (): Promise<IResult<{ One: string }>> => {
       		,[display_name]
       		,[created_at]
     		,[updated_at]
-  			FROM [KUPantipDB].[dbo].[app_user]`
+  			FROM [dbo].[app_user]`
 		);
 		return dataResult;
 	} catch (error: unknown) {

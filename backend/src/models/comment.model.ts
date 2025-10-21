@@ -19,6 +19,8 @@ type CommentWithAuthor = {
 	dislike_count: number;
 	vote_count: number;
 	vote_score: number;
+	liked_by_requesting_user: boolean;
+	disliked_by_requesting_user: boolean;
 };
 
 export const create_comment = async (data: t.CommentReq) => {
@@ -68,13 +70,24 @@ export const create_comment = async (data: t.CommentReq) => {
 };
 
 export const getCommentsByPostId = async (
-	post_id: string
+	post_id: string,
+	requesting_user_id?: string
 ): Promise<CommentWithAuthor[]> => {
 	try {
 		const cnt: ConnectionPool = await getDbConnection();
 
 		// Get all comments for the post with author information
-		const result = await cnt.request().input('post_id', post_id).query(`
+		const request = cnt.request().input('post_id', post_id);
+
+		// Bind requesting_user_id for shadowban check
+		const sql = await import('mssql');
+		request.input(
+			'requesting_user_id',
+			sql.UniqueIdentifier,
+			requesting_user_id ?? null
+		);
+
+		const result = await request.query(`
                 SELECT 
                     c.id,
                     c.post_id,
@@ -92,21 +105,95 @@ export const getCommentsByPostId = async (
                         WHERE r.parent_id = c.id
                         AND r.deleted_at IS NULL
                     ) AS reply_count,
-					ISNULL((
-						SELECT SUM(CASE WHEN v.value = 1 THEN 1 ELSE 0 END)
-						FROM [dbo].[comment_vote] v
-						WHERE v.comment_id = c.id
-					), 0) AS like_count,
-					ISNULL((
-						SELECT SUM(CASE WHEN v.value = -1 THEN 1 ELSE 0 END)
-						FROM [dbo].[comment_vote] v
-						WHERE v.comment_id = c.id
-					), 0) AS dislike_count,
-					(SELECT COUNT(*) FROM [dbo].[comment_vote] v WHERE v.comment_id = c.id AND v.value IN (1,-1)) AS vote_count,
-	  				COALESCE((SELECT SUM(v.value) FROM [dbo].[comment_vote] v WHERE v.comment_id = c.id),0) AS vote_score
+				ISNULL((
+					SELECT SUM(CASE WHEN v.value = 1 THEN 1 ELSE 0 END)
+					FROM [dbo].[comment_vote] v
+					WHERE v.comment_id = c.id
+					  AND (
+						NOT EXISTS (
+						  SELECT 1 FROM [dbo].[user_ban] ub
+						  WHERE ub.user_id = v.user_id
+							AND ub.ban_type = 'shadowban'
+							AND ub.revoked_at IS NULL
+							AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+							AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+						)
+						OR v.user_id = @requesting_user_id
+					  )
+				), 0) AS like_count,
+				ISNULL((
+					SELECT SUM(CASE WHEN v.value = -1 THEN 1 ELSE 0 END)
+					FROM [dbo].[comment_vote] v
+					WHERE v.comment_id = c.id
+					  AND (
+						NOT EXISTS (
+						  SELECT 1 FROM [dbo].[user_ban] ub
+						  WHERE ub.user_id = v.user_id
+							AND ub.ban_type = 'shadowban'
+							AND ub.revoked_at IS NULL
+							AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+							AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+						)
+						OR v.user_id = @requesting_user_id
+					  )
+				), 0) AS dislike_count,
+				(SELECT COUNT(*) FROM [dbo].[comment_vote] v WHERE v.comment_id = c.id AND v.value IN (1,-1)
+				  AND (
+					NOT EXISTS (
+					  SELECT 1 FROM [dbo].[user_ban] ub
+					  WHERE ub.user_id = v.user_id
+						AND ub.ban_type = 'shadowban'
+						AND ub.revoked_at IS NULL
+						AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+						AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+					)
+					OR v.user_id = @requesting_user_id
+				  )
+				) AS vote_count,
+	  			COALESCE((SELECT SUM(v.value) FROM [dbo].[comment_vote] v WHERE v.comment_id = c.id
+				  AND (
+					NOT EXISTS (
+					  SELECT 1 FROM [dbo].[user_ban] ub
+					  WHERE ub.user_id = v.user_id
+						AND ub.ban_type = 'shadowban'
+						AND ub.revoked_at IS NULL
+						AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+						AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+					)
+					OR v.user_id = @requesting_user_id
+				  )
+				),0) AS vote_score,
+				CAST(
+					CASE 
+						WHEN @requesting_user_id IS NOT NULL AND EXISTS (
+							SELECT 1 FROM [dbo].[comment_vote] v
+							WHERE v.comment_id = c.id AND v.user_id = @requesting_user_id AND v.value = 1
+						) THEN 1 ELSE 0 END AS BIT
+				) AS liked_by_requesting_user,
+				CAST(
+					CASE 
+						WHEN @requesting_user_id IS NOT NULL AND EXISTS (
+							SELECT 1 FROM [dbo].[comment_vote] v
+							WHERE v.comment_id = c.id AND v.user_id = @requesting_user_id AND v.value = -1
+						) THEN 1 ELSE 0 END AS BIT
+				) AS disliked_by_requesting_user
                 FROM [dbo].[comment] c
                 LEFT JOIN [dbo].[app_user] u ON c.author_id = u.id
                 WHERE c.post_id = @post_id AND c.deleted_at IS NULL
+				  -- Shadowban filter: hide comments from shadowbanned users unless viewing own comments
+				  AND (
+					-- Show if author is not shadowbanned
+					NOT EXISTS (
+					  SELECT 1 FROM [dbo].[user_ban] ub
+					  WHERE ub.user_id = c.author_id
+						AND ub.ban_type = 'shadowban'
+						AND ub.revoked_at IS NULL
+						AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+						AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+					)
+					-- OR show if requesting user is the author (shadowbanned users see their own comments)
+					OR (@requesting_user_id IS NOT NULL AND c.author_id = @requesting_user_id)
+				  )
                 ORDER BY 
                     CASE WHEN c.parent_id IS NULL THEN c.created_at END ASC,
                     CASE WHEN c.parent_id IS NOT NULL THEN c.created_at END ASC

@@ -10,10 +10,17 @@ import {
 } from '../controller/post.controller';
 import { uploadWithLimit } from '../middleware/upload.middleware';
 import { optionalAuthMiddleware } from '../middleware/optionalAuth.middleware';
+import { checkBan } from '../middleware/banCheck.middleware';
 
 const router = Router();
 
-router.post('/', authMiddleware, uploadWithLimit, createPostController);
+router.post(
+	'/',
+	authMiddleware,
+	checkBan('post'),
+	uploadWithLimit,
+	createPostController
+);
 
 router.get('/', optionalAuthMiddleware, getPostsController);
 
@@ -23,6 +30,12 @@ router.get('/summarystats', getPostSummaryStatsController);
 
 router.delete('/:post_id', authMiddleware, deletePostController);
 
-router.put('/:post_id', authMiddleware, uploadWithLimit, updatePostController);
+router.put(
+	'/:post_id',
+	authMiddleware,
+	checkBan('post'),
+	uploadWithLimit,
+	updatePostController
+);
 
 export default router;
