@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { useSession } from 'next-auth/react';
 
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/posts/AppSideBar';
@@ -25,11 +26,14 @@ export default function DashboardLayout({
 }: {
 	children: React.ReactNode;
 }) {
+	const { data: session, status } = useSession();
+
 	useEffect(() => {
 		window.history.scrollRestoration = 'manual';
 		window.scrollTo({ top: 0 });
 		AOS.init({ duration: 800, once: true, offset: 100 });
 	}, []);
+
 	return (
 		<SidebarProvider>
 			<header className="fixed top-0 left-0 w-full h-16 bg-green-2 shadow flex items-center px-4 z-50">
@@ -48,11 +52,15 @@ export default function DashboardLayout({
 								</div>
 							</Button>
 						</Link>
-						<Link href="/login">
-							<Button className="w-30 bg-green-1 text-white rounded-lg hover:bg-green-700 cursor-pointer hover:scale-105">
-								<div className="hover:underline">Log In</div>
-							</Button>
-						</Link>
+						{status !== 'authenticated' && (
+							<Link href="/login">
+								<Button className="w-30 bg-green-1 text-white rounded-lg hover:bg-green-700 cursor-pointer hover:scale-105">
+									<div className="hover:underline">
+										Log In
+									</div>
+								</Button>
+							</Link>
+						)}
 						<Button
 							variant="ghost"
 							className="p-0 bg-transparent hover:bg-transparent focus-visible:ring-0 cursor-pointer hover:scale-105"
