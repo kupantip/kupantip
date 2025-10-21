@@ -58,6 +58,10 @@ const getFilterSchema = z.object({
 	}, z.boolean().optional()),
 });
 
+const getAttachmentsSchema = z.object({
+	filename: z.string().min(1, 'Filename is required'),
+});
+
 export const createPostController = async (
 	req: Request,
 	res: Response,
@@ -303,6 +307,30 @@ export const updatePostController = async (
 			message: 'Post updated',
 			post: updated,
 			attachments: newAttachments,
+		});
+	} catch (err) {
+		next(err);
+	}
+};
+
+export const getAttachmentsController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const filename = req.params.filename;
+
+		const parsed = getAttachmentsSchema.parse({ filename });
+
+		const options = {
+			root: 'uploads/',
+		};
+
+		res.sendFile(parsed.filename, options, (err) => {
+			if (err) {
+				res.status(404).send('File not found');
+			}
 		});
 	} catch (err) {
 		next(err);

@@ -13,7 +13,7 @@ import {
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PostItem } from '@/components/dashboard/PostItem';
+import { PostItem } from '@/components/posts/PostItem';
 import { usePosts } from '@/services/post/post';
 import { useParams } from 'next/navigation';
 
@@ -94,6 +94,7 @@ export default function PostCategoryPage() {
 								author={post.author_name}
 								time={post.minutes_since_posted}
 								comments={post.comment_count}
+								attachments={post.attachments}
 							/>
 						))
 					) : (

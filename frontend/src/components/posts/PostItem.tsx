@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart } from 'lucide-react';
+import { Heart, Paperclip } from 'lucide-react';
+import { Attachment } from '@/services/post/post';
 
 interface PostItemProps {
 	id: string;
@@ -12,6 +13,7 @@ interface PostItemProps {
 	category: string;
 	time: number; // time in minutes
 	comments?: number;
+	attachments?: Attachment[];
 }
 
 export const PostItem: React.FC<PostItemProps> = ({
@@ -21,6 +23,7 @@ export const PostItem: React.FC<PostItemProps> = ({
 	category,
 	time,
 	comments = 0,
+	attachments = [],
 }) => {
 	const formatTime = (minutes: number) => {
 		if (minutes < 60) return `${minutes} min ago`;
@@ -34,7 +37,7 @@ export const PostItem: React.FC<PostItemProps> = ({
 	};
 
 	return (
-		<Link href={`/dashboard/${id}`} className="block">
+		<Link href={`/posts/${id}`} className="block">
 			<div
 				className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
                         hover:bg-gray-100 dark:hover:bg-gray-800 
@@ -44,7 +47,12 @@ export const PostItem: React.FC<PostItemProps> = ({
 			>
 				<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
 					<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline cursor-pointer">
-						{title}
+						{title}{' '}
+						{attachments.length > 0 ? (
+							<Paperclip className="inline-block w-4 h-4 text-gray-500 ml-1" />
+						) : (
+							''
+						)}
 					</h3>
 					<p className="text-sm text-gray-500">
 						<Badge

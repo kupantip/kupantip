@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { getSession } from 'next-auth/react';
 
-type Attachment = {
+export type Attachment = {
 	id: string;
 	url: string;
 	mime_type: string;
@@ -66,6 +66,43 @@ export function usePosts(category_id: string | null) {
 	return useQuery<Post[], Error>({
 		queryKey: ['posts', category_id],
 		queryFn: () => fetchPosts(category_id),
+		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+}
+
+export const fetchPostDetailById = async (post_id: string): Promise<Post> => {
+	try {
+		const session = await getSession();
+
+		const header = {
+			Authorization: `Bearer ${session?.user?.accessToken}`,
+		};
+
+		const response = await instance.get<Post[]>('/post', {
+			headers: header,
+			params: { post_id },
+		});
+		if (response.data.length === 0) {
+			throw new Error('Post not found');
+		}
+		return response.data[0];
+	} catch (error: unknown) {
+		if (axios.isAxiosError(error)) {
+			throw new Error(
+				`Failed to fetch post detail: ${error.response?.status} ${error.response?.statusText}`
+			);
+		} else if (error instanceof Error) {
+			throw new Error(error.message);
+		} else {
+			throw new Error(String(error));
+		}
+	}
+};
+
+export function usePostDetail(post_id: string) {
+	return useQuery<Post, Error>({
+		queryKey: ['postDetail', post_id],
+		queryFn: () => fetchPostDetailById(post_id),
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 }
