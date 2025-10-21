@@ -37,6 +37,15 @@ export const authOptions: NextAuthOptions = {
           const res = await login({ email, password })
           if (!res.user_id) return null
 
+          const cookieStore = await cookies();
+          cookieStore.set('token', res.token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7,
+            path: '/',
+          });
+
           return {
             id: res.user_id,
             name: res.display_name ?? res.email,
