@@ -1,5 +1,6 @@
 'use client';
 
+import { useCategories } from '@/services/post/category';
 import {
 	Calendar,
 	Home,
@@ -17,7 +18,11 @@ const items = [
 	{ title: 'Home', url: '/dashboard', icon: Home },
 	{ title: 'Annoucement', url: '/dashboard/annoucement', icon: Inbox },
 	{ title: 'Community', url: '/dashboard/community', icon: PersonStanding },
-	{ title: 'Recruitment', url: '/dashboard/recruitment', icon: BriefcaseBusiness },
+	{
+		title: 'Recruitment',
+		url: '/dashboard/recruitment',
+		icon: BriefcaseBusiness,
+	},
 ];
 
 const topicItems = [
@@ -29,6 +34,15 @@ export function AppSidebar() {
 	const [collapsed, setCollapsed] = useState(false);
 	const [hovered, setHovered] = useState(false);
 	const hoverTimer = useRef<number | null>(null);
+	const iconMenu = {
+		Home: Home,
+		Annoucement: Inbox,
+		Community: PersonStanding,
+		Recruitment: BriefcaseBusiness,
+	};
+
+	const { data: categories, isLoading: isLoadingCategories } =
+		useCategories();
 
 	const expanded = !collapsed || hovered;
 
@@ -103,28 +117,40 @@ export function AppSidebar() {
 
 			<nav className="h-[calc(100%-3rem)] overflow-y-auto pb-6">
 				<ul className="space-y-1 px-4">
-					{items.map((item) => {
-						const Icon = item.icon;
-						return (
-							<li key={item.title}>
-								<a
-									href={item.url}
-									className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
-										expanded
-											? 'justify-start'
-											: 'justify-center'
-									}`}
-									aria-label={
-										expanded ? undefined : item.title
-									}
-									title={!expanded ? item.title : undefined}
-								>
-									<Icon className="h-4 w-4 shrink-0" />
-									{expanded && <span>{item.title}</span>}
-								</a>
-							</li>
-						);
-					})}
+					{!isLoadingCategories &&
+						categories?.map((category) => {
+							const Icon =
+								iconMenu[
+									category.label as keyof typeof iconMenu
+								];
+							return (
+								<li key={category.id}>
+									<a
+										href={`/posts/category/${category.id}`}
+										className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
+											expanded
+												? 'justify-start'
+												: 'justify-center'
+										}`}
+										aria-label={
+											expanded
+												? undefined
+												: category.label
+										}
+										title={
+											!expanded
+												? category.label
+												: undefined
+										}
+									>
+										<Icon className="h-4 w-4 shrink-0" />
+										{expanded && (
+											<span>{category.label}</span>
+										)}
+									</a>
+								</li>
+							);
+						})}
 
 					{expanded && (
 						<li className="pt-2">

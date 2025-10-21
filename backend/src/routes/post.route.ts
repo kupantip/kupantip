@@ -38,4 +38,17 @@ router.put(
 	updatePostController
 );
 
+router.get('/attachments/:filename', (req, res) => {
+	const filename = req.params.filename;
+	const options = {
+		root: 'uploads/',
+	};
+
+	res.sendFile(filename, options, (err) => {
+		if (err) {
+			res.status(404).send('File not found');
+		}
+	});
+});
+
 export default router;

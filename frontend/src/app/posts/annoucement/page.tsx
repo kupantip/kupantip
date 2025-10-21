@@ -14,11 +14,12 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PostItem } from '@/components/posts/PostItem';
+
 import { getPost } from '@/services/dashboard/getPost';
-import { PostItem } from '@/components/dashboard/PostItem';
 import * as t from '@/types/dashboard/post';
 
-export default function CommunityPage() {
+export default function AnnoucementPage() {
 	const [postArray, setPostArray] = useState<t.Post[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(false);
@@ -34,7 +35,7 @@ export default function CommunityPage() {
 	useEffect(() => {
 		const fetchPosts = async () => {
 			try {
-				const data = await getPost('Community');
+				const data = await getPost('Announcement');
 				setPostArray(data);
 				console.log(postArray);
 			} catch (error) {
@@ -52,8 +53,6 @@ export default function CommunityPage() {
 			data-aos="fade-up"
 			className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
 		>
-			{' '}
-			{/* Breadcrumb */}
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
@@ -61,41 +60,37 @@ export default function CommunityPage() {
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
-						<BreadcrumbPage>Community</BreadcrumbPage>
+						<BreadcrumbPage>Announcement</BreadcrumbPage>
 					</BreadcrumbItem>
 				</BreadcrumbList>
 			</Breadcrumb>
-			{/* Header Card */}
+
 			<Card className="bg-green-1 text-white shadow-md border-none">
 				<CardHeader>
-					<CardTitle className="text-2xl font-bold">
-						<div className="text-2xl font-bold">Community</div>
+					<CardTitle>
+						<div className="text-2xl font-bold">Announcements</div>
 						<div className="text-sm font-normal pt-2">
 							1,240 Posts • 520 Followers
 						</div>
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="flex items-center justify-between text-sm">
-					<div>
-						A space for students to share ideas, experiences, and
-						discussions within the university community.
-					</div>
+					<div>Latest Announcements and Student Notices</div>
 					<Button
 						variant="secondary"
-						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer"
+						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer hover:scale-105"
 					>
-						Join
+						Follow
 					</Button>
 				</CardContent>
 			</Card>
-			{/* Community Discussions */}
+
 			<Card className="shadow-sm overflow-hidden rounded-lg">
 				<CardHeader className="text-green-2 mb-[-20]">
 					<CardTitle className="text-lg font-semibold">
 						Latest Posts
 					</CardTitle>
 				</CardHeader>
-
 				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
 					{postArray.map((post, i) => (
 						<PostItem
