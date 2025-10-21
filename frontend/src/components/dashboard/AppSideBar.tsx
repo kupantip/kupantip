@@ -126,7 +126,7 @@ export function AppSidebar() {
 							return (
 								<li key={category.id}>
 									<a
-										href={`/dashboard/category/${category.id}`}
+										href={`/posts/category/${category.id}`}
 										className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
 											expanded
 												? 'justify-start'

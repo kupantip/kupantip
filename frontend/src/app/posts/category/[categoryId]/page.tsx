@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -13,15 +13,16 @@ import {
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { getPost } from '@/services/dashboard/getPost';
 import { PostItem } from '@/components/dashboard/PostItem';
-import * as t from '@/types/dashboard/post';
+import { usePosts } from '@/services/post/post';
+import { useParams } from 'next/navigation';
 
-export default function CommunityPage() {
-	const [postArray, setPostArray] = useState<t.Post[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(false);
+export default function PostCategoryPage() {
+	const params = useParams();
+	const { categoryId } = params;
+	const { data: posts } = usePosts(
+		typeof categoryId === 'string' ? categoryId : null
+	);
 
 	useEffect(() => {
 		AOS.init({
@@ -30,22 +31,13 @@ export default function CommunityPage() {
 			offset: 80,
 		});
 	}, []);
-
-	useEffect(() => {
-		const fetchPosts = async () => {
-			try {
-				const data = await getPost('Community');
-				setPostArray(data);
-				console.log(postArray);
-			} catch (error) {
-				setError(true);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchPosts();
-	}, []);
+	if (!categoryId) {
+		return (
+			<div className="p-4 text-center text-gray-500">
+				Invalid category.
+			</div>
+		);
+	}
 
 	return (
 		<div
@@ -71,7 +63,8 @@ export default function CommunityPage() {
 					<CardTitle className="text-2xl font-bold">
 						<div className="text-2xl font-bold">Community</div>
 						<div className="text-sm font-normal pt-2">
-							1,240 Posts • 520 Followers
+							{posts ? posts.length : 0} Posts · A place to share
+							ideas and discussions
 						</div>
 					</CardTitle>
 				</CardHeader>
@@ -80,12 +73,6 @@ export default function CommunityPage() {
 						A space for students to share ideas, experiences, and
 						discussions within the university community.
 					</div>
-					<Button
-						variant="secondary"
-						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer"
-					>
-						Join
-					</Button>
 				</CardContent>
 			</Card>
 			{/* Community Discussions */}
@@ -97,17 +84,23 @@ export default function CommunityPage() {
 				</CardHeader>
 
 				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
-					{postArray.map((post, i) => (
-						<PostItem
-							key={i}
-							id={post.id}
-							title={post.title}
-							category={post.category_label}
-							author={post.author_name}
-							time={post.minutes_since_posted}
-							comments={post.comment_count}
-						/>
-					))}
+					{posts ? (
+						posts.map((post, i) => (
+							<PostItem
+								key={i}
+								id={post.id}
+								title={post.title}
+								category={post.category_label}
+								author={post.author_name}
+								time={post.minutes_since_posted}
+								comments={post.comment_count}
+							/>
+						))
+					) : (
+						<div className="p-4 text-center text-gray-500">
+							No posts available.
+						</div>
+					)}
 				</CardContent>
 			</Card>
 		</div>
