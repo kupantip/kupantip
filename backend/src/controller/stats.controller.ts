@@ -9,11 +9,9 @@ import {
 } from '../models/stats.model';
 import * as z from 'zod';
 
-
 const dailyActivitySchema = z.object({
 	days: z.coerce.number().int().min(1).max(90).optional(),
 });
-
 
 export const getDashboardStatsController = async (
 	req: Request,
@@ -104,7 +102,6 @@ export const getReportStatsController = async (
 		next(err);
 	}
 };
-
 
 export const getDailyPostActivityController = async (
 	req: Request,
