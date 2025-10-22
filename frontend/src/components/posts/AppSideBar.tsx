@@ -15,12 +15,12 @@ import { useState, useRef, useEffect } from 'react';
 const HOVER_OPEN_DELAY_MS = 250;
 
 const items = [
-	{ title: 'Home', url: '/dashboard', icon: Home },
-	{ title: 'Annoucement', url: '/dashboard/annoucement', icon: Inbox },
-	{ title: 'Community', url: '/dashboard/community', icon: PersonStanding },
+	{ title: 'Home', url: '/posts', icon: Home },
+	{ title: 'Announcement', url: '/posts/annoucement', icon: Inbox },
+	{ title: 'Community', url: '/posts/community', icon: PersonStanding },
 	{
 		title: 'Recruitment',
-		url: '/dashboard/recruitment',
+		url: '/posts/recruitment',
 		icon: BriefcaseBusiness,
 	},
 ];
@@ -36,7 +36,7 @@ export function AppSidebar() {
 	const hoverTimer = useRef<number | null>(null);
 	const iconMenu = {
 		Home: Home,
-		Annoucement: Inbox,
+		Announcement: Inbox,
 		Community: PersonStanding,
 		Recruitment: BriefcaseBusiness,
 	};

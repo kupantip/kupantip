@@ -71,7 +71,7 @@ export default function EditPostPage() {
 		if (!post) return;
 		try {
 			await updatePost({ title, body_md: body, category_id }, post.id);
-			router.push(`/dashboard`);
+			router.push(`/posts/category/${category_id}`);
 		} catch (err) {
 			console.error('Failed to update post', err);
 		}
@@ -113,7 +113,7 @@ export default function EditPostPage() {
 						rows={10}
 					/>
 					<div className="flex justify-end gap-2">
-						<Link href="/dashboard">
+						<Link href={`/posts/${postId}`}>
 							<Button className="bg-gray-200 text-black rounded-full hover:bg-gray-300 hover:shadow-md hover:scale-105 cursor-pointer">
 								Cancel
 							</Button>

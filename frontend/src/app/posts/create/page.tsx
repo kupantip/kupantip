@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { v4 as uuidv4 } from "uuid";
 import { createPost } from "@/services/user/create-post_page";
+import { useCategories } from '@/services/post/category';
 import { motion } from "framer-motion";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -17,7 +18,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-
 export default function CreatePostPage() {
   const [tab, setTab] = useState<"text" | "media">("text");
   const [formData, setFormData] = useState({
@@ -27,6 +27,8 @@ export default function CreatePostPage() {
     category_id: "",
     files: [] as File[],
   });
+
+  const { data: categories, isLoading: isLoadingCategories } = useCategories();
 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -67,7 +69,7 @@ export default function CreatePostPage() {
 
     try {
       await createPost({ ...formData, url: postUrl });
-      router.push("/posts");
+      router.push(`/posts/category/${formData.category_id}`);
     } catch (err: unknown) {
       console.error("Error: ", err);
     } finally {
@@ -124,9 +126,11 @@ export default function CreatePostPage() {
               <SelectValue placeholder="Select Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="9108433E-F36B-1410-84CA-00F2EA0D0522">Announcement</SelectItem>
-              <SelectItem value="9708433E-F36B-1410-84CA-00F2EA0D0522">Community</SelectItem>
-              <SelectItem value="9D08433E-F36B-1410-84CA-00F2EA0D0522">Recruitment</SelectItem>
+              {categories?.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
