@@ -13,6 +13,7 @@ import commentVoteRoutes from './routes/commentVote.route';
 import reportRoutes from './routes/report.route';
 import banRoutes from './routes/ban.route';
 import moderationActionRoutes from './routes/moderationAction.route';
+import statsRoutes from './routes/stats.route';
 import * as z from 'zod';
 import { getDbConnection } from './database/mssql.database';
 
@@ -50,6 +51,7 @@ apiV1.use('/comment-vote', commentVoteRoutes);
 apiV1.use('/report', reportRoutes);
 apiV1.use('/ban', banRoutes);
 apiV1.use('/moderation-actions', moderationActionRoutes);
+apiV1.use('/stats', statsRoutes);
 
 app.use('/api/v1', apiV1);
 
