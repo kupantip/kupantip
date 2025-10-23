@@ -17,7 +17,6 @@ import Image from 'next/image';
 import { Trash2 } from 'lucide-react';
 import { Pen } from 'lucide-react';
 import { Flag } from 'lucide-react';
-// import ReportComment from '@/app/posts/report_comment/page';
 import ReportModal from '@/app/posts/report/page';
 
 type PostDetailProps = {
@@ -195,10 +194,6 @@ export default function PostDetail({ post }: PostDetailProps) {
 	const [loadingComments, setLoadingComments] = useState(true);
 
 	const [reportingPost, setReportingPost] = useState<t.Post | null>(null);
-	const [reportTarget, setReportTarget] = useState<{ 
-		type: "post" | "comment", 
-		data: t.Post | t.Comment 
-	} | null>(null);
 
 	const { data: session } = useSession();
 	const tokenPayload = session?.accessToken
@@ -404,12 +399,6 @@ export default function PostDetail({ post }: PostDetailProps) {
 								className="w-full h-auto object-cover rounded-lg mb-4"
 							/>
 						))
-					// <img
-					// 	src={post.attachments[0].url}
-					// 	alt="Post attachment"
-					// 	className="w-full h-auto object-cover rounded-lg"
-					// />
-					// <Image src={`/backend/post/attachments/${post.attachments[0].url}`} alt="Post attachment" width={600} height={400} className="w-full h-auto object-cover rounded-lg" />
 				}
 
 				<div>{post.body_md}</div>
