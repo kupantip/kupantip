@@ -17,7 +17,8 @@ import Image from 'next/image';
 import { Trash2 } from 'lucide-react';
 import { Pen } from 'lucide-react';
 import { Flag } from 'lucide-react';
-import ReportPost from '@/app/posts/report_post/page';
+// import ReportComment from '@/app/posts/report_comment/page';
+import ReportModal from '@/app/posts/report/page';
 
 type PostDetailProps = {
 	post: t.Post;
@@ -41,6 +42,45 @@ type CommentProps = {
 
 const CommentItem = ({ comment }: CommentProps) => {
 	const [showReplyBox, setShowReplyBox] = useState(false);
+	const [menuOpen, setMenuOpen] = useState(false);
+
+	const menuRef = useRef<HTMLDivElement>(null);
+
+	const { data: session } = useSession();
+	const tokenPayload = session?.accessToken
+		? jwtDecode<User>(session.accessToken)
+		: null;
+	const currentUserId = tokenPayload?.user_id;
+
+	const [reportingComment, setReportingComment] = useState<t.Comment | null>(null);
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				menuRef.current &&
+				!menuRef.current.contains(event.target as Node)
+			) {
+				setMenuOpen(false);
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
+
+	const handleReportComment = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		console.log('Report Comment on', comment.id);
+		setMenuOpen(false);
+		setReportingComment(comment);
+
+	};
+
+	const handleCloseReport = () => {
+		setReportingComment(null);
+	};
 
 	return (
 		<div className="mb-4">
@@ -75,6 +115,46 @@ const CommentItem = ({ comment }: CommentProps) => {
 							<MessageSquare className="w-4 h-4" />
 							<span>Reply</span>
 						</div>
+						<div
+							className="flex items-center gap-1 px-2 py-1 "
+							onClick={(e) => {
+								e.stopPropagation();
+								setMenuOpen(!menuOpen);
+							}}
+						>
+							<button
+								className="p-1 rounded-full hover:bg-gray-100 cursor-pointer cursor-pointer"
+								onClick={(e) => {
+									e.stopPropagation();
+									setMenuOpen(!menuOpen);
+								}}
+							>
+								<Ellipsis />
+							</button>
+							{comment.author_id != currentUserId && (
+								<AnimatePresence>
+									{menuOpen && (
+										<motion.div
+											ref={menuRef}
+											className="absolute mt-22 w-24 bg-white shadow-md rounded-lg"
+											initial={{ opacity: 0, x: 0, y: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={{ duration: 0.15 }}
+										>
+											<button
+												className="flex gap-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
+												onClick={handleReportComment}
+											>
+												<Flag />
+												<span className='mt-0.5'>Report</span>
+											</button>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							)}
+							
+						</div>
 					</div>
 
 					{showReplyBox && (
@@ -94,6 +174,16 @@ const CommentItem = ({ comment }: CommentProps) => {
 					)}
 				</div>
 			</div>
+			<AnimatePresence>
+				{reportingComment && (
+						<ReportModal
+							targetType="comment"
+							target={comment}
+							onClose={handleCloseReport} 
+						>
+						</ReportModal>
+				)}
+			</AnimatePresence>
 		</div>
 	);
 };
@@ -105,6 +195,10 @@ export default function PostDetail({ post }: PostDetailProps) {
 	const [loadingComments, setLoadingComments] = useState(true);
 
 	const [reportingPost, setReportingPost] = useState<t.Post | null>(null);
+	const [reportTarget, setReportTarget] = useState<{ 
+		type: "post" | "comment", 
+		data: t.Post | t.Comment 
+	} | null>(null);
 
 	const { data: session } = useSession();
 	const tokenPayload = session?.accessToken
@@ -193,15 +287,14 @@ export default function PostDetail({ post }: PostDetailProps) {
 		}
 	};
 
-	const handleReport = async (e: React.MouseEvent) => {
+	const handleReportPost = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Report on', post.id);
 		setMenuOpen(false);
 		setReportingPost(post);
-
 	};
 
-	const handleCloseReportModal = () => {
+	const handleCloseReport = () => {
 		setReportingPost(null);
 	};
 
@@ -281,7 +374,7 @@ export default function PostDetail({ post }: PostDetailProps) {
 									>
 										<button
 											className="flex gap-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
-											onClick={handleReport}
+											onClick={handleReportPost}
 										>
 											<Flag />
 											<span className='mt-0.5'>Report</span>
@@ -364,11 +457,12 @@ export default function PostDetail({ post }: PostDetailProps) {
 			</div>
 			<AnimatePresence>
 				{reportingPost && (
-						<ReportPost
-							post={reportingPost} 
-							onClose={handleCloseReportModal} 
+						<ReportModal
+							targetType="post"
+							target={post}
+							onClose={handleCloseReport} 
 						>
-						</ReportPost>
+						</ReportModal>
 				)}
 			</AnimatePresence>
 		</div>

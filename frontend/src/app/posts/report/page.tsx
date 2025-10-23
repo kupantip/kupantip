@@ -1,29 +1,26 @@
 "use client"
 
 import React, { useState} from 'react';
-import { Post } from '@/types/dashboard/post';
+import { Post, Comment } from '@/types/dashboard/post';
 import { motion } from 'framer-motion';
 import { Report } from '@/services/user/report';
 
 interface ReportModalProps {
-    post: Post;
+    targetType: "post" | "comment";
+    target: Post | Comment;
     onClose: () => void;
 }
 
-export default function ReportPost({ post, onClose }: ReportModalProps) {
+export default function ReportModal({ targetType, target, onClose }: ReportModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [formData, setFormData] = useState({
-        target_type: "",
-        target_id: post.id,
-        reason: "",
-    });
+    const [reason, setReason] = useState("");
 
     const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitting(true);
         
         try{
-            await Report({...formData, target_type: "post"})
+            await Report({target_type: targetType, target_id: target.id, reason: reason})
             console.log("Report Success!");
             onClose();
         }catch(err: unknown){
@@ -37,6 +34,11 @@ export default function ReportPost({ post, onClose }: ReportModalProps) {
         hidden: { opacity: 0, scale: 0.9 },
         visible: { opacity: 1, scale: 1 },
     };
+
+    const titleLabel = targetType === 'post' ? "Post title:" : "Comment content:";
+    const displayContent = targetType === 'post'
+        ? (target as Post).title
+        : (target as Comment).body_md;
 
     return (
         <div
@@ -53,22 +55,20 @@ export default function ReportPost({ post, onClose }: ReportModalProps) {
                 transition={{ duration: 0.2, ease: 'easeInOut' }}            
             >
                 <h3 className="text-2xl font-bold mb-4 text-black">
-                    Report Post
+                    Submit a report
                 </h3>
-                <p className="mb-1 text-black">Post title:</p>
+                <p className="mb-1 text-black">{titleLabel}</p>
                 <p className="mb-6 font-semibold text-black bg-gray-200 p-3 rounded-lg">
-                    {post.title}"
+                    {(displayContent)}
                 </p>
 
                 <form onSubmit={handleFormSubmit}>
                     <div className="mb-6">
-                        <label htmlFor="details" className="block text-black mb-2">
-                            Reason:
-                        </label>
+                        <p className="block text-black mb-2">Reason:</p>
                         <textarea
-                            value={formData.reason}
+                            value={reason}
                             onChange={(e) =>
-                            setFormData({ ...formData, reason: e.target.value })
+                            setReason(e.target.value)
                             }
                             rows={6}
                             className="w-full p-2 bg-gray-200 rounded-lg text-black"
