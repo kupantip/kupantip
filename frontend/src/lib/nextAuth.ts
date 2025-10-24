@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { login } from '@/services/user/auth';
 import { cookies } from 'next/headers';
 import NextAuth, { DefaultSession, DefaultUser } from 'next-auth';
+import axios from 'axios';
 
 declare module 'next-auth' {
 	interface Session {
@@ -18,6 +19,7 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
 	interface JWT {
 		accessToken?: string;
+		role?: string;
 	}
 }
 
@@ -44,7 +46,7 @@ export const authOptions: NextAuthOptions = {
 						role: res.role,
 						token: res.token,
 					};
-				} catch (err) {
+				} catch {
 					return null;
 				}
 			},
@@ -59,6 +61,7 @@ export const authOptions: NextAuthOptions = {
 	callbacks: {
 		async jwt({ token, user }) {
 			if (user?.token) token.accessToken = user.token;
+			if (user?.role) token.role = user.role;
 			return token;
 		},
 		async session({ session, token }) {
@@ -73,6 +76,17 @@ export const authOptions: NextAuthOptions = {
 				maxAge: 60 * 60 * 24 * 7, // 7 days
 				path: '/',
 			});
+
+			const res = await axios.get(
+				'http://localhost:8000/api/v1/user/profile',
+				{
+					headers: {
+						Authorization: `Bearer ${token.accessToken}`,
+					},
+				}
+			);
+
+			session.user = res.data.user;
 
 			return session;
 		},

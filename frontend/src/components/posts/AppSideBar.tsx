@@ -10,6 +10,8 @@ import {
 	PersonStanding,
 	BriefcaseBusiness,
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 
 const HOVER_OPEN_DELAY_MS = 250;
@@ -40,7 +42,7 @@ export function AppSidebar() {
 		Community: PersonStanding,
 		Recruitment: BriefcaseBusiness,
 	};
-
+	const session = useSession();
 	const { data: categories, isLoading: isLoadingCategories } =
 		useCategories();
 
@@ -181,6 +183,35 @@ export function AppSidebar() {
 							</a>
 						</li>
 					))}
+
+					{session.data?.user.role === 'admin' && (
+						<>
+							{expanded && (
+								<li className="pt-2">
+									<div className="mx-2 border-t border-gray-200" />
+								</li>
+							)}
+							<li>
+								<Link
+									href="/posts/admin"
+									className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
+										expanded
+											? 'justify-start'
+											: 'justify-center'
+									}`}
+									aria-label={
+										expanded ? undefined : 'Admin Panel'
+									}
+									title={
+										!expanded ? 'Admin Panel' : undefined
+									}
+								>
+									<Calendar className="h-4 w-4 shrink-0" />
+									{expanded && <span>Admin Panel</span>}
+								</Link>
+							</li>
+						</>
+					)}
 				</ul>
 			</nav>
 		</div>
