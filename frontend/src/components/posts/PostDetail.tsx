@@ -135,7 +135,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 							{comment.author_name}
 						</span>
 						<span className="text-gray-400">
-							{formatTime(1000)}
+							{formatTime(comment.minutes_since_commented || 0)}
 						</span>
 					</div>
 					<p className="text-gray-700 mt-1">{comment.body_md}</p>
