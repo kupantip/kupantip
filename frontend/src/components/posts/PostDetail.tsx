@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,7 +11,7 @@ import { User } from '@/types/dashboard/user';
 import { getCommentByPostId } from '@/services/dashboard/getCommentByPostId';
 import CommentBox from './CommentBox';
 import { deletePost } from '@/services/user/delete_post';
-import { upvotePost, downvotePost, deletevotePost } from '@/services/user/vote';
+import { votePost, deletevotePost, voteComment, deletevoteComment } from '@/services/user/vote';
 import { jwtDecode } from 'jwt-decode';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
@@ -38,9 +39,10 @@ const formatTime = (minutes: number) => {
 // Recursive Comment Component
 type CommentProps = {
 	comment: t.Comment & { replies: t.Comment[] };
+	refreshComments: () => void;
 };
 
-const CommentItem = ({ comment }: CommentProps) => {
+const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 	const [showReplyBox, setShowReplyBox] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
 
@@ -69,6 +71,42 @@ const CommentItem = ({ comment }: CommentProps) => {
 			document.removeEventListener('mousedown', handleClickOutside);
 		};
 	}, []);
+
+	const handleUpVote = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		console.log('Upvote on',comment.id);
+		try {
+			if(!comment.liked_by_requesting_user){
+				await voteComment({commentId: comment.id, value: 1});
+				console.log('Upvote Comment Success');
+			}else{
+				await deletevoteComment(comment.id);
+				console.log('Delete Upvote Success')
+			}
+		} catch (err: unknown) {
+			console.error("Upvote failed:", err)
+		} finally {
+			refreshComments();
+		}
+	};
+
+	const handleDownVote = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		console.log('Downvote on',comment.id);
+		try {
+			if(!comment.disliked_by_requesting_user){
+				await voteComment({commentId: comment.id, value: -1});
+				console.log('Downvote Comment Success');
+			}else{
+				await deletevoteComment(comment.id);
+				console.log('Delete Downvote Success')
+			}
+		} catch (err: unknown) {
+			console.error("Downvote failed:", err);
+		} finally {
+			refreshComments();
+		}
+	};
 
 	const handleReportComment = async (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -103,10 +141,18 @@ const CommentItem = ({ comment }: CommentProps) => {
 					<p className="text-gray-700 mt-1">{comment.body_md}</p>
 
 					<div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
-						<div className="flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 cursor-pointer">
-							<ArrowUp className="w-4 h-4" />
-							<span>100</span>
-							<ArrowDown className="w-4 h-4" />
+						<div className="flex items-center gap-1 px-2 py-1">
+						<ArrowUp
+							className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+								${comment.liked_by_requesting_user ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
+							onClick={handleUpVote}
+						/>
+						<span>{comment.vote_score}</span>
+						<ArrowDown
+							className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+								${comment.disliked_by_requesting_user ? "bg-red-400 text-black" : "hover:bg-gray-200"}`}
+							onClick={handleDownVote}
+						/>
 						</div>
 						<div
 							className="flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 cursor-pointer"
@@ -168,7 +214,7 @@ const CommentItem = ({ comment }: CommentProps) => {
 					{comment.replies.length > 0 && (
 						<div className="pl-5 border-l border-gray-200 mt-2">
 							{comment.replies.map((reply) => (
-								<CommentItem key={reply.id} comment={reply} />
+								<CommentItem key={reply.id} comment={reply} refreshComments={refreshComments} />
 							))}
 						</div>
 					)}
@@ -189,11 +235,6 @@ const CommentItem = ({ comment }: CommentProps) => {
 };
 
 export default function PostDetail({ post, refresh }: PostDetailProps) {
-	const [commentsData, setCommentsData] = useState<t.CommentsResponse | null>(
-		null
-	);
-	const [loadingComments, setLoadingComments] = useState(true);
-
 	const [reportingPost, setReportingPost] = useState<t.Post | null>(null);
 
 	const { data: session } = useSession();
@@ -206,19 +247,15 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const router = useRouter();
 	const menuRef = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		const fetchComments = async () => {
-			try {
-				const data = await getCommentByPostId(post.id);
-				setCommentsData(data);
-			} catch (error) {
-				console.error(error);
-			} finally {
-				setLoadingComments(false);
-			}
-		};
-		fetchComments();
-	}, [post.id]);
+	const{
+		data: commentsData,
+		isLoading: loadingComments,
+		refetch: refreshComments
+	} = useQuery({
+		queryKey: ['comments', post.id, currentUserId],
+		queryFn: () => getCommentByPostId(post.id),
+		enabled: !!post.id,
+	})
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -241,7 +278,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		console.log('Upvote on');
 		try {
 			if(!post.liked_by_requesting_user){
-				await upvotePost(post.id);
+				await votePost({postId: post.id, value: 1});
 				console.log('Upvote Post Success');
 			}else{
 				await deletevotePost(post.id);
@@ -257,7 +294,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		console.log('Downvote on');
 		try {
 			if(!post.disliked_by_requesting_user){
-				await downvotePost(post.id);
+				await votePost({postId: post.id, value: -1});
 				console.log('Downvote Post Success');
 			}else{
 				await deletevotePost(post.id);
@@ -443,7 +480,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					<p className="text-gray-500 italic">Loading comments...</p>
 				) : commentsData && commentsData.comments.length > 0 ? (
 					commentsData.comments.map((comment) => (
-						<CommentItem key={comment.id} comment={comment} />
+						<CommentItem key={comment.id} comment={comment} refreshComments={refreshComments} />
 					))
 				) : (
 					<p className="text-gray-500 italic">No comments yet.</p>
