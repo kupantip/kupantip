@@ -6,6 +6,7 @@ import {
 	getCommentStats,
 	getReportStats,
 	getDailyPostActivity,
+	getDailyReportActivity,
 } from '../models/stats.model';
 import * as z from 'zod';
 
@@ -117,6 +118,27 @@ export const getDailyPostActivityController = async (
 		const days = parsed.days ?? 7; // Default to 7 days
 
 		const activity = await getDailyPostActivity(days);
+
+		return res.status(200).json(activity);
+	} catch (err) {
+		next(err);
+	}
+};
+
+export const getDailyReportActivityController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		if (!req.user || req.user.role !== 'admin') {
+			return res.status(403).json({ message: 'Admin access required' });
+		}
+
+		const parsed = dailyActivitySchema.parse(req.query);
+		const days = parsed.days ?? 7; // Default to 7 days
+
+		const activity = await getDailyReportActivity(days);
 
 		return res.status(200).json(activity);
 	} catch (err) {
