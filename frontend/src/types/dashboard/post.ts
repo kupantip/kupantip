@@ -18,8 +18,10 @@ export interface Post {
   attachments: Attachment[];
   minutes_since_posted: number;
   comment_count: number;
-  vote_count: number
-  vote_score: number
+  vote_count: number;
+  vote_score: number;
+  liked_by_requesting_user: boolean;
+  disliked_by_requesting_user: boolean;
 }
 
 export type Comment = {
