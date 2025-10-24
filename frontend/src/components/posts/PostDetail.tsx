@@ -208,6 +208,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 							className="mt-2"
 							postId={comment.post_id}
 							parentId={comment.id}
+							refresh={refreshComments}
 						/>
 					)}
 
@@ -472,6 +473,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 				className="w-full max-w-3xl mt-4"
 				postId={post.id}
 				parentId=""
+				refresh={refreshComments}
 			/>
 
 			{/* Comments Section */}

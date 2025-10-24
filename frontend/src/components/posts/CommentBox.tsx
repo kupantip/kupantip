@@ -18,12 +18,14 @@ interface CommentBoxProps {
 	className?: string;
 	postId: string;
 	parentId: string;
+	refresh: () => void;
 }
 
 export default function CommentBox({
 	className,
 	postId,
 	parentId,
+	refresh
 }: CommentBoxProps) {
 	const { data: session, status } = useSession();
 	const isLoggedIn = status === 'authenticated';
@@ -58,6 +60,8 @@ export default function CommentBox({
 		} catch (err) {
 			toast.error('Please login first');
 			console.error('Failed to post comment:', err);
+		} finally {
+			refresh();
 		}
 	}
 
