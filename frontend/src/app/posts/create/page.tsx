@@ -28,7 +28,7 @@ export default function CreatePostPage() {
     files: [] as File[],
   });
 
-  const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { data: categories } = useCategories();
 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
