@@ -21,6 +21,7 @@ import ReportModal from '@/app/posts/report/page';
 
 type PostDetailProps = {
 	post: t.Post;
+	refresh: () => void;
 };
 
 const formatTime = (minutes: number) => {
@@ -187,7 +188,7 @@ const CommentItem = ({ comment }: CommentProps) => {
 	);
 };
 
-export default function PostDetail({ post }: PostDetailProps) {
+export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const [commentsData, setCommentsData] = useState<t.CommentsResponse | null>(
 		null
 	);
@@ -246,7 +247,9 @@ export default function PostDetail({ post }: PostDetailProps) {
 				await deletevotePost(post.id);
 				console.log('Delete Upvote Success')
 			}
-		} catch (err: unknown) {}
+		} catch (err: unknown) {} finally {
+			refresh();
+		}
 	};
 
 	const handleDownVote = async (e: React.MouseEvent) => {
@@ -260,7 +263,9 @@ export default function PostDetail({ post }: PostDetailProps) {
 				await deletevotePost(post.id);
 				console.log('Delete Downvote Success')
 			}
-		} catch (err: unknown) {}
+		} catch (err: unknown) {} finally {
+			refresh();
+		}
 	};
 
 	const handleEdit = async (e: React.MouseEvent) => {
