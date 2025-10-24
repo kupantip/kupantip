@@ -73,7 +73,6 @@ export default function CommentBox({
     const handleCancel = () => {
         setComment('');
         setShowActions(false);
-         // (FIX 3/3) เรียก onClose ถ้ามี (เพื่อปิด Reply Box)
         if (onClose) {
             onClose();
         }
