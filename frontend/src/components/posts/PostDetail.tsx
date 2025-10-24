@@ -209,6 +209,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 							postId={comment.post_id}
 							parentId={comment.id}
 							refresh={refreshComments}
+							onClose={() => setShowReplyBox(false)}
 						/>
 					)}
 
