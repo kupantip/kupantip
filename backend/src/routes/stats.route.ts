@@ -6,6 +6,7 @@ import {
 	getCommentStatsController,
 	getReportStatsController,
 	getDailyPostActivityController,
+	getDailyReportActivityController,
 } from '../controller/stats.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
 
@@ -25,5 +26,6 @@ router.get('/reports', getReportStatsController);
 
 // Get daily post activity for charts
 router.get('/daily-post-activity', getDailyPostActivityController);
+router.get('/daily-report-activity', getDailyReportActivityController);
 
 export default router;

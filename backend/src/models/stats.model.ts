@@ -38,6 +38,13 @@ export interface DailyPostActivity {
 	end_date: string;
 }
 
+export interface DailyReportActivity {
+	data: DailyActivityData[];
+	period_days: number;
+	start_date: string;
+	end_date: string;
+}
+
 export interface DashboardStats {
 	users: UserStats;
 	posts: PostStats;
@@ -137,6 +144,42 @@ export const getDailyPostActivity = async (
 		FROM DateRange dr
 		LEFT JOIN [dbo].[post] p 
 			ON CAST(p.created_at AS DATE) = dr.date 
+		GROUP BY dr.date
+		ORDER BY dr.date ASC
+	`);
+
+	const data = result.recordset.map((row) => ({
+		date: row.date,
+		count: row.count,
+		day_label: row.day_label,
+	}));
+
+	return {
+		data,
+		period_days: days,
+		start_date: data.length > 0 ? data[0].date : '',
+		end_date: data.length > 0 ? data[data.length - 1].date : '',
+	};
+};
+
+export const getDailyReportActivity = async (
+	days: number = 7
+): Promise<DailyReportActivity> => {
+	const pool = await getDbConnection();
+
+	const result = await pool.request().input('days', sql.Int, days).query(`
+		WITH DateRange AS (
+			SELECT CAST(DATEADD(day, -number, CAST(GETDATE() AS DATE)) AS DATE) AS date
+			FROM master..spt_values
+			WHERE type = 'P' AND number BETWEEN 0 AND @days - 1
+		)
+		SELECT 
+			CONVERT(VARCHAR(10), dr.date, 23) AS date,
+			COALESCE(COUNT(r.id), 0) AS count,
+			DATENAME(dw, dr.date) + ' ' + CAST(DAY(dr.date) AS VARCHAR) AS day_label
+		FROM DateRange dr
+		LEFT JOIN [dbo].[report] r 
+			ON CAST(r.created_at AS DATE) = dr.date
 		GROUP BY dr.date
 		ORDER BY dr.date ASC
 	`);
