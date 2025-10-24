@@ -20,9 +20,13 @@ export default function PostPage() {
 		? params.postId[0]
 		: params.postId;
 
-	const { data: post, isLoading: isLoadingPost } = usePostDetail(
+	const { data: post, isLoading: isLoadingPost, refetch: refetchPost } = usePostDetail(
 		postId || ''
 	);
+
+	const refreshPage = async() => {
+		refetchPost();
+	}
 
 	// Loading state
 	if (isLoadingPost) {
@@ -79,5 +83,5 @@ export default function PostPage() {
 	}
 
 	// Display post
-	return <PostDetail post={post} />;
+	return <PostDetail post={post} refresh={refreshPage} />;
 }

@@ -8,16 +8,20 @@ import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
 import { getCommentByPostId } from '@/services/dashboard/getCommentByPostId';
-import { getPostById } from '@/services/dashboard/getPostById';
 import CommentBox from './CommentBox';
 import { deletePost } from '@/services/user/delete_post';
 import { upvotePost, downvotePost, deletevotePost } from '@/services/user/vote';
 import { jwtDecode } from 'jwt-decode';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
+import { Trash2 } from 'lucide-react';
+import { Pen } from 'lucide-react';
+import { Flag } from 'lucide-react';
+import ReportModal from '@/app/posts/report/page';
 
 type PostDetailProps = {
 	post: t.Post;
+	refresh: () => void;
 };
 
 const formatTime = (minutes: number) => {
@@ -38,6 +42,45 @@ type CommentProps = {
 
 const CommentItem = ({ comment }: CommentProps) => {
 	const [showReplyBox, setShowReplyBox] = useState(false);
+	const [menuOpen, setMenuOpen] = useState(false);
+
+	const menuRef = useRef<HTMLDivElement>(null);
+
+	const { data: session } = useSession();
+	const tokenPayload = session?.accessToken
+		? jwtDecode<User>(session.accessToken)
+		: null;
+	const currentUserId = tokenPayload?.user_id;
+
+	const [reportingComment, setReportingComment] = useState<t.Comment | null>(null);
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				menuRef.current &&
+				!menuRef.current.contains(event.target as Node)
+			) {
+				setMenuOpen(false);
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
+
+	const handleReportComment = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		console.log('Report Comment on', comment.id);
+		setMenuOpen(false);
+		setReportingComment(comment);
+
+	};
+
+	const handleCloseReport = () => {
+		setReportingComment(null);
+	};
 
 	return (
 		<div className="mb-4">
@@ -72,6 +115,46 @@ const CommentItem = ({ comment }: CommentProps) => {
 							<MessageSquare className="w-4 h-4" />
 							<span>Reply</span>
 						</div>
+						<div
+							className="flex items-center gap-1 px-2 py-1 "
+							onClick={(e) => {
+								e.stopPropagation();
+								setMenuOpen(!menuOpen);
+							}}
+						>
+							<button
+								className="p-1 rounded-full hover:bg-gray-100 cursor-pointer cursor-pointer"
+								onClick={(e) => {
+									e.stopPropagation();
+									setMenuOpen(!menuOpen);
+								}}
+							>
+								<Ellipsis />
+							</button>
+							{comment.author_id != currentUserId && (
+								<AnimatePresence>
+									{menuOpen && (
+										<motion.div
+											ref={menuRef}
+											className="absolute mt-22 w-24 bg-white shadow-md rounded-lg"
+											initial={{ opacity: 0, x: 0, y: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={{ duration: 0.15 }}
+										>
+											<button
+												className="flex gap-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
+												onClick={handleReportComment}
+											>
+												<Flag />
+												<span className='mt-0.5'>Report</span>
+											</button>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							)}
+							
+						</div>
 					</div>
 
 					{showReplyBox && (
@@ -91,15 +174,27 @@ const CommentItem = ({ comment }: CommentProps) => {
 					)}
 				</div>
 			</div>
+			<AnimatePresence>
+				{reportingComment && (
+						<ReportModal
+							targetType="comment"
+							target={comment}
+							onClose={handleCloseReport} 
+						>
+						</ReportModal>
+				)}
+			</AnimatePresence>
 		</div>
 	);
 };
 
-export default function PostDetail({ post }: PostDetailProps) {
+export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const [commentsData, setCommentsData] = useState<t.CommentsResponse | null>(
 		null
 	);
 	const [loadingComments, setLoadingComments] = useState(true);
+
+	const [reportingPost, setReportingPost] = useState<t.Post | null>(null);
 
 	const { data: session } = useSession();
 	const tokenPayload = session?.accessToken
@@ -145,25 +240,39 @@ export default function PostDetail({ post }: PostDetailProps) {
 		e.stopPropagation();
 		console.log('Upvote on');
 		try {
-			await upvotePost(post.id);
-			console.log('Upvote Post Success');
-		} catch (err: unknown) {}
+			if(!post.liked_by_requesting_user){
+				await upvotePost(post.id);
+				console.log('Upvote Post Success');
+			}else{
+				await deletevotePost(post.id);
+				console.log('Delete Upvote Success')
+			}
+		} catch (err: unknown) {} finally {
+			refresh();
+		}
 	};
 
 	const handleDownVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Downvote on');
 		try {
-			await downvotePost(post.id);
-			console.log('Downvote Post Success');
-		} catch (err: unknown) {}
+			if(!post.disliked_by_requesting_user){
+				await downvotePost(post.id);
+				console.log('Downvote Post Success');
+			}else{
+				await deletevotePost(post.id);
+				console.log('Delete Downvote Success')
+			}
+		} catch (err: unknown) {} finally {
+			refresh();
+		}
 	};
 
 	const handleEdit = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		setMenuOpen(false);
 		console.log('Edit on', post.id);
-		router.push(`/dashboard/${post.id}/edit`);
+		router.push(`/posts/${post.id}/edit`);
 	};
 
 	const handleDelete = async (e: React.MouseEvent) => {
@@ -172,22 +281,28 @@ export default function PostDetail({ post }: PostDetailProps) {
 		try {
 			await deletePost(post.id);
 			console.log('Delete post', post.id, ' success');
-			router.push(`/dashboard`);
+			router.push(`/posts/category/${post.category_id}`);
 		} catch (err: unknown) {
 			console.log('Delete Failed');
 		}
 	};
 
-	const handleReport = async (e: React.MouseEvent) => {
+	const handleReportPost = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Report on', post.id);
-		router.push(`/dashboard/${post.id}/report_post`);
+		setMenuOpen(false);
+		setReportingPost(post);
+	};
+
+	const handleCloseReport = () => {
+		setReportingPost(null);
 	};
 
 	return (
+		
 		<div className="flex flex-col items-center py-10">
 			{/* Post Card */}
-			<div className="w-full max-w-3xl bg-white dark:bg-gray-900 rounded-lg shadow-md p-6 space-y-4">
+			<div className="w-full max-w-3xl bg-white dark:bg-gray-9 rounded-lg shadow-md p-6 space-y-4">
 				{/* Header */}
 				<div className="flex items-center gap-3">
 					<Avatar className="w-10 h-10">
@@ -230,16 +345,18 @@ export default function PostDetail({ post }: PostDetailProps) {
 										transition={{ duration: 0.15 }}
 									>
 										<button
-											className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer`}
+											className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
 											onClick={handleEdit}
 										>
-											Edit
+											<Pen className='px-1 mr-2'/>
+											<span className='mt-0.5'>Edit</span>
 										</button>
 										<button
-											className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-b-lg cursor-pointer"
+											className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-b-lg cursor-pointer"
 											onClick={handleDelete}
 										>
-											Delete
+											<Trash2 className='mr-2'/>
+											<span className='mt-0.5'>Delete</span>
 										</button>
 									</motion.div>
 								)}
@@ -256,10 +373,11 @@ export default function PostDetail({ post }: PostDetailProps) {
 										transition={{ duration: 0.15 }}
 									>
 										<button
-											className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
-											onClick={handleReport}
+											className="flex gap-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
+											onClick={handleReportPost}
 										>
-											Report
+											<Flag />
+											<span className='mt-0.5'>Report</span>
 										</button>
 									</motion.div>
 								)}
@@ -267,6 +385,7 @@ export default function PostDetail({ post }: PostDetailProps) {
 						)}
 					</div>
 				</div>
+
 
 				{/* Post Content */}
 				<h2 className="text-lg font-medium">{post.title}</h2>
@@ -285,12 +404,6 @@ export default function PostDetail({ post }: PostDetailProps) {
 								className="w-full h-auto object-cover rounded-lg mb-4"
 							/>
 						))
-					// <img
-					// 	src={post.attachments[0].url}
-					// 	alt="Post attachment"
-					// 	className="w-full h-auto object-cover rounded-lg"
-					// />
-					// <Image src={`/backend/post/attachments/${post.attachments[0].url}`} alt="Post attachment" width={600} height={400} className="w-full h-auto object-cover rounded-lg" />
 				}
 
 				<div>{post.body_md}</div>
@@ -299,12 +412,14 @@ export default function PostDetail({ post }: PostDetailProps) {
 				<div className="flex items-center gap-6 text-gray-600">
 					<div className="flex items-center gap-2">
 						<ArrowUp
-							className="w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full"
+							className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+								${post.liked_by_requesting_user ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
 							onClick={handleUpVote}
 						/>
 						<span>{post.vote_score}</span>
 						<ArrowDown
-							className="w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full"
+							className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+								${post.disliked_by_requesting_user ? "bg-red-400 text-black" : "hover:bg-gray-200"}`}
 							onClick={handleDownVote}
 						/>
 					</div>
@@ -334,6 +449,16 @@ export default function PostDetail({ post }: PostDetailProps) {
 					<p className="text-gray-500 italic">No comments yet.</p>
 				)}
 			</div>
+			<AnimatePresence>
+				{reportingPost && (
+						<ReportModal
+							targetType="post"
+							target={post}
+							onClose={handleCloseReport} 
+						>
+						</ReportModal>
+				)}
+			</AnimatePresence>
 		</div>
 	);
 }
