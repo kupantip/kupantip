@@ -42,6 +42,7 @@ type DailyPostResponse = {
 	start_date: string;
 	end_date: string;
 };
+
 const fetchDailyPosts = async (
 	days: number | undefined
 ): Promise<DailyPostResponse> => {
@@ -57,5 +58,36 @@ export const useDailyPosts = (days?: number) => {
 	return useQuery<DailyPostResponse, Error>({
 		queryKey: ['daily-post-activity', days],
 		queryFn: () => fetchDailyPosts(days),
+	});
+};
+
+type DailyReport = {
+	date: string;
+	count: number;
+	day_label: string;
+};
+
+type DailyReportResponse = {
+	data: DailyReport[];
+	period_days: number;
+	start_date: string;
+	end_date: string;
+};
+
+const fetchDailyReport = async (
+	days: number | undefined
+): Promise<DailyReportResponse> => {
+	const res = await instance.get('/daily-report-activity', {
+		params: {
+			days: days,
+		},
+	});
+	return res.data;
+};
+
+export const useDailyReport = (days?: number) => {
+	return useQuery<DailyReportResponse, Error>({
+		queryKey: ['daily-report-activity', days],
+		queryFn: () => fetchDailyReport(days),
 	});
 };

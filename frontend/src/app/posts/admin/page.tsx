@@ -4,7 +4,11 @@ import ReportCard from '@/components/admin/ReportCard';
 import { ReportDataTable } from '@/components/admin/ReportDataTable';
 
 import { useReports } from '@/services/admin/report';
-import { useDailyPosts, useStats } from '@/services/admin/stats';
+import {
+	useDailyPosts,
+	useDailyReport,
+	useStats,
+} from '@/services/admin/stats';
 import {
 	FilePlus2,
 	Flag,
@@ -18,6 +22,7 @@ export default function AdminPage() {
 
 	const { data: dailyPostsData, isLoading: isLoadingDailyPosts } =
 		useDailyPosts(7);
+	const { data: dailyReportsData, isLoading: isLoadingDailyReport } = useDailyReport(7);
 
 	const { data: reportsData, isLoading: isLoadingReports } = useReports();
 
@@ -80,14 +85,19 @@ export default function AdminPage() {
 						data={dailyPostsData.data}
 					/>
 				)}
+				{!isLoadingDailyReport && dailyReportsData && (
+					<AdminLineChart
+						title="Daily Report Activity"
+						subtitle={`Number of reports created in the last ${dailyReportsData.period_days} days`}
+						data={dailyReportsData.data}
+					/>
+				)}
+
 				{/* <AdminLineChart /> */}
 			</div>
 			{/* Table Report */}
 			<ReportDataTable
 				data={reportsData || []}
-				onView={onViewReport}
-				onApprove={onApproveReport}
-				onReject={onRejectReport}
 			/>
 		</div>
 	);

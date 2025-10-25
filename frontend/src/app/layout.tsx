@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { CustomProviders } from './provider';
+import { Toaster } from '@/components/ui/sonner';
 
 export const metadata: Metadata = {
 	title: 'KUPantip',
@@ -18,6 +19,7 @@ export default function RootLayout({
 			<html lang="en">
 				<body>
 					<main>{children}</main>
+					<Toaster position="top-right" richColors />
 				</body>
 			</html>
 		</CustomProviders>
