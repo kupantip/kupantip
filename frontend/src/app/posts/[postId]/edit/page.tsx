@@ -2,6 +2,7 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useCategories } from '@/services/post/category';
 import { Post } from '@/types/dashboard/post';
 import { getPostById } from '@/services/dashboard/getPostById';
 import { updatePost } from '@/services/user/updatePost';
@@ -28,6 +29,8 @@ export default function EditPostPage() {
 	const [title, setTitle] = useState('');
 	const [body, setBody] = useState('');
 	const [category_id, setCategoryid] = useState('');
+
+	const { data: categories } = useCategories();
 
 	useEffect(() => {
 			AOS.init({
@@ -100,9 +103,11 @@ export default function EditPostPage() {
 						<SelectValue placeholder="Select Category" />
 						</SelectTrigger>
 						<SelectContent>
-						<SelectItem value="9108433E-F36B-1410-84CA-00F2EA0D0522">Announcement</SelectItem>
-						<SelectItem value="9708433E-F36B-1410-84CA-00F2EA0D0522">Community</SelectItem>
-						<SelectItem value="9D08433E-F36B-1410-84CA-00F2EA0D0522">Recruitment</SelectItem>
+						{categories?.map((category) => (
+							<SelectItem key={category.id} value={category.id}>
+							{category.label}
+							</SelectItem>
+						))}
 						</SelectContent>
 					</Select>
 					<textarea
