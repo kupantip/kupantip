@@ -2,48 +2,74 @@ import { useState, useEffect } from 'react';
 
 const BACKEND_HOST = process.env.NEXT_PUBLIC_BACKEND_HOST;
 
-export async function upvotePost(postId: string) {
-	const res = await fetch(`${BACKEND_HOST}/post-vote/${postId}`, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		credentials: 'include',
-		body: JSON.stringify({ value: 1 }),
-	});
-
-	if (!res.ok) {
-		throw new Error(`Failed to upvote: ${res.status}`);
-	}
-
-	return res.json();
+interface votePostData{
+  postId: string
+  value: number
 }
 
-export async function downvotePost(postId: string) {
-	const res = await fetch(`${BACKEND_HOST}/post-vote/${postId}`, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		credentials: 'include',
-		body: JSON.stringify({ value: -1 }),
-	});
+export async function votePost(data: votePostData) {
+    const res = await fetch(`${BACKEND_HOST}/post-vote/${data.postId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ value: data.value }),
+    });
 
-	if (!res.ok) {
-		throw new Error(`Failed to downvote: ${res.status}`);
-	}
+    if (!res.ok) {
+      throw new Error(`Failed to upvote/downvote: ${res.status}`);
+    }
 
 	return res.json();
 }
 
 export async function deletevotePost(postId: string) {
-	const res = await fetch(`${BACKEND_HOST}/post-vote/${postId}`, {
-		method: 'DELETE',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		credentials: 'include',
-	});
+    const res = await fetch(`${BACKEND_HOST}/post-vote/${postId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to deletevote: ${res.status}`);
+    }
+
+    return res.json();
+}
+
+interface voteCommentData{
+  commentId: string
+  value: number
+}
+
+export async function voteComment(data: voteCommentData) {
+    const res = await fetch(`${BACKEND_HOST}/comment-vote/${data.commentId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ value: data.value }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to upvote/downvote: ${res.status}`);
+    }
+
+	return res.json();
+}
+
+export async function deletevoteComment(commentId: string) {
+    const res = await fetch(`${BACKEND_HOST}/comment-vote/${commentId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
 
 	if (!res.ok) {
 		throw new Error(`Failed to deletevote: ${res.status}`);

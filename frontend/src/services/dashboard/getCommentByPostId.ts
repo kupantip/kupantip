@@ -1,4 +1,5 @@
 import * as t from '@/types/dashboard/post'
+import { getSession } from 'next-auth/react'
 
 const BACKEND_HOST = process.env.NEXT_PUBLIC_BACKEND_HOST
 
@@ -6,9 +7,12 @@ export async function getCommentByPostId(
     post_id: string
 ): Promise<t.CommentsResponse> {
     try {
-        const res = await fetch(
-            `${BACKEND_HOST}/comment?post_id=${post_id}`
-        )
+        const res = await fetch(`${BACKEND_HOST}/comment?post_id=${post_id}`,{
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        })
 
         if (!res.ok) {
             throw new Error(
