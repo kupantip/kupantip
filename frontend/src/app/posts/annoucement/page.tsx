@@ -48,6 +48,37 @@ export default function AnnoucementPage() {
 		fetchPosts();
 	}, []);
 
+	if (loading) {
+		return (
+			<div className="h-full px-10 py-8 flex items-center justify-center">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-1 mx-auto"></div>
+					<p className="mt-4 text-gray-600 dark:text-gray-400">
+						Loading announcements...
+					</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="h-full px-10 py-8 flex items-center justify-center">
+				<div className="text-center">
+					<p className="text-red-600 dark:text-red-400">
+						Failed to load announcements
+					</p>
+					<Button
+						onClick={() => window.location.reload()}
+						className="mt-4"
+					>
+						Try Again
+					</Button>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<div
 			data-aos="fade-up"

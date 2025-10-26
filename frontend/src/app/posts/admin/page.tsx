@@ -24,22 +24,22 @@ export default function AdminPage() {
 		useDailyPosts(7);
 	const { data: dailyReportsData, isLoading: isLoadingDailyReport } = useDailyReport(7);
 
-	const { data: reportsData, isLoading: isLoadingReports } = useReports();
+	const { data: reportsData } = useReports();
 
-	const onViewReport = (id: string) => {
-		console.log('View report:', id);
-		// Navigate to detail page or open modal
-	};
+	// const onViewReport = (id: string) => {
+	// 	console.log('View report:', id);
+	// 	// Navigate to detail page or open modal
+	// };
 
-	const onApproveReport = (id: string) => {
-		console.log('Approve report:', id);
-		// Call API to approve
-	};
+	// const onApproveReport = (id: string) => {
+	// 	console.log('Approve report:', id);
+	// 	// Call API to approve
+	// };
 
-	const onRejectReport = (id: string) => {
-		console.log('Reject report:', id);
-		// Call API to reject
-	};
+	// const onRejectReport = (id: string) => {
+	// 	console.log('Reject report:', id);
+	// 	// Call API to reject
+	// };
 
 	if (isLoadingStats) {
 		return <div>Loading...</div>;

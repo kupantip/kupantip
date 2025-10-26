@@ -7,18 +7,11 @@ import 'aos/dist/aos.css';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/posts/AppSideBar';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { CirclePlus } from 'lucide-react';
 import { UserPen } from 'lucide-react';
 import { Bell } from 'lucide-react';
 
 import Link from 'next/link';
-import NavButtons from '@/components/NavButton';
 
 export default function DashboardLayout({
 	children,
