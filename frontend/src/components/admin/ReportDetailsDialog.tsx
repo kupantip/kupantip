@@ -63,7 +63,7 @@ export function ReportDetailsDialog({
 					});
 					onOpenChange(false);
 				},
-				onError: (error) => {
+				onError: () => {
 					toast.error('Error', {
 						description:
 							'Failed to dismiss report. Please try again.',

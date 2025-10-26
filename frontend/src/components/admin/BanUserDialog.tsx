@@ -81,10 +81,20 @@ export function BanUserDialog({
 					onOpenChange(false);
 					onSuccess?.();
 				},
-				onError: (error: any) => {
+				onError: (error: unknown) => {
 					const errorMessage =
-						error?.response?.data?.message ||
-						'Failed to ban user. Please try again.';
+						error &&
+						typeof error === 'object' &&
+						'response' in error &&
+						error.response &&
+						typeof error.response === 'object' &&
+						'data' in error.response &&
+						error.response.data &&
+						typeof error.response.data === 'object' &&
+						'message' in error.response.data &&
+						typeof error.response.data.message === 'string'
+							? error.response.data.message
+							: 'Failed to ban user. Please try again.';
 					toast.error('Error', {
 						description: errorMessage,
 					});

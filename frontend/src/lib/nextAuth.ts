@@ -2,7 +2,6 @@ import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { login } from '@/services/user/auth';
 import { cookies } from 'next/headers';
-import NextAuth, { DefaultSession, DefaultUser } from 'next-auth';
 import axios from 'axios';
 
 declare module 'next-auth' {

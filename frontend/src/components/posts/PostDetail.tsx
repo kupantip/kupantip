@@ -52,7 +52,9 @@ const CommentItem = ({ comment }: CommentProps) => {
 		: null;
 	const currentUserId = tokenPayload?.user_id;
 
-	const [reportingComment, setReportingComment] = useState<t.Comment | null>(null);
+	const [reportingComment, setReportingComment] = useState<t.Comment | null>(
+		null
+	);
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -75,7 +77,6 @@ const CommentItem = ({ comment }: CommentProps) => {
 		console.log('Report Comment on', comment.id);
 		setMenuOpen(false);
 		setReportingComment(comment);
-
 	};
 
 	const handleCloseReport = () => {
@@ -147,13 +148,14 @@ const CommentItem = ({ comment }: CommentProps) => {
 												onClick={handleReportComment}
 											>
 												<Flag />
-												<span className='mt-0.5'>Report</span>
+												<span className="mt-0.5">
+													Report
+												</span>
 											</button>
 										</motion.div>
 									)}
 								</AnimatePresence>
 							)}
-							
 						</div>
 					</div>
 
@@ -176,12 +178,11 @@ const CommentItem = ({ comment }: CommentProps) => {
 			</div>
 			<AnimatePresence>
 				{reportingComment && (
-						<ReportModal
-							targetType="comment"
-							target={comment}
-							onClose={handleCloseReport} 
-						>
-						</ReportModal>
+					<ReportModal
+						targetType="comment"
+						target={comment}
+						onClose={handleCloseReport}
+					></ReportModal>
 				)}
 			</AnimatePresence>
 		</div>
@@ -240,14 +241,15 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		e.stopPropagation();
 		console.log('Upvote on');
 		try {
-			if(!post.liked_by_requesting_user){
+			if (!post.liked_by_requesting_user) {
 				await upvotePost(post.id);
 				console.log('Upvote Post Success');
-			}else{
+			} else {
 				await deletevotePost(post.id);
-				console.log('Delete Upvote Success')
+				console.log('Delete Upvote Success');
 			}
-		} catch (err: unknown) {} finally {
+		} catch {
+		} finally {
 			refresh();
 		}
 	};
@@ -256,14 +258,15 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		e.stopPropagation();
 		console.log('Downvote on');
 		try {
-			if(!post.disliked_by_requesting_user){
+			if (!post.disliked_by_requesting_user) {
 				await downvotePost(post.id);
 				console.log('Downvote Post Success');
-			}else{
+			} else {
 				await deletevotePost(post.id);
-				console.log('Delete Downvote Success')
+				console.log('Delete Downvote Success');
 			}
-		} catch (err: unknown) {} finally {
+		} catch {
+		} finally {
 			refresh();
 		}
 	};
@@ -282,7 +285,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			await deletePost(post.id);
 			console.log('Delete post', post.id, ' success');
 			router.push(`/posts/category/${post.category_id}`);
-		} catch (err: unknown) {
+		} catch {
 			console.log('Delete Failed');
 		}
 	};
@@ -299,7 +302,6 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	};
 
 	return (
-		
 		<div className="flex flex-col items-center py-10">
 			{/* Post Card */}
 			<div className="w-full max-w-3xl bg-white dark:bg-gray-9 rounded-lg shadow-md p-6 space-y-4">
@@ -348,15 +350,17 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 											className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
 											onClick={handleEdit}
 										>
-											<Pen className='px-1 mr-2'/>
-											<span className='mt-0.5'>Edit</span>
+											<Pen className="px-1 mr-2" />
+											<span className="mt-0.5">Edit</span>
 										</button>
 										<button
 											className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-b-lg cursor-pointer"
 											onClick={handleDelete}
 										>
-											<Trash2 className='mr-2'/>
-											<span className='mt-0.5'>Delete</span>
+											<Trash2 className="mr-2" />
+											<span className="mt-0.5">
+												Delete
+											</span>
 										</button>
 									</motion.div>
 								)}
@@ -377,7 +381,9 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 											onClick={handleReportPost}
 										>
 											<Flag />
-											<span className='mt-0.5'>Report</span>
+											<span className="mt-0.5">
+												Report
+											</span>
 										</button>
 									</motion.div>
 								)}
@@ -386,25 +392,22 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					</div>
 				</div>
 
-
 				{/* Post Content */}
 				<h2 className="text-lg font-medium">{post.title}</h2>
-				{
-					post.attachments.length > 0 &&
-						post.attachments.map((attachment) => (
-							<Image
-								key={attachment.id}
-								src={attachment.url.replace(
-									'/uploads/',
-									'/backend/post/attachments/'
-								)}
-								alt="Post attachment"
-								width={300}
-								height={200}
-								className="w-full h-auto object-cover rounded-lg mb-4"
-							/>
-						))
-				}
+				{post.attachments.length > 0 &&
+					post.attachments.map((attachment) => (
+						<Image
+							key={attachment.id}
+							src={attachment.url.replace(
+								'/uploads/',
+								'/backend/post/attachments/'
+							)}
+							alt="Post attachment"
+							width={300}
+							height={200}
+							className="w-full h-auto object-cover rounded-lg mb-4"
+						/>
+					))}
 
 				<div>{post.body_md}</div>
 
@@ -413,13 +416,21 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					<div className="flex items-center gap-2">
 						<ArrowUp
 							className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
-								${post.liked_by_requesting_user ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
+								${
+									post.liked_by_requesting_user
+										? 'bg-green-400 text-black'
+										: 'hover:bg-gray-200'
+								}`}
 							onClick={handleUpVote}
 						/>
 						<span>{post.vote_score}</span>
 						<ArrowDown
 							className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
-								${post.disliked_by_requesting_user ? "bg-red-400 text-black" : "hover:bg-gray-200"}`}
+								${
+									post.disliked_by_requesting_user
+										? 'bg-red-400 text-black'
+										: 'hover:bg-gray-200'
+								}`}
 							onClick={handleDownVote}
 						/>
 					</div>
@@ -451,12 +462,11 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			</div>
 			<AnimatePresence>
 				{reportingPost && (
-						<ReportModal
-							targetType="post"
-							target={post}
-							onClose={handleCloseReport} 
-						>
-						</ReportModal>
+					<ReportModal
+						targetType="post"
+						target={post}
+						onClose={handleCloseReport}
+					></ReportModal>
 				)}
 			</AnimatePresence>
 		</div>

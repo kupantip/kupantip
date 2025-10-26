@@ -1,20 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-	MessageSquare,
-	Share2,
-	ArrowUp,
-	ArrowDown,
-	Ellipsis,
-} from 'lucide-react';
+import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as t from '@/types/dashboard/post';
 import { deletePost } from '@/services/user/delete_post';
-import { upvotePost, downvotePost, deletevotePost, useUserVote } from '@/services/user/vote';
-
+import {
+	upvotePost,
+	downvotePost,
+	deletevotePost,
+	useUserVote,
+} from '@/services/user/vote';
 
 const daySincePosted = (minutes: number) => {
 	if (minutes < 60) {
@@ -35,7 +34,7 @@ type PostProps = {
 
 export default function Post({ post, currentPage }: PostProps) {
 	const router = useRouter();
-	const [menuOpen, setMenuOpen] = useState(false)
+	const [menuOpen, setMenuOpen] = useState(false);
 	const { userVote, updateUserVote } = useUserVote(post.id, post.author_id);
 
 	const handlePostClick = () => {
@@ -44,41 +43,41 @@ export default function Post({ post, currentPage }: PostProps) {
 
 	const handleUpVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
-		let newVote = userVote
-		
-		if(userVote === 1){
+		let newVote = userVote;
+
+		if (userVote === 1) {
 			newVote = 0;
-			try{
+			try {
 				await deletevotePost(post.id);
-				console.log("Undo UpVote success");
-			} catch (err : unknown){}
-		}else{
-			newVote = 1
-			try{
+				console.log('Undo UpVote success');
+			} catch {}
+		} else {
+			newVote = 1;
+			try {
 				await upvotePost(post.id);
-				console.log("UpVote Post Success",post.id);
-			} catch (err : unknown){}
+				console.log('UpVote Post Success', post.id);
+			} catch {}
 		}
-		
+
 		updateUserVote(newVote);
 	};
 
 	const handleDownVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
-		let newVote = userVote
-		
-		if(userVote === -1){
+		let newVote = userVote;
+
+		if (userVote === -1) {
 			newVote = 0;
-			try{
+			try {
 				await deletevotePost(post.id);
-				console.log("Undo DownVote success");
-			} catch (err : unknown){}
-		}else{
-			newVote = -1
-			try{
+				console.log('Undo DownVote success');
+			} catch {}
+		} else {
+			newVote = -1;
+			try {
 				await downvotePost(post.id);
-				console.log("DownVote Post Success",post.id);
-			} catch (err : unknown){}
+				console.log('DownVote Post Success', post.id);
+			} catch {}
 		}
 
 		updateUserVote(newVote);
@@ -92,21 +91,21 @@ export default function Post({ post, currentPage }: PostProps) {
 	const handleEdit = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		setMenuOpen(false);
-		console.log("Edit on", post.id)
+		console.log('Edit on', post.id);
 		router.push(`/${currentPage}/${post.id}/edit`);
-	}
+	};
 
 	const handleDelete = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		setMenuOpen(false);
 		try {
-			await deletePost(post.id)
-			console.log("Delete post", post.id," success")
+			await deletePost(post.id);
+			console.log('Delete post', post.id, ' success');
 			window.location.reload();
-		} catch (err : unknown){
-			console.log("Delete Failed");
+		} catch {
+			console.log('Delete Failed');
 		}
-	}
+	};
 
 	return (
 		<Card
@@ -129,22 +128,18 @@ export default function Post({ post, currentPage }: PostProps) {
 						<span>{daySincePosted(post.minutes_since_posted)}</span>
 					</span>
 				</div>
-				{/* <button className="ml-auto bg-purple-2 text-white text-xs px-3 py-1 rounded-lg hover:bg-purple-1">
-                    Join
-                </button> */}
 				<div className="ml-auto relative">
-					<button 
+					<button
 						className="p-1 rounded-lg hover:bg-gray-200"
 						onClick={(e) => {
 							e.stopPropagation();
 							setMenuOpen(!menuOpen);
-						}}>
+						}}
+					>
 						<Ellipsis />
 					</button>
 					{menuOpen && (
-						<div
-							className="absolute mt-2 w-24 right-0 bg-white shadow rounded-lg"
-						>
+						<div className="absolute mt-2 w-24 right-0 bg-white shadow rounded-lg">
 							<button
 								className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
 								onClick={handleEdit}
@@ -158,20 +153,23 @@ export default function Post({ post, currentPage }: PostProps) {
 								Delete
 							</button>
 						</div>
-					)}					
+					)}
 				</div>
-
 			</CardHeader>
 
 			{/* Content */}
 			<CardContent className="px-3 pb-1 w-[50vw]">
-				<div className="text-base mb-2 font-semibold text-[1.3em]">{post.title}</div>
-				<div className='text-base'>{post.body_md}</div>
+				<div className="text-base mb-2 font-semibold text-[1.3em]">
+					{post.title}
+				</div>
+				<div className="text-base">{post.body_md}</div>
 				{post.attachments.length > 0 && (
 					<div className="border rounded-md overflow-hidden">
-						<img
+						<Image
 							src={post.attachments[0].url}
 							alt="Post attachment"
+							width={800}
+							height={600}
 							className="w-full h-auto object-cover"
 						/>
 					</div>
@@ -182,13 +180,21 @@ export default function Post({ post, currentPage }: PostProps) {
 					<div className="flex items-center gap-1 bg-gray-200 px-2 py-1 rounded-xl h-8">
 						<ArrowUp
 							className={`w-6 h-6 p-1 rounded-full border border-gray-200 hover:bg-gray-300 cursor-pointer
-								${userVote === 1 ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
+                                ${
+									userVote === 1
+										? 'bg-green-400 text-black'
+										: 'hover:bg-gray-200'
+								}`}
 							onClick={handleUpVote}
 						/>
 						<span>{post.vote_score}</span>
 						<ArrowDown
 							className={`w-6 h-6 p-1 rounded-full border border-gray-200 hover:bg-gray-300 cursor-pointer
-								${userVote === -1 ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
+                                ${
+									userVote === -1
+										? 'bg-green-400 text-black'
+										: 'hover:bg-gray-200'
+								}`}
 							onClick={handleDownVote}
 						/>
 					</div>
@@ -200,14 +206,6 @@ export default function Post({ post, currentPage }: PostProps) {
 						<MessageSquare className="w-4 h-4" />
 						<span>{post.comment_count}</span>
 					</div>
-
-					{/* <div
-                        className="flex items-center gap-1 bg-gray-200 px-2 py-1 rounded-xl hover:bg-gray-300 h-8"
-                        onClick={handleShare}
-                    >
-                        <Share2 className="w-4 h-4" />
-                        <span>Share</span>
-                    </div> */}
 				</div>
 			</CardContent>
 		</Card>

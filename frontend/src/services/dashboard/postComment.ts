@@ -31,7 +31,7 @@ export async function postComment(body: {
 			);
 		}
 
-		const json: t.CommentsResponse = await res.json();
+		// const json: t.CommentsResponse = await res.json();
 		return true;
 	} catch (err: unknown) {
 		if (err instanceof Error) {

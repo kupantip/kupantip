@@ -37,8 +37,8 @@ export default function AnnoucementPage() {
 			try {
 				const data = await getPost('Announcement');
 				setPostArray(data);
-				console.log(postArray);
-			} catch (error) {
+			} catch (err) {
+				console.error('Failed to fetch posts:', err);
 				setError(true);
 			} finally {
 				setLoading(false);
@@ -46,6 +46,7 @@ export default function AnnoucementPage() {
 		};
 
 		fetchPosts();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	if (loading) {

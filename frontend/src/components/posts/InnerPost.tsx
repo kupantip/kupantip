@@ -159,13 +159,17 @@ export default function InnerPost({ post }: PostProps) {
 			try {
 				await deletevotePost(post.id);
 				console.log('Undo UpVote success');
-			} catch (err: unknown) {}
+			} catch {
+				// Handle error silently
+			}
 		} else {
 			newVote = 1;
 			try {
 				await upvotePost(post.id);
 				console.log('UpVote Post Success', post.id);
-			} catch (err: unknown) {}
+			} catch {
+				// Handle error silently
+			}
 		}
 
 		updateUserVote(newVote);
@@ -181,13 +185,17 @@ export default function InnerPost({ post }: PostProps) {
 			try {
 				await deletevotePost(post.id);
 				console.log('Undo DownVote success');
-			} catch (err: unknown) {}
+			} catch {
+				// Handle error silently
+			}
 		} else {
 			newVote = -1;
 			try {
 				await downvotePost(post.id);
 				console.log('DownVote Post Success', post.id);
-			} catch (err: unknown) {}
+			} catch {
+				// Handle error silently
+			}
 		}
 
 		updateUserVote(newVote);
@@ -205,17 +213,17 @@ export default function InnerPost({ post }: PostProps) {
 		router.push(`/dashboard/${post.id}/edit`);
 	};
 
-	const handleDelete = async (e: React.MouseEvent) => {
-		e.stopPropagation();
-		setMenuOpen(false);
-		try {
-			await deletePost(post.id);
-			console.log('Delete post', post.id, ' success');
-			router.push('/dashboard');
-		} catch (err: unknown) {
-			console.log('Delete Failed');
-		}
-	};
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setMenuOpen(false);
+        try {
+            await deletePost(post.id);
+            console.log('Delete post', post.id, ' success');
+            router.push('/dashboard');
+        } catch {
+            console.log('Delete Failed');
+        }
+    };
 
 	return (
 		<div className="flex flex-col items-center">
