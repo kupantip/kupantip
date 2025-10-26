@@ -46,7 +46,7 @@ export default function AdminPage() {
 	}
 
 	return (
-		<div className="space-y-2">
+		<div className="space-y-4">
 			<div className="grid grid-cols-4 gap-4">
 				<ReportCard
 					num={statsData?.users.new_today || 0}

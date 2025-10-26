@@ -26,7 +26,7 @@ export default function AdminLineChart({
 	subtitle,
 }: AdminLineChartProps) {
 	return (
-		<Card>
+		<Card className='hover:scale-101'>
 			<CardHeader>
 				<CardTitle>{title}</CardTitle>
 				<CardDescription>{subtitle}</CardDescription>

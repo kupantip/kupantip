@@ -213,7 +213,7 @@ export function ReportDataTable({ data }: ReportDataTableProps) {
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
-                                className="h-8 w-8 p-0"
+                                className="h-8 w-8 p-0 cursor-pointer"
                                 aria-label="Open menu"
                                 disabled={isPending}
                             >
@@ -357,7 +357,7 @@ export function ReportDataTable({ data }: ReportDataTableProps) {
                                     }
                                 >
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                        <TableCell key={cell.id} className='hover:scale-101'>
                                             {flexRender(
                                                 cell.column.columnDef.cell,
                                                 cell.getContext()

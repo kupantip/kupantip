@@ -52,7 +52,6 @@ export function BanUserDialog({
 	const [endDate, setEndDate] = useState<Date>();
 
 	const { mutate: createBan, isPending } = useCreateBan();
-
 	const handleSubmit = () => {
 		if (!banType || !reasonAdmin || !reasonUser || !endDate) {
 			toast.error('Missing Information', {
@@ -82,9 +81,12 @@ export function BanUserDialog({
 					onOpenChange(false);
 					onSuccess?.();
 				},
-				onError: (error) => {
+				onError: (error: any) => {
+					const errorMessage =
+						error?.response?.data?.message ||
+						'Failed to ban user. Please try again.';
 					toast.error('Error', {
-						description: 'Failed to ban user. Please try again.',
+						description: errorMessage,
 					});
 				},
 			}

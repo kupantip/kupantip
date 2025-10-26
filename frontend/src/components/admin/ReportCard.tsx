@@ -16,7 +16,7 @@ export default function ReportCard({
 	date,
 }: ReportCardProps) {
 	return (
-		<div className="w-full bg-gray-300 rounded-md p-4 shadow-md hover:shadow-lg transition-shadow">
+		<div className="w-full bg-gray-200 rounded-md p-4 shadow-md hover:shadow-lg transition-shadow hover:scale-101">
 			<div className="flex justify-between">
 				<div>
 					{num} {title}
