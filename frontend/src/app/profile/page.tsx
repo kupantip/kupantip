@@ -30,12 +30,24 @@ import {
 	Award,
 	Edit,
 } from 'lucide-react';
+import { usePostByUserId } from '@/services/post/post';
 
 type UserPayload = {
 	user_id: string;
 	email: string;
 	username: string;
 	role: string;
+};
+
+const formatTime = (minutes: number) => {
+	if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+	if (minutes < 1440)
+		return `${Math.floor(minutes / 60)} hour${
+			Math.floor(minutes / 60) !== 1 ? 's' : ''
+		} ago`;
+	return `${Math.floor(minutes / 1440)} day${
+		Math.floor(minutes / 1440) !== 1 ? 's' : ''
+	} ago`;
 };
 
 export default function MyProfilePage() {
@@ -60,6 +72,10 @@ export default function MyProfilePage() {
 		}
 	}, [status, router]);
 
+	const { data: post, isLoading: isLoadingPost } = usePostByUserId(
+		tokenPayload?.user_id || ''
+	);
+	const firstThreePost = post?.slice(0, 3) || [];
 
 	if (status === 'unauthenticated') {
 		return null; // Will redirect in useEffect
@@ -74,27 +90,6 @@ export default function MyProfilePage() {
 		following: 65,
 		reputation: 1247,
 	};
-
-	const recentActivity = [
-		{
-			id: 1,
-			type: 'post',
-			title: 'How to prepare for final exams',
-			time: '2 hours ago',
-		},
-		{
-			id: 2,
-			type: 'comment',
-			title: 'Commented on "Best study spots on campus"',
-			time: '5 hours ago',
-		},
-		{
-			id: 3,
-			type: 'upvote',
-			title: 'Upvoted "Internship opportunities"',
-			time: '1 day ago',
-		},
-	];
 
 	const badges = [
 		{
@@ -115,7 +110,6 @@ export default function MyProfilePage() {
 			data-aos="fade-up"
 			className="min-h-screen px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
 		>
-			{/* ...rest of your JSX remains exactly the same... */}
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
@@ -179,11 +173,16 @@ export default function MyProfilePage() {
 							</div>
 
 							<div className="flex gap-2 pt-2">
-								<Button className="bg-green-1 hover:bg-green-600">
+								<Button className="bg-green-1 hover:bg-green-600 cursor-pointer">
 									<Edit className="w-4 h-4 mr-2" />
 									Edit Profile
 								</Button>
-								<Button variant="outline">Share Profile</Button>
+								<Button
+									variant="outline"
+									className="cursor-pointer"
+								>
+									Share Profile
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -262,33 +261,47 @@ export default function MyProfilePage() {
 						<CardHeader>
 							<CardTitle>Recent Activity</CardTitle>
 						</CardHeader>
-						<CardContent className="space-y-4">
-							{recentActivity.map((activity) => (
-								<div
-									key={activity.id}
-									className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-								>
-									<div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
-										{activity.type === 'post' && (
-											<FileText className="w-4 h-4 text-green-600" />
-										)}
-										{activity.type === 'comment' && (
-											<MessageSquare className="w-4 h-4 text-blue-600" />
-										)}
-										{activity.type === 'upvote' && (
-											<TrendingUp className="w-4 h-4 text-orange-600" />
-										)}
-									</div>
-									<div className="flex-1">
-										<p className="font-medium">
-											{activity.title}
-										</p>
-										<p className="text-sm text-gray-500">
-											{activity.time}
+						<CardContent className="space-y-4 ">
+							{isLoadingPost ? (
+								// Loading state
+								<div className="flex items-center justify-center py-8">
+									<div className="text-center">
+										<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-1 mx-auto"></div>
+										<p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+											Loading posts...
 										</p>
 									</div>
 								</div>
-							))}
+							) : post && post.length > 0 ? (
+								// Show first 3 posts
+								firstThreePost.map((activity) => (
+									<div
+										key={activity.id}
+										className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition hover:scale-102"
+									>
+										<div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
+											<FileText className="w-4 h-4 text-green-600" />
+										</div>
+										<div className="flex-1">
+											<p className="font-medium">
+												{activity.title}
+											</p>
+											<p className="text-sm text-gray-500">
+												{formatTime(
+													activity.minutes_since_posted
+												)}
+											</p>
+										</div>
+									</div>
+								))
+							) : (
+								// No posts found
+								<div className="text-center py-8">
+									<p className="text-gray-500 text-sm italic">
+										No posts yet.
+									</p>
+								</div>
+							)}
 						</CardContent>
 					</Card>
 				</TabsContent>
