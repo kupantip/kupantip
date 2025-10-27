@@ -42,7 +42,7 @@ export default function ReportModal({ targetType, target, onClose }: ReportModal
 
     return (
         <div
-            className="fixed inset-0 backdrop-blur-xs inset-0 min-w-xl flex items-center justify-center z-50 p-4 text-white"
+            className="fixed inset-0 backdrop-blur-xs min-w-xl flex items-center justify-center z-50 p-4 text-white"
             onClick={onClose}
         >
             <motion.div

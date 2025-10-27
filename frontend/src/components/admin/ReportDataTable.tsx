@@ -412,8 +412,8 @@ export function ReportDataTable({ data }: ReportDataTableProps) {
 
             {reportToBan && (
                 <BanUserDialog
-                    reportId={String(reportToBan.id)}
-                    userId={reportToBan.reporter_id}
+                    reportId={String(reportToBan.reporter_id)}
+                    userId={reportToBan.reported_user_id}
                     open={banDialogOpen}
                     onOpenChange={setBanDialogOpen}
                     onSuccess={handleBanSuccess}
