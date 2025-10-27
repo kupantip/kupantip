@@ -60,18 +60,6 @@ export default function MyProfilePage() {
 		}
 	}, [status, router]);
 
-	if (status === 'loading') {
-		return (
-			<div className="h-full px-10 py-8 flex items-center justify-center">
-				<div className="text-center">
-					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-1 mx-auto"></div>
-					<p className="mt-4 text-gray-600 dark:text-gray-400">
-						Loading profile...
-					</p>
-				</div>
-			</div>
-		);
-	}
 
 	if (status === 'unauthenticated') {
 		return null; // Will redirect in useEffect

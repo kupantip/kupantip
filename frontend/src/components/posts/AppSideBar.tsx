@@ -34,9 +34,9 @@ export function AppSidebar() {
 	const [collapsed, setCollapsed] = useState(false);
 	const [hovered, setHovered] = useState(false);
 	const hoverTimer = useRef<number | null>(null);
-	const iconMenu = {
+	const iconMenu: Record<string, React.ElementType> = {
 		Home: Home,
-		Annoucement: Inbox,
+		Announcement: Inbox,
 		Community: PersonStanding,
 		Recruitment: BriefcaseBusiness,
 	};
@@ -119,10 +119,8 @@ export function AppSidebar() {
 				<ul className="space-y-1 px-4">
 					{!isLoadingCategories &&
 						categories?.map((category) => {
-							const Icon =
-								iconMenu[
-									category.label as keyof typeof iconMenu
-								];
+							const Icon = iconMenu[category.label] || Home;
+
 							return (
 								<li key={category.id}>
 									<a
