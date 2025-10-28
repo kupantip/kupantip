@@ -66,7 +66,7 @@ export function usePosts(category_id: string | null) {
 	return useQuery<Post[], Error>({
 		queryKey: ['posts', category_id],
 		queryFn: () => fetchPosts(category_id),
-		staleTime: 5 * 60 * 1000, // 5 minutes
+		// staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 }
 

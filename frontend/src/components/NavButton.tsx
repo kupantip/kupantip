@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 export default function NavButtons() {
-	const { data: session, status } = useSession();
+	const { status } = useSession();
 	const isLoggedIn = status === 'authenticated';
 
 	const handlePostClick = () => {

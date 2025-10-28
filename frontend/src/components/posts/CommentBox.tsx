@@ -3,16 +3,16 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Image, Type, Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { postComment } from '@/services/dashboard/postComment';
+import { Image as ImageIcon } from 'lucide-react';
 
-interface Content {
-	parent_id: string;
-	body_md: string;
-}
+// interface Content {
+// 	parent_id: string;
+// 	body_md: string;
+// }
 
 interface CommentBoxProps {
 	className?: string;
@@ -25,7 +25,7 @@ export default function CommentBox({
 	postId,
 	parentId,
 }: CommentBoxProps) {
-	const { data: session, status } = useSession();
+	const { status } = useSession();
 	const isLoggedIn = status === 'authenticated';
 
 	const [comment, setComment] = useState('');
@@ -80,9 +80,9 @@ export default function CommentBox({
 			<div className="mt-3 flex items-center justify-between">
 				{/* Left action icons */}
 				<div className="flex gap-3 text-gray-500">
-					<Image size={16} className="cursor-pointer" />
+					<ImageIcon size={16} className="cursor-pointer" />
 					{/* <Film size={16} className="cursor-pointer" />
-					<Type size={16} className="cursor-pointer" /> */}
+                    <Type size={16} className="cursor-pointer" /> */}
 				</div>
 
 				{/* Right buttons */}

@@ -18,8 +18,10 @@ export interface Post {
   attachments: Attachment[];
   minutes_since_posted: number;
   comment_count: number;
-  vote_count: number
-  vote_score: number
+  vote_count: number;
+  vote_score: number;
+  liked_by_requesting_user: boolean;
+  disliked_by_requesting_user: boolean;
 }
 
 export type Comment = {
@@ -34,9 +36,11 @@ export type Comment = {
   author_name: string
   minutes_since_commented: number
   reply_count: number
-  vote_count: number
   replies: Comment[] // recursive type
-  
+  vote_count: number
+	vote_score: number
+	liked_by_requesting_user: boolean
+	disliked_by_requesting_user: boolean
 }
 
 export type CommentsResponse = {
