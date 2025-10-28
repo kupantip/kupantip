@@ -10,20 +10,22 @@ import {
 	PersonStanding,
 	BriefcaseBusiness,
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 
 const HOVER_OPEN_DELAY_MS = 250;
 
-const items = [
-	{ title: 'Home', url: '/posts', icon: Home },
-	{ title: 'Announcement', url: '/posts/annoucement', icon: Inbox },
-	{ title: 'Community', url: '/posts/community', icon: PersonStanding },
-	{
-		title: 'Recruitment',
-		url: '/posts/recruitment',
-		icon: BriefcaseBusiness,
-	},
-];
+// const items = [
+// 	{ title: 'Home', url: '/posts', icon: Home },
+// 	{ title: 'Announcement', url: '/posts/annoucement', icon: Inbox },
+// 	{ title: 'Community', url: '/posts/community', icon: PersonStanding },
+// 	{
+// 		title: 'Recruitment',
+// 		url: '/posts/recruitment',
+// 		icon: BriefcaseBusiness,
+// 	},
+// ];
 
 const topicItems = [
 	{ title: 'Games', url: '/games', icon: '🎮' },
@@ -34,13 +36,13 @@ export function AppSidebar() {
 	const [collapsed, setCollapsed] = useState(false);
 	const [hovered, setHovered] = useState(false);
 	const hoverTimer = useRef<number | null>(null);
-	const iconMenu = {
+	const iconMenu: Record<string, React.ElementType> = {
 		Home: Home,
 		Announcement: Inbox,
 		Community: PersonStanding,
 		Recruitment: BriefcaseBusiness,
 	};
-
+	const session = useSession();
 	const { data: categories, isLoading: isLoadingCategories } =
 		useCategories();
 
@@ -119,10 +121,8 @@ export function AppSidebar() {
 				<ul className="space-y-1 px-4">
 					{!isLoadingCategories &&
 						categories?.map((category) => {
-							const Icon =
-								iconMenu[
-									category.label as keyof typeof iconMenu
-								];
+							const Icon = iconMenu[category.label] || Home;
+
 							return (
 								<li key={category.id}>
 									<a
@@ -181,6 +181,35 @@ export function AppSidebar() {
 							</a>
 						</li>
 					))}
+
+					{session.data?.user.role === 'admin' && (
+						<>
+							{expanded && (
+								<li className="pt-2">
+									<div className="mx-2 border-t border-gray-200" />
+								</li>
+							)}
+							<li>
+								<Link
+									href="/posts/admin"
+									className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
+										expanded
+											? 'justify-start'
+											: 'justify-center'
+									}`}
+									aria-label={
+										expanded ? undefined : 'Admin Panel'
+									}
+									title={
+										!expanded ? 'Admin Panel' : undefined
+									}
+								>
+									<Calendar className="h-4 w-4 shrink-0" />
+									{expanded && <span>Admin Panel</span>}
+								</Link>
+							</li>
+						</>
+					)}
 				</ul>
 			</nav>
 		</div>

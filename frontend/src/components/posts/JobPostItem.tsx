@@ -14,7 +14,6 @@ interface JobPostItemProps {
 }
 
 export const JobPostItem: React.FC<JobPostItemProps> = ({
-    id,
     title,
     type,
     department,
