@@ -15,21 +15,17 @@ export default withAuth({
 				return true;
 			}
 
-			const publicPaths = ['/login', '/signup', '/forgot-password'];
-			if (publicPaths.includes(req.nextUrl.pathname)) {
-				return true;
-			}
+            // Protect /create path - require token
+            if (req.nextUrl.pathname.startsWith('/create')) {
+                return !!token
+            }
 
-			if (req.nextUrl.pathname.startsWith('/admin')) {
-				console.log(token, 'log at middleware');
-				return token?.role === 'admin';
-			}
-			// Protect other routes
-			return !!token;
-		},
-	},
-});
+            // All other paths are public
+            return true
+        },
+    },
+})
 
 export const config = {
-	matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-};
+    matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+}

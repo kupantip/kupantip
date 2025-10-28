@@ -106,3 +106,40 @@ export function usePostDetail(post_id: string) {
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 }
+
+export const fetchPostByUserId = async (user_id: string): Promise<Post[]> => {
+	try {
+		const session = await getSession();
+
+		const header = {
+			Authorization: `Bearer ${session?.user?.accessToken}`,
+		};
+
+		const response = await instance.get<Post[]>('/post', {
+			headers: header,
+			params: { user_id },
+		});
+		if (response.data.length === 0) {
+			throw new Error('Post not found');
+		}
+		return response.data;
+	} catch (error: unknown) {
+		if (axios.isAxiosError(error)) {
+			throw new Error(
+				`Failed to fetch post by user id: ${error.response?.status} ${error.response?.statusText}`
+			);
+		} else if (error instanceof Error) {
+			throw new Error(error.message);
+		} else {
+			throw new Error(String(error));
+		}
+	}
+};
+
+export function usePostByUserId(user_id: string) {
+	return useQuery<Post[], Error>({
+		queryKey: ['postUserId', user_id],
+		queryFn: () => fetchPostByUserId(user_id),
+		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+}
