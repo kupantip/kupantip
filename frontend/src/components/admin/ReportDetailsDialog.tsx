@@ -228,8 +228,8 @@ export function ReportDetailsDialog({
 			</Dialog>
 
 			<BanUserDialog
-				reportId={report.id}
-				userId={report.target_id}
+				reportId={String(report.reporter_id)}
+				userId={report.reported_user_id}
 				open={showBanDialog}
 				onOpenChange={setShowBanDialog}
 				onSuccess={handleBanSuccess}
