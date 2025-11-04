@@ -120,10 +120,6 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		setShowReportCommentDialog(true)
 	};
 
-	const handleCloseReport = () => {
-		setReportingComment(null);
-	};
-
 	return (
 		<div className="mb-4">
 			<div className="flex items-start gap-3">
@@ -232,7 +228,6 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 						target={comment}
 						open={showReportCommentDialog}
 						onOpenChange={setShowReportCommentDialog}
-						onClose={handleCloseReport}
 					></ReportModal>
 				)}
 			</AnimatePresence>
@@ -339,10 +334,6 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		setMenuOpen(false);
 		setReportingPost(post);
 		setShowReportPostDialog(true);
-	};
-
-	const handleCloseReport = () => {
-		setReportingPost(null);
 	};
 
 	return (
@@ -511,7 +502,6 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					target={post}
 					open={showReportPostDialog}
 					onOpenChange={setShowReportPostDialog}
-					onClose={handleCloseReport}
 				></ReportModal>
 			)}
 		</div>

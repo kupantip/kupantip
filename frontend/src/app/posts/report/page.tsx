@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState} from 'react';
-import { motion } from 'framer-motion';
 import { Post, Comment } from '@/types/dashboard/post';
 import { Report } from '@/services/user/report';
 import { toast } from 'sonner';
@@ -21,10 +20,9 @@ interface ReportModalProps {
     target: Post | Comment;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-    onClose: () => void;
 }
 
-export default function ReportModal({ targetType, target, onClose, open, onOpenChange }: ReportModalProps) {
+export default function ReportModal({ targetType, target, open, onOpenChange }: ReportModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [reason, setReason] = useState("");
 
