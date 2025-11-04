@@ -34,7 +34,6 @@ const topicItems = [
 ];
 
 export function AppSidebar() {
-	// const [collapsed, setCollapsed] = useState(false);
 	const { open, toggleSidebar } = useSidebar();
 	const [hovered, setHovered] = useState(false);
 	const hoverTimer = useRef<number | null>(null);
