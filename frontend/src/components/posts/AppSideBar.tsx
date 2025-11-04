@@ -13,6 +13,7 @@ import {
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const HOVER_OPEN_DELAY_MS = 250;
 
@@ -33,7 +34,7 @@ const topicItems = [
 ];
 
 export function AppSidebar() {
-	const [collapsed, setCollapsed] = useState(false);
+	const { open, toggleSidebar } = useSidebar();
 	const [hovered, setHovered] = useState(false);
 	const hoverTimer = useRef<number | null>(null);
 	const iconMenu: Record<string, React.ElementType> = {
@@ -46,10 +47,10 @@ export function AppSidebar() {
 	const { data: categories, isLoading: isLoadingCategories } =
 		useCategories();
 
-	const expanded = !collapsed || hovered;
+	const expanded = open || hovered;
 
 	const handleMouseEnter = () => {
-		if (!collapsed) return;
+		if (open) return;
 		if (hoverTimer.current) window.clearTimeout(hoverTimer.current);
 		hoverTimer.current = window.setTimeout(() => {
 			setHovered(true);
@@ -63,7 +64,7 @@ export function AppSidebar() {
 			hoverTimer.current = null;
 		}
 
-		if (collapsed) setHovered(false);
+		if (!open) setHovered(false);
 	};
 
 	useEffect(() => {
@@ -78,13 +79,13 @@ export function AppSidebar() {
 			hoverTimer.current = null;
 		}
 		setHovered(false);
-		setCollapsed((c) => !c);
+		toggleSidebar();
 	};
 
 	return (
 		<div
 			className={`group relative h-full border-r bg-grey-1 transition-[width] duration-200 ease-out ${
-				expanded ? 'w-60' : 'w-15'
+				expanded ? 'w-64' : 'w-12'
 			}`}
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}
@@ -105,7 +106,7 @@ export function AppSidebar() {
 					type="button"
 					onClick={toggleCollapse}
 					aria-label={
-						collapsed ? 'Expand sidebar' : 'Collapse sidebar'
+						!open ? 'Expand sidebar' : 'Collapse sidebar'
 					}
 					className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-gray-200 hover:bg-gray-100 transition"
 				>

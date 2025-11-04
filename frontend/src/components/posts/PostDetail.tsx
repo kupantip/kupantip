@@ -46,6 +46,8 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 	const [showReplyBox, setShowReplyBox] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
 
+	const [showReportCommentDialog, setShowReportCommentDialog] = useState(false);
+
 	const menuRef = useRef<HTMLDivElement>(null);
 
 	const { data: session } = useSession();
@@ -115,10 +117,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		console.log('Report Comment on', comment.id);
 		setMenuOpen(false);
 		setReportingComment(comment);
-	};
-
-	const handleCloseReport = () => {
-		setReportingComment(null);
+		setShowReportCommentDialog(true)
 	};
 
 	return (
@@ -210,8 +209,6 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 							className="mt-2"
 							postId={comment.post_id}
 							parentId={comment.id}
-							refresh={refreshComments}
-							onClose={() => setShowReplyBox(false)}
 						/>
 					)}
 
@@ -229,7 +226,8 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 					<ReportModal
 						targetType="comment"
 						target={comment}
-						onClose={handleCloseReport}
+						open={showReportCommentDialog}
+						onOpenChange={setShowReportCommentDialog}
 					></ReportModal>
 				)}
 			</AnimatePresence>
@@ -239,6 +237,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 
 export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const [reportingPost, setReportingPost] = useState<t.Post | null>(null);
+	const [showReportPostDialog, setShowReportPostDialog] = useState(false);
 
 	const { data: session } = useSession();
 	const tokenPayload = session?.accessToken
@@ -334,10 +333,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		console.log('Report on', post.id);
 		setMenuOpen(false);
 		setReportingPost(post);
-	};
-
-	const handleCloseReport = () => {
-		setReportingPost(null);
+		setShowReportPostDialog(true);
 	};
 
 	return (
@@ -485,7 +481,6 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 				className="w-full max-w-3xl mt-4"
 				postId={post.id}
 				parentId=""
-				refresh={refreshComments}
 			/>
 
 			{/* Comments Section */}
@@ -500,15 +495,15 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					<p className="text-gray-500 italic">No comments yet.</p>
 				)}
 			</div>
-			<AnimatePresence>
-				{reportingPost && (
-					<ReportModal
-						targetType="post"
-						target={post}
-						onClose={handleCloseReport}
-					></ReportModal>
-				)}
-			</AnimatePresence>
+
+			{reportingPost && (
+				<ReportModal
+					targetType="post"
+					target={post}
+					open={showReportPostDialog}
+					onOpenChange={setShowReportPostDialog}
+				></ReportModal>
+			)}
 		</div>
 	);
 }
