@@ -14,6 +14,8 @@ import {
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { useSidebar } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 
 interface ReportModalProps {
     targetType: "post" | "comment";
@@ -25,6 +27,8 @@ interface ReportModalProps {
 export default function ReportModal({ targetType, target, open, onOpenChange }: ReportModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [reason, setReason] = useState("");
+
+    const {open : isSidebarOpen} = useSidebar();
 
     const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -56,7 +60,10 @@ export default function ReportModal({ targetType, target, open, onOpenChange }: 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent 
-                className="bg-white p-8 rounded-xl shadow-lg text-left max-w-xl w-full text-black"
+                className={cn(
+                    "bg-white p-8 rounded-xl shadow-lg text-left max-w-xl w-full text-black",
+                    isSidebarOpen ? "ml-32" : "ml-6"
+                )}
             >
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-bold mb-4 text-black">
