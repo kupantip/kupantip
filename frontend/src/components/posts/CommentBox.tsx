@@ -18,12 +18,16 @@ interface CommentBoxProps {
 	className?: string;
 	postId: string;
 	parentId: string;
+	refresh: () => void;
+	onClose?: () => void;
 }
 
 export default function CommentBox({
 	className,
 	postId,
 	parentId,
+	refresh,
+	onClose,
 }: CommentBoxProps) {
 	const { status } = useSession();
 	const isLoggedIn = status === 'authenticated';
@@ -54,12 +58,25 @@ export default function CommentBox({
 				console.log('Comment posted successfully!');
 				setComment('');
 				setShowActions(false);
+				if (onClose){
+					onClose();
+				}
 			}
 		} catch (err) {
 			toast.error('Please login first');
 			console.error('Failed to post comment:', err);
+		} finally {
+			refresh();
 		}
 	}
+
+    const handleCancel = () => {
+        setComment('');
+        setShowActions(false);
+        if (onClose) {
+            onClose();
+        }
+    };
 
 	return (
 		<div
@@ -89,11 +106,10 @@ export default function CommentBox({
 				{showActions && (
 					<div className="flex gap-2">
 						<Button
-							variant="secondary"
-							onClick={() => {
-								setComment('');
-								setShowActions(false);
-							}}
+							variant="ghost"
+							onClick={handleCancel}
+                            className='cursor-pointer text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            size='sm'
 						>
 							Cancel
 						</Button>
@@ -105,6 +121,8 @@ export default function CommentBox({
 								setShowActions(false);
 							}}
 							disabled={!comment.trim()}
+							className='cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50'
+							size='sm'
 						>
 							Comment
 						</Button>
