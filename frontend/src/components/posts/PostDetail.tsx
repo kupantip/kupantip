@@ -46,6 +46,8 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 	const [showReplyBox, setShowReplyBox] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
 
+	const [isEditing, setIsEditing] = useState(false);
+
 	const [showReportCommentDialog, setShowReportCommentDialog] = useState(false);
 
 	const menuRef = useRef<HTMLDivElement>(null);
@@ -112,6 +114,13 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		}
 	};
 
+	const handleEditComment = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		console.log('Edit Comment on', comment.id);
+		setMenuOpen(false);
+		setIsEditing(true);
+	};
+
 	const handleReportComment = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Report Comment on', comment.id);
@@ -138,46 +147,79 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 							{formatTime(comment.minutes_since_commented || 0)}
 						</span>
 					</div>
-					<p className="text-gray-700 mt-1">{comment.body_md}</p>
-
-					<div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
-						<div className="flex items-center gap-1 px-2 py-1">
-						<ArrowUp
-							className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
-								${comment.liked_by_requesting_user ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
-							onClick={handleUpVote}
-						/>
-						<span>{comment.vote_score}</span>
-						<ArrowDown
-							className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
-								${comment.disliked_by_requesting_user ? "bg-red-400 text-black" : "hover:bg-gray-200"}`}
-							onClick={handleDownVote}
-						/>
-						</div>
-						<div
-							className="flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 cursor-pointer"
-							onClick={() => setShowReplyBox(!showReplyBox)}
-						>
-							<MessageSquare className="w-4 h-4" />
-							<span>Reply</span>
-						</div>
-						<div
-							className="flex items-center gap-1 px-2 py-1 "
-							onClick={(e) => {
-								e.stopPropagation();
-								setMenuOpen(!menuOpen);
-							}}
-						>
-							<button
-								className="p-1 rounded-full hover:bg-gray-100 cursor-pointer cursor-pointer"
+					{/* <p className="text-gray-700 mt-1">{comment.body_md}</p> */}
+                    {isEditing ? (
+                        <CommentBox
+                            className="mt-2"
+                            postId={comment.post_id}
+                            parentId={comment.parent_id || ''}
+                            refresh={refreshComments}
+                            onClose={() => setIsEditing(false)}
+                            editComment={{ id: comment.id, body_md: comment.body_md }}
+                        />
+                    ) : (
+                        <p className="text-gray-700 mt-1">{comment.body_md}</p>
+                    )}
+					{!isEditing &&
+						<div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
+							<div className="flex items-center gap-1 px-2 py-1">
+							<ArrowUp
+								className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+									${comment.liked_by_requesting_user ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
+								onClick={handleUpVote}
+							/>
+							<span>{comment.vote_score}</span>
+							<ArrowDown
+								className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+									${comment.disliked_by_requesting_user ? "bg-red-400 text-black" : "hover:bg-gray-200"}`}
+								onClick={handleDownVote}
+							/>
+							</div>
+							<div
+								className="flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 cursor-pointer"
+								onClick={() => setShowReplyBox(!showReplyBox)}
+							>
+								<MessageSquare className="w-4 h-4" />
+								<span>Reply</span>
+							</div>
+							<div
+								className="flex items-center gap-1 px-2 py-1 "
 								onClick={(e) => {
 									e.stopPropagation();
 									setMenuOpen(!menuOpen);
 								}}
 							>
-								<Ellipsis />
-							</button>
-							{comment.author_id != currentUserId && (
+								<button
+									className="p-1 rounded-full hover:bg-gray-100 cursor-pointer cursor-pointer"
+									onClick={(e) => {
+										e.stopPropagation();
+										setMenuOpen(!menuOpen);
+									}}
+								>
+									<Ellipsis />
+								</button>
+							{comment.author_id === currentUserId ? (
+								<AnimatePresence>
+									{menuOpen && (
+										<motion.div
+											ref={menuRef}
+											className="absolute mt-22 w-24 bg-white shadow-md rounded-lg"
+											initial={{ opacity: 0, x: 0, y: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={{ duration: 0.15 }}
+										>
+											<button
+												className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
+												onClick={handleEditComment}
+											>
+												<Pen className="px-1 mr-2" />
+												<span className="mt-0.5">Edit</span>
+											</button>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							) : (
 								<AnimatePresence>
 									{menuOpen && (
 										<motion.div
@@ -201,8 +243,9 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 									)}
 								</AnimatePresence>
 							)}
+							</div>
 						</div>
-					</div>
+					}
 
 					{showReplyBox && (
 						<CommentBox
