@@ -53,11 +53,9 @@ const formatTime = (minutes: number) => {
 type CommentProps = {
 	comment: t.Comment & { replies: t.Comment[] };
 	refreshComments: () => void;
-	open?: boolean;
-	onOpenChange?: (open: boolean) => void;
 };
 
-const CommentItem = ({ comment, refreshComments, open, onOpenChange }: CommentProps) => {
+const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 	const [showReplyBox, setShowReplyBox] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
 
@@ -293,7 +291,7 @@ const CommentItem = ({ comment, refreshComments, open, onOpenChange }: CommentPr
 								<AlertDialogHeader>
 									<AlertDialogTitle>Delete comment?</AlertDialogTitle>
 									<AlertDialogDescription>
-										Are you sure you want to delete your comment? You can't undo this.
+										Are you sure you want to delete your comment? You can&apos;t undo this.
 									</AlertDialogDescription>
 								</AlertDialogHeader>
 								<AlertDialogFooter>
