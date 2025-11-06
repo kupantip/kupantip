@@ -3,6 +3,7 @@ import { getDbConnection } from '../database/mssql.database';
 import {
 	createPost,
 	getPosts,
+	getPriorityPosts,
 	addAttachment,
 	deletePost,
 	updatePost,
@@ -61,6 +62,26 @@ const getFilterSchema = z.object({
 
 const getAttachmentsSchema = z.object({
 	filename: z.string().min(1, 'Filename is required'),
+});
+
+// Filter for priority posts
+const getPriorityFilterSchema = z.object({
+	category_id: z.string().uuid().optional(),
+	recent: z.preprocess((v) => {
+		const toBool = (s: string) => {
+			const t = s.trim().toLowerCase();
+			if (t === 'true' || t === '1') return true;
+			if (t === 'false' || t === '0') return false;
+			return undefined;
+		};
+		if (typeof v === 'boolean') return v;
+		if (typeof v === 'string') return toBool(v);
+		if (Array.isArray(v) && v.length > 0) {
+			const last = v[v.length - 1];
+			if (typeof last === 'string') return toBool(last);
+		}
+		return undefined;
+	}, z.boolean().optional()),
 });
 
 export const createPostController = async (
@@ -164,6 +185,27 @@ export const getHotPostsController = async (
 ) => {
 	try {
 		const posts = await getHotPostsByCategory(req.user?.user_id);
+		return res.status(200).json(posts);
+	} catch (err) {
+		next(err);
+	}
+};
+
+export const getPriorityPostsController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const parsed = getPriorityFilterSchema.parse(req.query);
+		const { category_id, recent } = parsed;
+
+		const posts = await getPriorityPosts(
+			category_id,
+			recent ?? true,
+			req.user?.user_id
+		);
+
 		return res.status(200).json(posts);
 	} catch (err) {
 		next(err);
