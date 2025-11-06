@@ -14,7 +14,7 @@ model app_user {
   display_name                           String              @db.NVarChar(100)
   created_at                             DateTime            @default(now(), map: "DF__app_user__create__3A81B327") @db.DateTime
   updated_at                             DateTime            @default(now(), map: "DF__app_user__update__3B75D760") @db.DateTime
-  annoucement                            annoucement[]
+  announcement                            announcement[]
   comment                                comment[]
   comment_vote                           comment_vote[]
   moderation_action                      moderation_action[]
@@ -165,14 +165,14 @@ model user_ban {
   @@index([revoked_at], map: "user_ban_index_5")
 }
 
-model annoucement {
-  id        String    @id(map: "PK__annoucem__3213E83FC1741333") @default(dbgenerated("newsequentialid()"), map: "DF__annoucement__id__656C112C") @db.UniqueIdentifier
+model announcement {
+  id        String    @id(map: "PK__announcem__3213E83FC1741333") @default(dbgenerated("newsequentialid()"), map: "DF__announcement__id__656C112C") @db.UniqueIdentifier
   author_id String    @db.UniqueIdentifier
   title     String    @db.NVarChar(300)
   body_md   String    @db.NVarChar(Max)
-  create_at DateTime  @default(now(), map: "DF__annouceme__creat__66603565") @db.DateTime
+  create_at DateTime  @default(now(), map: "DF__announceme__creat__66603565") @db.DateTime
   start_at  DateTime  @db.DateTime
   end_at    DateTime  @db.DateTime
   delete_at DateTime? @db.DateTime
-  app_user  app_user  @relation(fields: [author_id], references: [id], onUpdate: NoAction, map: "FK__annouceme__autho__778AC167")
+  app_user  app_user  @relation(fields: [author_id], references: [id], onUpdate: NoAction, map: "FK__announceme__autho__778AC167")
 }
