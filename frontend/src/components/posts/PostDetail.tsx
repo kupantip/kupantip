@@ -142,7 +142,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		try {
 			await deleteComment(comment.id);
 			console.log('Delete comment', comment.id, ' success');
-			toast.success('Comment Deleted!')
+			toast.warning('Comment deleted successfully!')
 			refreshComments();
 		} catch {
 			console.log('Delete Failed');
