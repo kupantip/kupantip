@@ -8,12 +8,13 @@ datasource db {
 }
 
 model app_user {
-  id                                     String              @id(map: "PK__app_user__3213E83FC82FB4AF") @default(dbgenerated("newsequentialid()"), map: "DF__app_user__id__398D8EEE") @db.UniqueIdentifier
-  email                                  String              @unique(map: "UQ__app_user__AB6E61641C100918") @db.NVarChar(320)
-  handle                                 String              @unique(map: "UQ__app_user__7ED567C02725D883") @db.NVarChar(32)
+  id                                     String              @id(map: "PK__app_user__3213E83F9E358759") @default(dbgenerated("newsequentialid()"), map: "DF__app_user__id__398D8EEE") @db.UniqueIdentifier
+  email                                  String              @unique(map: "UQ__app_user__AB6E61647AF27769") @db.NVarChar(320)
+  handle                                 String              @unique(map: "UQ__app_user__7ED567C0DFA7E905") @db.NVarChar(32)
   display_name                           String              @db.NVarChar(100)
   created_at                             DateTime            @default(now(), map: "DF__app_user__create__3A81B327") @db.DateTime
   updated_at                             DateTime            @default(now(), map: "DF__app_user__update__3B75D760") @db.DateTime
+  annoucement                            annoucement[]
   comment                                comment[]
   comment_vote                           comment_vote[]
   moderation_action                      moderation_action[]
@@ -28,7 +29,7 @@ model app_user {
 }
 
 model attachment {
-  id         String   @id(map: "PK__attachme__3213E83FF060078B") @default(dbgenerated("newsequentialid()"), map: "DF__attachment__id__5441852A") @db.UniqueIdentifier
+  id         String   @id(map: "PK__attachme__3213E83F3BF0C5A5") @default(dbgenerated("newsequentialid()"), map: "DF__attachment__id__5441852A") @db.UniqueIdentifier
   post_id    String   @db.UniqueIdentifier
   url        String   @db.NVarChar(2048)
   mime_type  String?  @db.NVarChar(255)
@@ -37,14 +38,14 @@ model attachment {
 }
 
 model category {
-  id        String  @id(map: "PK__category__3213E83F84440C4D") @default(dbgenerated("newsequentialid()"), map: "DF__category__id__5165187F") @db.UniqueIdentifier
+  id        String  @id(map: "PK__category__3213E83FC08C8E88") @default(dbgenerated("newsequentialid()"), map: "DF__category__id__5165187F") @db.UniqueIdentifier
   label     String  @db.NVarChar(64)
   color_hex String? @db.VarChar(7)
   post      post[]
 }
 
 model comment {
-  id            String         @id(map: "PK__comment__3213E83FF74471FB") @default(dbgenerated("newsequentialid()"), map: "DF__comment__id__46E78A0C") @db.UniqueIdentifier
+  id            String         @id(map: "PK__comment__3213E83F41C7424C") @default(dbgenerated("newsequentialid()"), map: "DF__comment__id__46E78A0C") @db.UniqueIdentifier
   post_id       String         @db.UniqueIdentifier
   author_id     String?        @db.UniqueIdentifier
   parent_id     String?        @db.UniqueIdentifier
@@ -69,11 +70,11 @@ model comment_vote {
   comment    comment  @relation(fields: [comment_id], references: [id], onUpdate: NoAction, map: "FK__comment_v__comme__6383C8BA")
   app_user   app_user @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__comment_v__user___6477ECF3")
 
-  @@id([comment_id, user_id], map: "PK__comment___0C0E95F7CB1F91BD")
+  @@id([comment_id, user_id], map: "PK__comment___0C0E95F76A782CFB")
 }
 
 model post {
-  id          String       @id(map: "PK__post__3213E83FC621AFCE") @default(dbgenerated("newsequentialid()"), map: "DF__post__id__4222D4EF") @db.UniqueIdentifier
+  id          String       @id(map: "PK__post__3213E83FF3088149") @default(dbgenerated("newsequentialid()"), map: "DF__post__id__4222D4EF") @db.UniqueIdentifier
   author_id   String?      @db.UniqueIdentifier
   title       String       @db.NVarChar(300)
   body_md     String?      @db.NVarChar(Max)
@@ -100,11 +101,11 @@ model post_vote {
   post       post     @relation(fields: [post_id], references: [id], onUpdate: NoAction, map: "FK__post_vote__post___619B8048")
   app_user   app_user @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__post_vote__user___628FA481")
 
-  @@id([post_id, user_id], map: "PK__post_vot__D54C64165658456C")
+  @@id([post_id, user_id], map: "PK__post_vot__D54C6416CE365A44")
 }
 
 model report {
-  id          String   @id(map: "PK__report__3213E83F9893DB22") @default(dbgenerated("newsequentialid()"), map: "DF__report__id__5812160E") @db.UniqueIdentifier
+  id          String   @id(map: "PK__report__3213E83FD7909D9C") @default(dbgenerated("newsequentialid()"), map: "DF__report__id__5812160E") @db.UniqueIdentifier
   target_type String   @db.NVarChar(16)
   target_id   String   @db.UniqueIdentifier
   reporter_id String   @db.UniqueIdentifier
@@ -119,17 +120,17 @@ model user_role {
   role     String   @db.NVarChar(32)
   app_user app_user @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__user_role__user___5BE2A6F2")
 
-  @@id([user_id, role], map: "PK__user_rol__31DDE51B735CAF6C")
+  @@id([user_id, role], map: "PK__user_rol__31DDE51B2723B6BB")
 }
 
 model user_secret {
-  user_id       String   @id(map: "PK__user_sec__B9BE370F1DC66A08") @db.UniqueIdentifier
+  user_id       String   @id(map: "PK__user_sec__B9BE370F2A983CFD") @db.UniqueIdentifier
   password_hash String   @db.NVarChar(255)
   app_user      app_user @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__user_secr__user___5AEE82B9")
 }
 
 model moderation_action {
-  id          String   @id(map: "PK__moderati__3213E83F16C9F4CE") @default(dbgenerated("newsequentialid()"), map: "DF__moderation_a__id__619B8048") @db.UniqueIdentifier
+  id          String   @id(map: "PK__moderati__3213E83FCAE178E8") @default(dbgenerated("newsequentialid()"), map: "DF__moderation_a__id__619B8048") @db.UniqueIdentifier
   actor_id    String   @db.UniqueIdentifier
   target_type String   @db.NVarChar(16)
   target_id   String   @db.UniqueIdentifier
@@ -143,7 +144,7 @@ model moderation_action {
 }
 
 model user_ban {
-  id                                     String    @id(map: "PK__user_ban__3213E83F4C275822") @default(dbgenerated("newsequentialid()"), map: "DF__user_ban__id__5CD6CB2B") @db.UniqueIdentifier
+  id                                     String    @id(map: "PK__user_ban__3213E83F0C6946AC") @default(dbgenerated("newsequentialid()"), map: "DF__user_ban__id__5CD6CB2B") @db.UniqueIdentifier
   user_id                                String    @db.UniqueIdentifier
   ban_type                               String    @db.NVarChar(32)
   reason_admin                           String?   @db.NVarChar(Max)
@@ -162,4 +163,16 @@ model user_ban {
   @@index([user_id, ban_type, start_at], map: "user_ban_index_3")
   @@index([end_at], map: "user_ban_index_4")
   @@index([revoked_at], map: "user_ban_index_5")
+}
+
+model annoucement {
+  id        String    @id(map: "PK__annoucem__3213E83FC1741333") @default(dbgenerated("newsequentialid()"), map: "DF__annoucement__id__656C112C") @db.UniqueIdentifier
+  author_id String    @db.UniqueIdentifier
+  title     String    @db.NVarChar(300)
+  body_md   String    @db.NVarChar(Max)
+  create_at DateTime  @default(now(), map: "DF__annouceme__creat__66603565") @db.DateTime
+  start_at  DateTime  @db.DateTime
+  end_at    DateTime  @db.DateTime
+  delete_at DateTime? @db.DateTime
+  app_user  app_user  @relation(fields: [author_id], references: [id], onUpdate: NoAction, map: "FK__annouceme__autho__778AC167")
 }
