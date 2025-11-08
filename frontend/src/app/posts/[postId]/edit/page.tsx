@@ -95,6 +95,10 @@ export default function EditPostPage() {
 				setBody(fetchedPost.body_md || '');
 				setCategoryid(fetchedPost.category_id || '');
 
+                if (fetchedPost.attachments && fetchedPost.attachments.length > 0) {
+                    setTab('media');
+                }
+
 				AOS.refresh();
 			} catch (err) {
 				console.error('Failed to fetch post', err);
