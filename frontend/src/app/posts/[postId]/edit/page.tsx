@@ -21,6 +21,8 @@ import {
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { Upload } from 'lucide-react';
+import { X } from 'lucide-react';
 
 export default function EditPostPage() {
 	const router = useRouter();
@@ -36,6 +38,8 @@ export default function EditPostPage() {
 	const [body, setBody] = useState('');
 	const [category_id, setCategoryid] = useState('');
 	const [files, setFiles] = useState([] as File[])
+
+	const [attachmentsToDelete, setAttachmentsToDelete] = useState<string[]>([]);
 
 	const { data: categories } = useCategories();
 
@@ -105,6 +109,37 @@ export default function EditPostPage() {
 		}
 	};
 
+    const removeNewFile = (index: number) => {
+        setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+    };
+
+    const removeExistingAttachment = (attachmentId: string) => {
+        setAttachmentsToDelete(prev => [...prev, attachmentId]);
+    };
+
+    if (!post) {
+		return;
+    }
+
+    const existingAttachments = post.attachments
+        .filter(att => !attachmentsToDelete.includes(att.id))
+        .map(att => ({
+            id: att.id,
+            url: att.url.includes('/backend/')
+                ? att.url
+                : att.url.replace('/uploads/', '/backend/post/attachments/'),
+            isNew: false,
+        }));
+        
+    const newUploads = files.map((file, i) => ({
+        id: `new-${i}`,
+        url: URL.createObjectURL(file),
+        isNew: true,
+        file: file 
+    }));
+    
+    const combinedImages = [...existingAttachments, ...newUploads];
+
 	return (
 		<div
 			data-aos="fade-up"
@@ -173,46 +208,47 @@ export default function EditPostPage() {
 						<div className="flex flex-col gap-4">
 							<div
 								{...getRootProps()}
-								className={`border-2 border-dashed rounded-xl p-16 text-center transition-colors ${
+								className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
 									isDragActive
 										? 'bg-emerald-50 border-emerald-400'
 										: 'border-gray-300 hover:border-emerald-500'
-								} cursor-pointer`}
+								} cursor-pointer min-h-[200px] flex flex-col justify-center items-center`}
 							>
 								<input {...getInputProps()} />
-								{files.length === 0 ? (
-									<p className="text-gray-500">
-										{isDragActive
-											? 'Drop your files here...'
-											: 'Drag & drop images, or click to upload'}
-									</p>
+								{combinedImages.length === 0 ? (
+                                    <div className="text-gray-500 flex flex-col items-center">
+                                        <Upload className='mb-2 opacity-70' size={50}/>
+                                        <p className="font-semibold">Drag and Drop or upload media</p>
+                                        <p className="text-sm">Click here to browse</p>
+                                    </div>
 								) : (
-									<div className="grid grid-cols-3 gap-3">
-										{files.map((file, i) => (
+									<div className="grid grid-cols-4 gap-3 w-full">
+										{combinedImages.map((image, combinedIndex) => (
 											<div
-												key={i}
-												className="relative group"
+												key={image.id}
+												className="relative group aspect-square"
 											>
 												<Image
-													src={URL.createObjectURL(
-														file
-													)}
-													alt={`Upload preview ${
-														i + 1
-													}`}
+													src={image.url}
+													alt={`Gallery item ${combinedIndex + 1}`}
 													width={200}
-													height={128}
-													className="rounded-lg object-cover h-32 w-full"
+													height={200}
+													className="rounded-lg object-cover h-full w-full"
 												/>
 												<button
 													type="button"
 													onClick={(e) => {
-														e.stopPropagation();
-														setFiles(prevFiles => prevFiles.filter((_, idx) => idx !== i));
-													}}
-													className="absolute top-2 right-2 bg-black/50 text-white rounded-full px-2 py-1 text-xs opacity-0 group-hover:opacity-100 transition"
+                                                        e.stopPropagation();
+                                                        if ((image as any).isNew) {
+                                                            const fileIndex = files.findIndex(f => f === (image as any).file);
+                                                            if (fileIndex > -1) removeNewFile(fileIndex);
+                                                        } else {
+                                                            removeExistingAttachment(image.id);
+                                                        }
+                                                    }}
+													className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition cursor-pointer"
 												>
-													✕
+													<X size={18}/>
 												</button>
 											</div>
 										))}
