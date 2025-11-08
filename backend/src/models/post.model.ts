@@ -219,6 +219,162 @@ export const getPosts = async (
 	}));
 };
 
+export const getPriorityPosts = async (
+	category_id?: string,
+	recent?: boolean,
+	requesting_user_id?: string
+) => {
+	const pool = await getDbConnection();
+
+	let query = `
+    SELECT 
+      p.id,
+      p.title,
+      p.body_md,
+      p.url,
+      p.created_at,
+      p.updated_at,
+      u.display_name as author_name,
+      u.id as author_id,
+      ur.role as author_role,
+      c.label as category_label,
+	  c.color_hex as category_color,
+      c.id as category_id,
+      (
+        SELECT a.id, a.url, a.mime_type
+        FROM [dbo].[attachment] a
+        WHERE a.post_id = p.id
+        FOR JSON PATH
+      ) as attachments,
+      DATEDIFF(minute, p.created_at, GETDATE()) AS minutes_since_posted,
+      (SELECT COUNT(*) FROM [dbo].[comment] cm WHERE cm.post_id = p.id AND cm.deleted_at IS NULL) AS comment_count,
+			-- Exclude votes cast by shadowbanned users for public viewers; allow requesting user to still see their own votes
+			(SELECT COUNT(*) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id AND pv.value IN (1,-1)
+				AND (
+					NOT EXISTS (
+						SELECT 1 FROM [dbo].[user_ban] ub
+						WHERE ub.user_id = pv.user_id
+							AND ub.ban_type = 'shadowban'
+							AND ub.revoked_at IS NULL
+							AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+							AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+					)
+					OR pv.user_id = @requesting_user_id
+				)
+			) AS vote_count,
+
+			COALESCE((SELECT SUM(pv.value) FROM [dbo].[post_vote] pv WHERE pv.post_id = p.id
+				AND (
+					NOT EXISTS (
+						SELECT 1 FROM [dbo].[user_ban] ub
+						WHERE ub.user_id = pv.user_id
+							AND ub.ban_type = 'shadowban'
+							AND ub.revoked_at IS NULL
+							AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+							AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+					)
+					OR pv.user_id = @requesting_user_id
+				)
+			),0) AS vote_score,
+
+			ISNULL((
+				SELECT SUM(CASE WHEN pv.value = 1 THEN 1 ELSE 0 END)
+				FROM [dbo].[post_vote] pv
+				WHERE pv.post_id = p.id
+					AND (
+						NOT EXISTS (
+							SELECT 1 FROM [dbo].[user_ban] ub
+							WHERE ub.user_id = pv.user_id
+								AND ub.ban_type = 'shadowban'
+								AND ub.revoked_at IS NULL
+								AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+								AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+						)
+						OR pv.user_id = @requesting_user_id
+					)
+				), 0) AS like_count,
+
+			ISNULL((
+				SELECT SUM(CASE WHEN pv.value = -1 THEN 1 ELSE 0 END)
+				FROM [dbo].[post_vote] pv
+				WHERE pv.post_id = p.id
+					AND (
+						NOT EXISTS (
+							SELECT 1 FROM [dbo].[user_ban] ub
+							WHERE ub.user_id = pv.user_id
+								AND ub.ban_type = 'shadowban'
+								AND ub.revoked_at IS NULL
+								AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+								AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+						)
+						OR pv.user_id = @requesting_user_id
+					)
+								), 0) AS dislike_count,
+			CAST(
+				CASE 
+					WHEN @requesting_user_id IS NOT NULL AND EXISTS (
+						SELECT 1 FROM [dbo].[post_vote] pv
+						WHERE pv.post_id = p.id AND pv.user_id = @requesting_user_id AND pv.value = 1
+					) THEN 1 ELSE 0 END AS BIT
+			) AS liked_by_requesting_user,
+			CAST(
+				CASE 
+					WHEN @requesting_user_id IS NOT NULL AND EXISTS (
+						SELECT 1 FROM [dbo].[post_vote] pv
+						WHERE pv.post_id = p.id AND pv.user_id = @requesting_user_id AND pv.value = -1
+					) THEN 1 ELSE 0 END AS BIT
+			) AS disliked_by_requesting_user
+    FROM [dbo].[post] p
+    LEFT JOIN [dbo].[app_user] u ON p.author_id = u.id
+    LEFT JOIN [dbo].[user_role] ur ON u.id = ur.user_id
+    LEFT JOIN [dbo].[category] c ON p.category_id = c.id
+    WHERE p.deleted_at IS NULL
+	  AND ur.role IN ('admin', 'teacher', 'staff')
+	  -- Shadowban filter: hide posts from shadowbanned users unless viewing own posts
+	  AND (
+		-- Show if author is not shadowbanned
+		NOT EXISTS (
+		  SELECT 1 FROM [dbo].[user_ban] ub
+		  WHERE ub.user_id = p.author_id
+			AND ub.ban_type = 'shadowban'
+			AND ub.revoked_at IS NULL
+			AND (ub.start_at IS NULL OR ub.start_at <= GETDATE())
+			AND (ub.end_at IS NULL OR ub.end_at > GETDATE())
+		)
+		-- OR show if requesting user is the author (shadowbanned users see their own posts)
+		OR (@requesting_user_id IS NOT NULL AND p.author_id = @requesting_user_id)
+	  )
+	`;
+
+	const request = pool.request();
+	request.input(
+		'requesting_user_id',
+		sql.UniqueIdentifier,
+		requesting_user_id ?? null
+	);
+	request.input('category_id', sql.UniqueIdentifier, category_id ?? null);
+
+	query += ` AND ((@category_id IS NULL) OR (p.category_id = @category_id))`;
+
+	// Sort by role priority first, then by date
+	const dateOrder = recent ? 'DESC' : 'ASC';
+	query += `\n    ORDER BY 
+		CASE 
+			WHEN ur.role = 'admin' THEN 1
+			WHEN ur.role = 'staff' THEN 2
+			WHEN ur.role = 'teacher' THEN 3
+			ELSE 4
+		END,
+		p.created_at ${dateOrder}, p.id ${dateOrder}`;
+
+	const result = await request.query(query);
+
+	return result.recordset.map((row: PostRow) => ({
+		...row,
+		attachments: row.attachments ? JSON.parse(row.attachments) : [],
+	}));
+};
+
 export const getHotPostsByCategory = async (requesting_user_id?: string) => {
 	const pool = await getDbConnection();
 

@@ -6,6 +6,7 @@ import {
 	deletePostController,
 	updatePostController,
 	getHotPostsController,
+	getPriorityPostsController,
 	getPostSummaryStatsController,
 } from '../controller/post.controller';
 import { uploadWithLimit } from '../middleware/upload.middleware';
@@ -25,6 +26,8 @@ router.post(
 router.get('/', optionalAuthMiddleware, getPostsController);
 
 router.get('/hot', optionalAuthMiddleware, getHotPostsController);
+
+router.get('/priority', optionalAuthMiddleware, getPriorityPostsController);
 
 router.get('/summarystats', getPostSummaryStatsController);
 
