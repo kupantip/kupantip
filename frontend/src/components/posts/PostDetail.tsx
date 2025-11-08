@@ -285,34 +285,33 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 						</div>
 					}
 
-					{isDeleting && (
-						<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-							<AlertDialogContent className={isSidebarOpen ? "ml-32" : "ml-6"}>
-								<AlertDialogHeader>
-									<AlertDialogTitle>Delete comment?</AlertDialogTitle>
-									<AlertDialogDescription>
-										Are you sure you want to delete your comment? You can&apos;t undo this.
-									</AlertDialogDescription>
-								</AlertDialogHeader>
-								<AlertDialogFooter>
-									<AlertDialogCancel
-										type="button"
-										onClick={() => setIsDeleting(false)}
-										className='cursor-pointer'
-									>
-										Cancel
-									</AlertDialogCancel>
-									<AlertDialogAction
-										type="submit"
-										onClick={handleDeleteComment}
-										className='cursor-pointer hover:bg-red-700 bg-red-600'
-									>
-										Delete
-									</AlertDialogAction>
-								</AlertDialogFooter>
-							</AlertDialogContent>
-						</AlertDialog>
-					)}
+
+					<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
+						<AlertDialogContent className={isSidebarOpen ? "ml-32" : "ml-6"}>
+							<AlertDialogHeader>
+								<AlertDialogTitle>Delete comment?</AlertDialogTitle>
+								<AlertDialogDescription>
+									Are you sure you want to delete your comment? You can&apos;t undo this.
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<AlertDialogCancel
+									type="button"
+									onClick={() => setIsDeleting(false)}
+									className='cursor-pointer'
+								>
+									Cancel
+								</AlertDialogCancel>
+								<AlertDialogAction
+									type="submit"
+									onClick={handleDeleteComment}
+									className='cursor-pointer hover:bg-red-700 bg-red-600'
+								>
+									Delete
+								</AlertDialogAction>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
 
 					{showReplyBox && (
 						<CommentBox
@@ -358,6 +357,9 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const router = useRouter();
 	const menuRef = useRef<HTMLDivElement>(null);
+
+	const {open: isSidebarOpen} = useSidebar();
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	const{
 		data: commentsData,
@@ -433,8 +435,10 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			await deletePost(post.id);
 			console.log('Delete post', post.id, ' success');
 			router.push(`/posts/category/${post.category_id}`);
+			toast.warning('Post deleted successfully!')
 		} catch {
 			console.log('Delete Failed');
+			toast.error('Failed to delete comment. Please try again.')
 		}
 	};
 
@@ -500,7 +504,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 										</button>
 										<button
 											className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-b-lg cursor-pointer"
-											onClick={handleDelete}
+											onClick={() => setIsDeleting(true)}
 										>
 											<Trash2 className="mr-2" />
 											<span className="mt-0.5">
@@ -615,6 +619,33 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					onOpenChange={setShowReportPostDialog}
 				></ReportModal>
 			)}
+
+			<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
+				<AlertDialogContent className={isSidebarOpen ? "ml-32" : "ml-6"}>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete post?</AlertDialogTitle>
+						<AlertDialogDescription>
+							Once you delete this post, it can&apos;t be restored.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							type="button"
+							onClick={() => setIsDeleting(false)}
+							className='cursor-pointer'
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction
+							type="submit"
+							onClick={handleDelete}
+							className='cursor-pointer hover:bg-red-700 bg-red-600'
+						>
+							Delete
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
