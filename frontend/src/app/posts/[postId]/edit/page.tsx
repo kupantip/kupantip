@@ -2,6 +2,7 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useDropzone } from 'react-dropzone';
 import { useCategories } from '@/services/post/category';
 import { Post } from '@/types/dashboard/post';
 import { getPostById } from '@/services/dashboard/getPostById';
@@ -16,7 +17,10 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { toast } from 'sonner';
 
 export default function EditPostPage() {
 	const router = useRouter();
@@ -25,10 +29,13 @@ export default function EditPostPage() {
 
 	const [loading, setLoading] = useState(false);
 
+	const [tab, setTab] = useState<'text' | 'media'>('text');
+
 	const [post, setPost] = useState<Post | null>(null);
 	const [title, setTitle] = useState('');
 	const [body, setBody] = useState('');
 	const [category_id, setCategoryid] = useState('');
+	const [files, setFiles] = useState([] as File[])
 
 	const { data: categories } = useCategories();
 
@@ -39,6 +46,17 @@ export default function EditPostPage() {
 				offset: 80,
 			});
 		}, []);
+
+	const onDrop = (acceptedFiles: File[]) => {
+		setFiles(prevFiles => [...prevFiles, ...acceptedFiles]);
+	};
+
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({
+		onDrop,
+		accept: {
+			'image/*': [],
+		},
+	});
 
 	useEffect(() => {
 		async function fetchPost() {
@@ -58,6 +76,8 @@ export default function EditPostPage() {
 				AOS.refresh();
 			} catch (err) {
 				console.error('Failed to fetch post', err);
+			} finally {
+				setLoading(false);
 			}
 		}
 		fetchPost();
@@ -73,10 +93,15 @@ export default function EditPostPage() {
 
 		if (!post) return;
 		try {
-			await updatePost({ title, body_md: body, category_id }, post.id);
-			router.push(`/posts/category/${category_id}`);
+			await updatePost({ title, body_md: body, category_id, files }, post.id);
+			router.push(`/posts/${post.id}`);
 		} catch (err) {
 			console.error('Failed to update post', err);
+			toast.error('Failed to update post, Please try again.')
+		} finally {
+			setLoading(false);
+			toast.success('Edit Post Successfully!');
+			fetch
 		}
 	};
 
@@ -86,6 +111,28 @@ export default function EditPostPage() {
 			className="flex justify-center items-start min-h-screen bg-white p-8 tr">
 			<div className="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-8">
 				<h1 className="text-3xl font-bold mb-4">Edit Post</h1>
+
+				<div className="flex gap-6 border-b mb-6">
+					{['text', 'media'].map((type) => (
+						<button
+							key={type}
+							onClick={() => setTab(type as 'text' | 'media')}
+							className={`relative pb-2 font-medium transition-colors ${
+								tab === type
+									? 'text-emerald-700 p-2 hover:bg-gray-100 cursor-pointer'
+									: 'text-gray-500 p-2 hover:bg-gray-100 cursor-pointer'
+							}`}
+						>
+							{type === 'text' ? 'Text' : 'Images'}
+							{tab === type && (
+								<motion.div
+									layoutId="underline"
+									className="absolute bottom-0 left-0 right-0 h-[3px] bg-emerald-700 rounded-full"
+								/>
+							)}
+						</button>
+					))}
+				</div>
 
 				<form onSubmit={handleSubmit} className="flex flex-col gap-5">
 					<input
@@ -110,13 +157,82 @@ export default function EditPostPage() {
 						))}
 						</SelectContent>
 					</Select>
-					<textarea
-						className="border rounded-xl p-3"
-						value={body}
-						onChange={(e) => setBody(e.target.value)}
-						placeholder="Body text (optional)"
-						rows={10}
-					/>
+
+					{tab === 'text' ? (
+						<textarea
+							placeholder="Write something interesting..."
+							value={body}
+							onChange={(e) =>
+								setBody(e.target.value)
+							}
+							className="border border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-700"
+							rows={10}
+							required
+						/>
+					) : (
+						<div className="flex flex-col gap-4">
+							<div
+								{...getRootProps()}
+								className={`border-2 border-dashed rounded-xl p-16 text-center transition-colors ${
+									isDragActive
+										? 'bg-emerald-50 border-emerald-400'
+										: 'border-gray-300 hover:border-emerald-500'
+								} cursor-pointer`}
+							>
+								<input {...getInputProps()} />
+								{files.length === 0 ? (
+									<p className="text-gray-500">
+										{isDragActive
+											? 'Drop your files here...'
+											: 'Drag & drop images, or click to upload'}
+									</p>
+								) : (
+									<div className="grid grid-cols-3 gap-3">
+										{files.map((file, i) => (
+											<div
+												key={i}
+												className="relative group"
+											>
+												<Image
+													src={URL.createObjectURL(
+														file
+													)}
+													alt={`Upload preview ${
+														i + 1
+													}`}
+													width={200}
+													height={128}
+													className="rounded-lg object-cover h-32 w-full"
+												/>
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														setFiles(prevFiles => prevFiles.filter((_, idx) => idx !== i));
+													}}
+													className="absolute top-2 right-2 bg-black/50 text-white rounded-full px-2 py-1 text-xs opacity-0 group-hover:opacity-100 transition"
+												>
+													✕
+												</button>
+											</div>
+										))}
+									</div>
+								)}
+							</div>
+
+							<textarea
+								placeholder="Add a caption or description..."
+								value={body}
+								onChange={(e) =>
+									setBody(e.target.value)
+								}
+								className="border border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-700"
+								rows={10}
+								required
+							/>
+						</div>
+					)}
+
 					<div className="flex justify-end gap-2">
 						<Link href={`/posts/${postId}`}>
 							<Button className="bg-gray-200 text-black rounded-full hover:bg-gray-300 hover:shadow-md hover:scale-105 cursor-pointer">

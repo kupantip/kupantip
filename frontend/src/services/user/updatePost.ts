@@ -4,21 +4,24 @@ interface updatePostData {
   title: string;
   body_md: string;
   category_id?: string;
+  files: File[];
 }
 
 export async function updatePost(data: updatePostData, postID : string) {
-    const body = {
-        title: data.title,
-        body_md: data.body_md,
-        ...(data.category_id && { category_id: data.category_id }),
-    };
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("body_md", data.body_md);
+    if (data.category_id) {
+    formData.append("category_id", data.category_id);
+    }
+
+    data.files.forEach((file) => {
+    formData.append("files", file);
+    });
 
     const res = await fetch(`${BACKEND_HOST}/post/${postID}`, {
         method: "PUT",
-        headers : {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body),
+        body: formData,
         credentials: "include"
     });
 

@@ -53,7 +53,6 @@ export default function CreatePostPage() {
 		onDrop,
 		accept: {
 			'image/*': [],
-			'video/*': [],
 		},
 	});
 
@@ -99,7 +98,7 @@ export default function CreatePostPage() {
 									: 'text-gray-500 p-2 hover:bg-gray-100 cursor-pointer'
 							}`}
 						>
-							{type === 'text' ? 'Text' : 'Images & Video'}
+							{type === 'text' ? 'Text' : 'Images'}
 							{tab === type && (
 								<motion.div
 									layoutId="underline"
@@ -153,6 +152,7 @@ export default function CreatePostPage() {
 							}
 							className="border border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-700"
 							rows={10}
+							required
 						/>
 					) : (
 						<div className="flex flex-col gap-4">
@@ -169,7 +169,7 @@ export default function CreatePostPage() {
 									<p className="text-gray-500">
 										{isDragActive
 											? 'Drop your files here...'
-											: 'Drag & drop images/videos, or click to upload'}
+											: 'Drag & drop images, or click to upload'}
 									</p>
 								) : (
 									<div className="grid grid-cols-3 gap-3">
@@ -234,6 +234,7 @@ export default function CreatePostPage() {
 								}
 								className="border border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-700"
 								rows={10}
+								required
 							/>
 						</div>
 					)}
