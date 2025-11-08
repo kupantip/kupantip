@@ -25,6 +25,21 @@ import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 import { X } from 'lucide-react';
 
+type ExistingAttachment = {
+    id: string;
+    url: string;
+    isNew: false;
+};
+
+type NewUpload = {
+    id: string; 
+    url: string; 
+    isNew: true; 
+    file: File;
+};
+
+type CombinedImage = ExistingAttachment | NewUpload;
+
 export default function EditPostPage() {
 	const router = useRouter();
 	const params = useParams() as { postId: string };
@@ -124,7 +139,7 @@ export default function EditPostPage() {
 		return;
     }
 
-    const existingAttachments = post.attachments
+    const existingAttachments: ExistingAttachment[] = post.attachments
         .filter(att => !attachmentsToDelete.includes(att.id))
         .map(att => ({
             id: att.id,
@@ -134,14 +149,14 @@ export default function EditPostPage() {
             isNew: false,
         }));
         
-    const newUploads = files.map((file, i) => ({
+    const newUploads: NewUpload[] = files.map((file, i) => ({
         id: `new-${i}`,
         url: URL.createObjectURL(file),
         isNew: true,
         file: file 
     }));
     
-    const combinedImages = [...existingAttachments, ...newUploads];
+    const combinedImages: CombinedImage[] = [...existingAttachments, ...newUploads];
 
 	return (
 		<div
@@ -242,8 +257,8 @@ export default function EditPostPage() {
 													type="button"
 													onClick={(e) => {
                                                         e.stopPropagation();
-                                                        if ((image as any).isNew) {
-                                                            const fileIndex = files.findIndex(f => f === (image as any).file);
+                                                        if (image.isNew) {
+                                                            const fileIndex = files.findIndex(f => f === image.file);
                                                             if (fileIndex > -1) removeNewFile(fileIndex);
                                                         } else {
                                                             removeExistingAttachment(image.id);
