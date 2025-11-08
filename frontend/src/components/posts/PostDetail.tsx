@@ -219,7 +219,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 								}}
 							>
 								<button
-									className="p-1 rounded-full hover:bg-gray-100 cursor-pointer cursor-pointer"
+									className="p-1 rounded-full hover:bg-gray-100 cursor-pointer"
 									onClick={(e) => {
 										e.stopPropagation();
 										setMenuOpen(!menuOpen);
