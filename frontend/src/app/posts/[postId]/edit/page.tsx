@@ -3,6 +3,7 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCategories } from '@/services/post/category';
 import { Post } from '@/types/dashboard/post';
 import { getPostById } from '@/services/dashboard/getPostById';
@@ -28,6 +29,8 @@ export default function EditPostPage() {
 	const router = useRouter();
 	const params = useParams() as { postId: string };
 	const postId = params.postId;
+
+	const queryClient = useQueryClient();
 
 	const [loading, setLoading] = useState(false);
 
@@ -98,6 +101,7 @@ export default function EditPostPage() {
 		if (!post) return;
 		try {
 			await updatePost({ title, body_md: body, category_id, files }, post.id);
+			await queryClient.invalidateQueries({ queryKey: ['postDetail', post.id] });
 			router.push(`/posts/${post.id}`);
 		} catch (err) {
 			console.error('Failed to update post', err);
@@ -105,7 +109,6 @@ export default function EditPostPage() {
 		} finally {
 			setLoading(false);
 			toast.success('Edit Post Successfully!');
-			fetch
 		}
 	};
 
