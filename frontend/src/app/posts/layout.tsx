@@ -16,7 +16,6 @@ import Link from 'next/link';
 import NavButtons from '@/components/NavButton';
 import ProfileDropDown from '@/components/ProfileDropdown';
 
-
 export default function DashboardLayout({
 	children,
 }: {
