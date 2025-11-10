@@ -9,11 +9,17 @@ import { useSession } from 'next-auth/react';
 import { postComment } from '@/services/dashboard/postComment';
 import { updateComment } from '@/services/user/updateComment';
 import { Image as ImageIcon } from 'lucide-react';
-
-// interface Content {
-// 	parent_id: string;
-// 	body_md: string;
-// }
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useSidebar } from '../ui/sidebar';
 
 interface CommentBoxProps {
 	className?: string;
@@ -44,6 +50,14 @@ export default function CommentBox({
 	const [showActions, setShowActions] = useState(isEditing);
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	const [banInfo, setBanInfo] = useState<{
+		message: string;
+		reason: string;
+		end_at: string;
+	} | null>(null);
+
+	const {open: isSidebarOpen} = useSidebar();
 
 	if (!postId) {
 		postId = '';
@@ -91,19 +105,25 @@ export default function CommentBox({
 
 			refresh();
 
-		} catch (err) {
-			if (isEditing){
-				toast.error('Failed to update comment. Please try again.');
-			} else if (!isLoggedIn) {
-				toast.error('Please login first to comment.');
-			} else {
-				toast.error('Failed to post comment. Please try again.');
+		} catch (err : any) {
+			console.error("Failed to submit comment: ", err);
+
+			if (err.response?.status === 403) {
+				const { message, reason, end_at } = err.response.data;
+				setBanInfo({ message, reason, end_at });
+				return;
 			}
-			console.error('Failed to submit comment: ', err);
+
+			if (isEditing) {
+				toast.error("Failed to update comment. Please try again.");
+			} else if (!isLoggedIn) {
+				toast.error("Please login first to comment.");
+			} else {
+				toast.error("Failed to post comment. Please try again.");
+			}
 		} finally {
 			setIsSubmitting(false);
 		}
-
 	}
 
     const handleCancel = () => {
@@ -169,6 +189,33 @@ export default function CommentBox({
 					</div>
 				)}
 			</div>
+
+			<AlertDialog open={!!banInfo} onOpenChange={() => setBanInfo}>
+				<AlertDialogContent className={isSidebarOpen ? "ml-32" : "ml-6"}>
+					<AlertDialogHeader>
+						<AlertDialogTitle>You are ban from Comment</AlertDialogTitle>
+						<AlertDialogDescription>
+                			<strong className='text-black/75'>Reason:</strong> {banInfo?.reason}
+						</AlertDialogDescription>
+						<AlertDialogDescription>
+							<strong className='text-black/75'>End Date:</strong>{" "}
+							{banInfo?.end_at
+							? new Date(banInfo.end_at).toLocaleString("en-En")
+							: "-"}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							type="button"
+							onClick={() => setBanInfo(null)}
+							className='cursor-pointer'
+						>
+							Cancel
+						</AlertDialogCancel>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</form>
+
 	);
 }
