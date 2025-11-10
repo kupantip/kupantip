@@ -8,10 +8,9 @@ import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { postComment } from '@/services/dashboard/postComment';
 import { updateComment } from '@/services/user/updateComment';
-import { Image as ImageIcon } from 'lucide-react';
+import { AlertTriangle, Image as ImageIcon } from 'lucide-react';
 import {
 	AlertDialog,
-	AlertDialogAction,
 	AlertDialogCancel,
 	AlertDialogContent,
 	AlertDialogDescription,
@@ -19,6 +18,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { TriangleAlert } from 'lucide-react';
 import { useSidebar } from '../ui/sidebar';
 
 interface CommentBoxProps {
@@ -105,13 +105,28 @@ export default function CommentBox({
 
 			refresh();
 
-		} catch (err : any) {
+		} catch (err : unknown) {
 			console.error("Failed to submit comment: ", err);
 
-			if (err.response?.status === 403) {
-				const { message, reason, end_at } = err.response.data;
-				setBanInfo({ message, reason, end_at });
+			if (
+				typeof err === "object" &&
+				err !== null &&
+				"status" in err &&
+				(err as { status?: number }).status === 403
+			) {
+				const e = err as { message?: string; reason?: string; end_at?: string };
+				setBanInfo({
+					message: e.message ?? "You are banned",
+					reason: e.reason ?? "-",
+					end_at: e.end_at ?? "-",
+				});
 				return;
+			}
+
+			if (err instanceof Error) {
+				toast.error(err.message);
+			} else {
+				toast.error("Failed to post comment. Please try again.");
 			}
 
 			if (isEditing) {
@@ -193,14 +208,22 @@ export default function CommentBox({
 			<AlertDialog open={!!banInfo} onOpenChange={() => setBanInfo}>
 				<AlertDialogContent className={isSidebarOpen ? "ml-32" : "ml-6"}>
 					<AlertDialogHeader>
-						<AlertDialogTitle>You are ban from Comment</AlertDialogTitle>
+						<div className='flex gap-2 text-red-500 items-center'>
+							<AlertTriangle className='w-5 h-5'/>
+							<AlertDialogTitle>
+								You&apos;ve been banned from commenting.
+							</AlertDialogTitle>
+						</div>
 						<AlertDialogDescription>
                 			<strong className='text-black/75'>Reason:</strong> {banInfo?.reason}
 						</AlertDialogDescription>
 						<AlertDialogDescription>
-							<strong className='text-black/75'>End Date:</strong>{" "}
+							<strong className='text-black/75'>Ban expires on:</strong>{" "}
 							{banInfo?.end_at
-							? new Date(banInfo.end_at).toLocaleString("en-En")
+							? new Date(banInfo.end_at).toLocaleString("en-En", {
+								dateStyle: 'long',
+								timeStyle: 'short'
+							})
 							: "-"}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
@@ -208,9 +231,9 @@ export default function CommentBox({
 						<AlertDialogCancel
 							type="button"
 							onClick={() => setBanInfo(null)}
-							className='cursor-pointer'
+							className='cursor-pointer w-full'
 						>
-							Cancel
+							Close
 						</AlertDialogCancel>
 					</AlertDialogFooter>
 				</AlertDialogContent>

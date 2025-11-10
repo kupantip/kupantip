@@ -6,6 +6,13 @@ interface Content {
   body_md: string;
 }
 
+interface BackendError {
+	message?: string;
+	reason?: string;
+	end_at?: string;
+	status?: number;
+}
+
 export async function postComment(body: {
 	content: Content;
 }): Promise<boolean> {
@@ -23,25 +30,22 @@ export async function postComment(body: {
     );
 
     if (!res.ok) {
-      let errorData: any = null;
-      try {
-        errorData = await res.json();
-      } catch {
-        errorData = { message: res.statusText };
-      }
-
-      throw {
-        response: {
-          status: res.status,
-          data: errorData,
-        },
-      };
+			let errorData: BackendError | null = null;
+			errorData = (await res.json()) as BackendError;
+			const error = new Error(errorData?.message ?? "Failed to post comment");
+			if (errorData) {
+				(error as Error & BackendError).reason = errorData.reason;
+				(error as Error & BackendError).end_at = errorData.end_at;
+				(error as Error & BackendError).status = res.status;
+			}
+			throw error;
     }
 
     return true;
-  } catch (err: any) {
-    if (err.response) throw err;
-
-    throw new Error(err.message || "Unexpected error occurred");
+  } catch (err) {
+		if (err instanceof Error) {
+			throw err;
+		}
+		throw new Error(String(err));
   }
 }
