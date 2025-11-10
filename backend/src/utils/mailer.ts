@@ -1,6 +1,5 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env';
-import * as jwt from 'jsonwebtoken';
 
 const transporter = nodemailer.createTransport({
 	service: 'Gmail',
@@ -10,7 +9,7 @@ const transporter = nodemailer.createTransport({
 	},
 });
 
-export const sendEmail = async (to: string, subject: string, html: string) => {
+const sendEmail = async (to: string, subject: string, html: string) => {
 	try {
 		const info = await transporter.sendMail({
 			from: `Kupantip <${env.smtpUser}>`,
@@ -26,13 +25,7 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
 	}
 };
 
-(async () => {
-	console.log('Mailer transporter configured');
-
-	const token = jwt.sign({ user_id: 'exampleUserId' }, env.jwtSecret, {
-		expiresIn: '24h',
-	});
-
+export const sendPasswordResetEmail = async (to: string, token: string) => {
 	const resetLink = `http://localhost:3000/reset-password/${token}`;
 
 	const html = `
@@ -114,10 +107,6 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
 		</body>
 		</html>
 	`;
-	await sendEmail(
-		'earth.phurinat@gmail.com',
-		'Reset your password for Kupantip',
-		html
-	);
-})();
-export default transporter;
+
+	await sendEmail(to, 'Password Reset Request', html);
+};

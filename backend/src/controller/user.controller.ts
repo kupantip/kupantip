@@ -1,11 +1,18 @@
 import { getDbConnection } from '../database/mssql.database';
 import bcrypt from 'bcrypt';
 import { Request, Response, NextFunction } from 'express';
-import { signup } from '../models/user.model';
+import {
+	createResetToken,
+	getResetToken,
+	getUserByEmail,
+	resetPassword,
+	signup,
+} from '../models/user.model';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { env } from '../config/env';
 import * as z from 'zod';
 import { getUserActiveBans } from '../models/ban.model';
+import { sendPasswordResetEmail } from '../utils/mailer';
 
 const passwordSchema = z
 	.string()
@@ -168,5 +175,95 @@ export const signupController = async (
 		return res.status(201).json({ message: 'Register success' });
 	} catch (err) {
 		next(err);
+	}
+};
+
+const forgetPasswordSchema = z.object({
+	email: z.email('Invalid email address'),
+});
+
+export const forgetPasswordController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const validateData = forgetPasswordSchema.parse(req.body);
+		const { email } = validateData;
+
+		const user = await getUserByEmail(email);
+		if (!user) {
+			return res
+				.status(404)
+				.json({ message: 'Email not found in our records' });
+		}
+
+		const token = jwt.sign({ email }, env.jwtSecret, {
+			expiresIn: '24h',
+		});
+
+		await createResetToken(email, token);
+		await sendPasswordResetEmail(email, token);
+		return res
+			.status(200)
+			.json({ message: 'Password reset link sent to email' });
+	} catch (err) {
+		next(err);
+	}
+};
+
+export const verifyTokenController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	const { token } = req.params;
+	try {
+		const user = await getResetToken(token);
+		if (!user || !user.isValid) {
+			return res
+				.status(400)
+				.json({ valid: false, message: 'Invalid token' });
+		}
+
+		const decoded = jwt.verify(token, env.jwtSecret) as {
+			email: string;
+			iat: number;
+			exp: number;
+		};
+
+		return res
+			.status(200)
+			.json({ valid: true, email: decoded.email, rt_id: user.id });
+	} catch (err) {
+		next(err);
+	}
+};
+
+const resetPasswordSchema = z.object({
+	new_password: passwordSchema,
+	rt_id: z.uuid(),
+});
+
+export const resetPasswordController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const { new_password } = req.body;
+		const { rt_id } = req.params;
+
+		const validateData = resetPasswordSchema.parse({
+			new_password,
+			rt_id,
+		});
+
+		// Reset password
+		await resetPassword(validateData.rt_id, validateData.new_password);
+
+		return res.status(200).json({ message: 'Password reset successful' });
+	} catch (error) {
+		next(error);
 	}
 };

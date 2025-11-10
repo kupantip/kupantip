@@ -1,0 +1,20 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- AlterTable
+ALTER TABLE [dbo].[reset_token] DROP CONSTRAINT [DF__reset_tok__isVal__6B24EA82];
+ALTER TABLE [dbo].[reset_token] ADD CONSTRAINT [DF__reset_tok__isVal__6B24EA82] DEFAULT 1 FOR [isValid];
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH

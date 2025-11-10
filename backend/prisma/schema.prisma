@@ -181,7 +181,8 @@ model announcement {
 model reset_token {
   id        String   @id(map: "PK__reset_to__3213E83F348BCA43") @default(dbgenerated("newsequentialid()"), map: "DF__reset_token__id__693CA210") @db.UniqueIdentifier
   user_id   String   @db.UniqueIdentifier
+  token		String	 @db.NVarChar(Max) 
   create_at DateTime @default(now(), map: "DF__reset_tok__creat__6A30C649") @db.DateTime
-  isValid   Boolean  @default(false, map: "DF__reset_tok__isVal__6B24EA82")
+  isValid   Boolean  @default(true, map: "DF__reset_tok__isVal__6B24EA82")
   app_user  app_user @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__reset_tok__user___7D439ABD")
 }
