@@ -1,21 +1,21 @@
 import PasswordForm from './PasswordForm';
+import axios from 'axios';
 
-// This is a placeholder for your real database check
-async function validateToken(token: string): Promise<boolean> {
-	console.log('Validating token on server:', token);
-	// TODO: Add your real logic here
-	// 1. Find token in database
-	// 2. Check if it's expired or already used
-	// 3. Return true if valid, false if not
+const instance = axios.create({
+	baseURL:
+		process.env.BACKEND_URL + '/user' || 'http://localhost:8000/api/v1',
+});
 
-	// For this example, we'll just deny a specific "invalid" token
-	if (token === 'invalid-token') {
+async function verifyResetToken(token: string) {
+	try {
+		const response = await instance.get(`/reset/verify/${token}`);
+		return response.data;
+	} catch (error) {
+		console.log('Error verifying token:', error);
 		return false;
 	}
-	return true;
 }
 
-// This is the main page component
 export default async function ResetPasswordPage({
 	params,
 }: {
@@ -23,29 +23,30 @@ export default async function ResetPasswordPage({
 }) {
 	const { token } = params;
 
-	// 1. Validate the token on the server before rendering
-	const isTokenValid = await validateToken(token);
+	const data = await verifyResetToken(token);
 
-	if (!isTokenValid) {
+	if (!data.valid) {
 		return (
-			<main
-				className="reset-card"
-				style={{
-					maxWidth: '400px',
-					margin: '100px auto',
-					padding: '30px 40px',
-					textAlign: 'center',
-				}}
-			>
-				<h2>Invalid Link</h2>
-				<p>
-					This password reset link is invalid or has expired. Please
-					request a new one.
-				</p>
+			<main className="flex items-center justify-center min-h-screen bg-gray-50">
+				<div className="w-full max-w-md p-8 text-center bg-white rounded-lg shadow-md">
+					<div className="text-5xl mb-5">⚠️</div>
+					<h2 className="text-2xl font-bold text-red-600 mb-3">
+						Invalid Link
+					</h2>
+					<p className="text-gray-600 mb-6 leading-relaxed">
+						This password reset link is invalid or has expired.
+						Please request a new one.
+					</p>
+					<a
+						href="/login"
+						className="inline-block px-6 py-2 bg-blue-500 text-white font-medium rounded hover:bg-blue-600 transition-colors"
+					>
+						Back to Login
+					</a>
+				</div>
 			</main>
 		);
 	}
 
-	// 2. If valid, render the Client Component with the form
-	return <PasswordForm token={token} />;
+	return <PasswordForm rt_id={data.rt_id} />;
 }

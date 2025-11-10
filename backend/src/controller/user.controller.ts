@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 import {
 	createResetToken,
 	getResetToken,
+	getResetTokenById,
 	getUserByEmail,
 	resetPassword,
 	signup,
@@ -203,7 +204,7 @@ export const forgetPasswordController = async (
 		});
 
 		await createResetToken(email, token);
-		await sendPasswordResetEmail(email, token);
+		await sendPasswordResetEmail(email, token, req.headers.origin || '');
 		return res
 			.status(200)
 			.json({ message: 'Password reset link sent to email' });
@@ -258,6 +259,14 @@ export const resetPasswordController = async (
 			new_password,
 			rt_id,
 		});
+
+		const tokenRecord = await getResetTokenById(validateData.rt_id);
+
+		if (!tokenRecord || !tokenRecord.isValid) {
+			return res
+				.status(400)
+				.json({ message: 'Invalid or expired reset token' });
+		}
 
 		// Reset password
 		await resetPassword(validateData.rt_id, validateData.new_password);

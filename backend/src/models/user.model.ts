@@ -147,6 +147,32 @@ export const getResetToken = async (token: string) => {
 	}
 };
 
+export const getResetTokenById = async (rt_id: string) => {
+	try {
+		const cnt: ConnectionPool = await getDbConnection();
+
+		const result = await cnt
+			.request()
+			.input('rt_id', VarChar, rt_id)
+			.query(
+				`SELECT rt.id, rt.user_id, rt.token, rt.create_at, rt.isValid, au.email 
+				FROM [dbo].[reset_token] rt 
+				INNER JOIN [dbo].[app_user] au 
+				ON rt.user_id = au.id 
+				WHERE rt.id = @rt_id AND rt.isValid = 1
+				`
+			);
+
+		if (result.recordset.length === 0) {
+			return null;
+		}
+
+		return result.recordset[0];
+	} catch (err) {
+		throw new Error('Failed to get reset token by id: ' + err);
+	}
+};
+
 export const resetPassword = async (rt_id: string, newPassword: string) => {
 	try {
 		const cnt: ConnectionPool = await getDbConnection();
@@ -177,7 +203,7 @@ export const resetPassword = async (rt_id: string, newPassword: string) => {
 		if (result.rowsAffected[0] === 0) {
 			return { message: 'Email not found' };
 		}
-
+		console.log(result);
 		return { message: 'Password reset successful' };
 	} catch (err) {
 		return { message: 'Password reset failed', error: err };

@@ -25,8 +25,13 @@ const sendEmail = async (to: string, subject: string, html: string) => {
 	}
 };
 
-export const sendPasswordResetEmail = async (to: string, token: string) => {
-	const resetLink = `http://localhost:3000/reset-password/${token}`;
+export const sendPasswordResetEmail = async (
+	to: string,
+	token: string,
+	origin: string
+) => {
+	const baseURL = origin || 'http://localhost:3000';
+	const resetLink = `${baseURL}/reset-password/${token}`;
 
 	const html = `
 	<!DOCTYPE html>

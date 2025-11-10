@@ -1,9 +1,5 @@
 'use client';
-
-import { useFormState } from 'react-dom';
-import { resetPassword, type FormState } from './actions';
-
-// shadcn/ui imports
+import { Controller, useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import {
 	Card,
@@ -15,15 +11,51 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { resetPassword } from '@/services/user/user';
+import { toast } from 'sonner';
 
-// --- CHANGE 1: Import from lucide-react instead of radix ---
-import { AlertTriangle } from 'lucide-react'; // Was ExclamationTriangleIcon
-import { useActionState } from 'react';
+type ResestPasswordFormData = {
+	newPassword: string;
+	confirmPassword: string;
+};
 
-export default function PasswordForm({ token }: { token: string }) {
-	const initialState: FormState = { message: '' };
-	const [state, formAction] = useActionState(resetPassword, initialState);
+type PasswordFormProps = {
+	rt_id: string;
+};
+
+export default function PasswordForm({ rt_id }: PasswordFormProps) {
+	const {
+		handleSubmit,
+		formState: { errors },
+		control,
+		watch,
+	} = useForm<ResestPasswordFormData>({
+		defaultValues: {
+			newPassword: '',
+			confirmPassword: '',
+		},
+	});
+
+	const handleSubmitForm = async (formData: ResestPasswordFormData) => {
+		try {
+			const result = await resetPassword(rt_id, formData.confirmPassword);
+			if (result.success) {
+				toast.success('Password has been reset successfully!');
+				window.location.href = '/login';
+			} else {
+				toast.error(result.error || 'Failed to reset password', {
+					action: {
+						label: 'Login Page',
+						onClick: () => {
+							window.location.href = '/login';
+						},
+					},
+				});
+			}
+		} catch (error) {
+			console.error('Error submitting new password:', error);
+		}
+	};
 
 	return (
 		<main className="flex min-h-screen w-full items-center justify-center bg-background p-4">
@@ -37,44 +69,62 @@ export default function PasswordForm({ token }: { token: string }) {
 					</CardDescription>
 				</CardHeader>
 
-				<form action={formAction}>
+				<form onSubmit={handleSubmit(handleSubmitForm)}>
 					<CardContent className="grid gap-4">
-						{state.message && (
-							<Alert variant="destructive">
-								{/* --- CHANGE 2: Use the Lucide icon component --- */}
-								<AlertTriangle className="h-4 w-4" />
-
-								<AlertDescription>
-									{state.message}
-								</AlertDescription>
-							</Alert>
-						)}
-
-						{/* New Password Field */}
 						<div className="grid gap-2">
-							<Label htmlFor="new-password">New Password</Label>
-							<Input
-								id="new-password"
+							<Controller
 								name="newPassword"
-								type="password"
-								required
+								control={control}
+								rules={{ required: 'New password is required' }}
+								render={({ field }) => (
+									<>
+										<Label htmlFor="new-password">
+											New Password
+										</Label>
+										<Input
+											id="new-password"
+											type="password"
+											{...field}
+										/>
+										{errors.newPassword && (
+											<span className="text-sm text-red-500">
+												{errors.newPassword.message}
+											</span>
+										)}
+									</>
+								)}
 							/>
 						</div>
 
-						{/* Confirm Password Field */}
 						<div className="grid gap-2">
-							<Label htmlFor="confirm-password">
-								Confirm New Password
-							</Label>
-							<Input
-								id="confirm-password"
+							<Controller
 								name="confirmPassword"
-								type="password"
-								required
+								control={control}
+								rules={{
+									required: 'Please confirm your password',
+									validate: (value) =>
+										value === watch('newPassword') ||
+										'Passwords do not match',
+								}}
+								render={({ field }) => (
+									<>
+										<Label htmlFor="confirm-password">
+											Confirm New Password
+										</Label>
+										<Input
+											id="confirm-password"
+											type="password"
+											{...field}
+										/>
+										{errors.confirmPassword && (
+											<span className="text-sm text-red-500">
+												{errors.confirmPassword.message}
+											</span>
+										)}
+									</>
+								)}
 							/>
 						</div>
-
-						<input type="hidden" name="token" value={token} />
 					</CardContent>
 
 					<CardFooter>
