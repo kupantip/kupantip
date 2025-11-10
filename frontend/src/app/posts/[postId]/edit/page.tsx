@@ -121,13 +121,13 @@ export default function EditPostPage() {
 		try {
 			await updatePost({ title, body_md: body, category_id, files }, post.id);
 			await queryClient.invalidateQueries({ queryKey: ['postDetail', post.id] });
+			toast.success('Edit Post Successfully!');
 			router.push(`/posts/${post.id}`);
 		} catch (err) {
 			console.error('Failed to update post', err);
 			toast.error('Failed to update post, Please try again.')
 		} finally {
 			setLoading(false);
-			toast.success('Edit Post Successfully!');
 		}
 	};
 

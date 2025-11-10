@@ -123,12 +123,6 @@ export default function CommentBox({
 				return;
 			}
 
-			if (err instanceof Error) {
-				toast.error(err.message);
-			} else {
-				toast.error("Failed to post comment. Please try again.");
-			}
-
 			if (isEditing) {
 				toast.error("Failed to update comment. Please try again.");
 			} else if (!isLoggedIn) {
