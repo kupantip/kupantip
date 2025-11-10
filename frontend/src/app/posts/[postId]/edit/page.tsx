@@ -2,6 +2,8 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCategories } from '@/services/post/category';
 import { Post } from '@/types/dashboard/post';
 import { getPostById } from '@/services/dashboard/getPostById';
@@ -16,19 +18,46 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { toast } from 'sonner';
+import { Upload } from 'lucide-react';
+import { X } from 'lucide-react';
+
+type ExistingAttachment = {
+    id: string;
+    url: string;
+    isNew: false;
+};
+
+type NewUpload = {
+    id: string; 
+    url: string; 
+    isNew: true; 
+    file: File;
+};
+
+type CombinedImage = ExistingAttachment | NewUpload;
 
 export default function EditPostPage() {
 	const router = useRouter();
 	const params = useParams() as { postId: string };
 	const postId = params.postId;
 
+	const queryClient = useQueryClient();
+
 	const [loading, setLoading] = useState(false);
+
+	const [tab, setTab] = useState<'text' | 'media'>('text');
 
 	const [post, setPost] = useState<Post | null>(null);
 	const [title, setTitle] = useState('');
 	const [body, setBody] = useState('');
 	const [category_id, setCategoryid] = useState('');
+	const [files, setFiles] = useState([] as File[])
+
+	const [attachmentsToDelete, setAttachmentsToDelete] = useState<string[]>([]);
 
 	const { data: categories } = useCategories();
 
@@ -39,6 +68,17 @@ export default function EditPostPage() {
 				offset: 80,
 			});
 		}, []);
+
+	const onDrop = (acceptedFiles: File[]) => {
+		setFiles(prevFiles => [...prevFiles, ...acceptedFiles]);
+	};
+
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({
+		onDrop,
+		accept: {
+			'image/*': [],
+		},
+	});
 
 	useEffect(() => {
 		async function fetchPost() {
@@ -55,9 +95,15 @@ export default function EditPostPage() {
 				setBody(fetchedPost.body_md || '');
 				setCategoryid(fetchedPost.category_id || '');
 
+                if (fetchedPost.attachments && fetchedPost.attachments.length > 0) {
+                    setTab('media');
+                }
+
 				AOS.refresh();
 			} catch (err) {
 				console.error('Failed to fetch post', err);
+			} finally {
+				setLoading(false);
 			}
 		}
 		fetchPost();
@@ -73,12 +119,48 @@ export default function EditPostPage() {
 
 		if (!post) return;
 		try {
-			await updatePost({ title, body_md: body, category_id }, post.id);
-			router.push(`/posts/category/${category_id}`);
+			await updatePost({ title, body_md: body, category_id, files }, post.id);
+			await queryClient.invalidateQueries({ queryKey: ['postDetail', post.id] });
+			router.push(`/posts/${post.id}`);
 		} catch (err) {
 			console.error('Failed to update post', err);
+			toast.error('Failed to update post, Please try again.')
+		} finally {
+			setLoading(false);
+			toast.success('Edit Post Successfully!');
 		}
 	};
+
+    const removeNewFile = (index: number) => {
+        setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+    };
+
+    const removeExistingAttachment = (attachmentId: string) => {
+        setAttachmentsToDelete(prev => [...prev, attachmentId]);
+    };
+
+    if (!post) {
+		return;
+    }
+
+    const existingAttachments: ExistingAttachment[] = post.attachments
+        .filter(att => !attachmentsToDelete.includes(att.id))
+        .map(att => ({
+            id: att.id,
+            url: att.url.includes('/backend/')
+                ? att.url
+                : att.url.replace('/uploads/', '/backend/post/attachments/'),
+            isNew: false,
+        }));
+        
+    const newUploads: NewUpload[] = files.map((file, i) => ({
+        id: `new-${i}`,
+        url: URL.createObjectURL(file),
+        isNew: true,
+        file: file 
+    }));
+    
+    const combinedImages: CombinedImage[] = [...existingAttachments, ...newUploads];
 
 	return (
 		<div
@@ -86,6 +168,28 @@ export default function EditPostPage() {
 			className="flex justify-center items-start min-h-screen bg-white p-8 tr">
 			<div className="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-8">
 				<h1 className="text-3xl font-bold mb-4">Edit Post</h1>
+
+				<div className="flex gap-6 border-b mb-6">
+					{['text', 'media'].map((type) => (
+						<button
+							key={type}
+							onClick={() => setTab(type as 'text' | 'media')}
+							className={`relative pb-2 font-medium transition-colors ${
+								tab === type
+									? 'text-emerald-700 p-2 hover:bg-gray-100 cursor-pointer'
+									: 'text-gray-500 p-2 hover:bg-gray-100 cursor-pointer'
+							}`}
+						>
+							{type === 'text' ? 'Text' : 'Images'}
+							{tab === type && (
+								<motion.div
+									layoutId="underline"
+									className="absolute bottom-0 left-0 right-0 h-[3px] bg-emerald-700 rounded-full"
+								/>
+							)}
+						</button>
+					))}
+				</div>
 
 				<form onSubmit={handleSubmit} className="flex flex-col gap-5">
 					<input
@@ -110,13 +214,83 @@ export default function EditPostPage() {
 						))}
 						</SelectContent>
 					</Select>
-					<textarea
-						className="border rounded-xl p-3"
-						value={body}
-						onChange={(e) => setBody(e.target.value)}
-						placeholder="Body text (optional)"
-						rows={10}
-					/>
+
+					{tab === 'text' ? (
+						<textarea
+							placeholder="Write something interesting..."
+							value={body}
+							onChange={(e) =>
+								setBody(e.target.value)
+							}
+							className="border border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-700"
+							rows={10}
+							required
+						/>
+					) : (
+						<div className="flex flex-col gap-4">
+							<div
+								{...getRootProps()}
+								className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
+									isDragActive
+										? 'bg-emerald-50 border-emerald-400'
+										: 'border-gray-300 hover:border-emerald-500'
+								} cursor-pointer min-h-[200px] flex flex-col justify-center items-center`}
+							>
+								<input {...getInputProps()} />
+								{combinedImages.length === 0 ? (
+                                    <div className="text-gray-500 flex flex-col items-center">
+                                        <Upload className='mb-2 opacity-70' size={50}/>
+                                        <p className="font-semibold">Drag and Drop or upload media</p>
+                                        <p className="text-sm">Click here to browse</p>
+                                    </div>
+								) : (
+									<div className="grid grid-cols-4 gap-3 w-full">
+										{combinedImages.map((image, combinedIndex) => (
+											<div
+												key={image.id}
+												className="relative group aspect-square"
+											>
+												<Image
+													src={image.url}
+													alt={`Gallery item ${combinedIndex + 1}`}
+													width={200}
+													height={200}
+													className="rounded-lg object-cover h-full w-full"
+												/>
+												<button
+													type="button"
+													onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (image.isNew) {
+                                                            const fileIndex = files.findIndex(f => f === image.file);
+                                                            if (fileIndex > -1) removeNewFile(fileIndex);
+                                                        } else {
+                                                            removeExistingAttachment(image.id);
+                                                        }
+                                                    }}
+													className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition cursor-pointer"
+												>
+													<X size={18}/>
+												</button>
+											</div>
+										))}
+									</div>
+								)}
+							</div>
+
+							<textarea
+								placeholder="Add a caption or description..."
+								value={body}
+								onChange={(e) =>
+									setBody(e.target.value)
+								}
+								className="border border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-700"
+								rows={10}
+								required
+							/>
+						</div>
+					)}
+
 					<div className="flex justify-end gap-2">
 						<Link href={`/posts/${postId}`}>
 							<Button className="bg-gray-200 text-black rounded-full hover:bg-gray-300 hover:shadow-md hover:scale-105 cursor-pointer">

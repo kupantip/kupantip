@@ -18,6 +18,8 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import Image from 'next/image';
+import { Upload } from 'lucide-react';
+import { X } from 'lucide-react';
 
 export default function CreatePostPage() {
 	const [tab, setTab] = useState<'text' | 'media'>('text');
@@ -53,7 +55,6 @@ export default function CreatePostPage() {
 		onDrop,
 		accept: {
 			'image/*': [],
-			'video/*': [],
 		},
 	});
 
@@ -99,7 +100,7 @@ export default function CreatePostPage() {
 									: 'text-gray-500 p-2 hover:bg-gray-100 cursor-pointer'
 							}`}
 						>
-							{type === 'text' ? 'Text' : 'Images & Video'}
+							{type === 'text' ? 'Text' : 'Images'}
 							{tab === type && (
 								<motion.div
 									layoutId="underline"
@@ -153,26 +154,27 @@ export default function CreatePostPage() {
 							}
 							className="border border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-700"
 							rows={10}
+							required
 						/>
 					) : (
 						<div className="flex flex-col gap-4">
 							<div
 								{...getRootProps()}
-								className={`border-2 border-dashed rounded-xl p-16 text-center transition-colors ${
+								className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
 									isDragActive
 										? 'bg-emerald-50 border-emerald-400'
 										: 'border-gray-300 hover:border-emerald-500'
-								} cursor-pointer`}
+								} cursor-pointer min-h-[200px] flex flex-col justify-center items-center`}
 							>
 								<input {...getInputProps()} />
 								{formData.files.length === 0 ? (
-									<p className="text-gray-500">
-										{isDragActive
-											? 'Drop your files here...'
-											: 'Drag & drop images/videos, or click to upload'}
-									</p>
+                                    <div className="text-gray-500 flex flex-col items-center">
+                                        <Upload className='mb-2 opacity-70' size={50}/>
+                                        <p className="font-semibold">Drag and Drop or upload media</p>
+                                        <p className="text-sm">Click here to browse</p>
+                                    </div>
 								) : (
-									<div className="grid grid-cols-3 gap-3">
+									<div className="grid grid-cols-4 gap-3 w-full">
 										{formData.files.map((file, i) => (
 											<div
 												key={i}
@@ -189,8 +191,8 @@ export default function CreatePostPage() {
 															i + 1
 														}`}
 														width={200}
-														height={128}
-														className="rounded-lg object-cover h-32 w-full"
+														height={200}
+														className="rounded-lg object-cover h-full w-full"
 													/>
 												) : (
 													<video
@@ -213,9 +215,9 @@ export default function CreatePostPage() {
 															),
 														}));
 													}}
-													className="absolute top-2 right-2 bg-black/50 text-white rounded-full px-2 py-1 text-xs opacity-0 group-hover:opacity-100 transition"
+													className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition cursor-pointer"
 												>
-													✕
+													<X size={18}/>
 												</button>
 											</div>
 										))}
@@ -234,6 +236,7 @@ export default function CreatePostPage() {
 								}
 								className="border border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-700"
 								rows={10}
+								required
 							/>
 						</div>
 					)}
