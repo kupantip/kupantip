@@ -14,6 +14,15 @@ import { usePriorityPosts } from '@/services/post/post';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { useSession } from 'next-auth/react';
 
 export default function PriorityPostsPage() {
 	const {
@@ -22,6 +31,7 @@ export default function PriorityPostsPage() {
 		refetch: refetchPosts,
 	} = usePriorityPosts();
 
+	const { data: session, status } = useSession();
 	const router = useRouter();
 
 	const refreshPage = async () => {
@@ -84,7 +94,7 @@ export default function PriorityPostsPage() {
 
 	return (
 		<div className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
-			<div className="mb-6">
+			{/* <div className="mb-6">
 				<div className="flex items-center gap-2 mb-2">
 					<Star className="w-6 h-6 text-yellow-500" />
 					<h1 className="text-3xl font-bold">📌 Priority Posts</h1>
@@ -92,7 +102,40 @@ export default function PriorityPostsPage() {
 				<p className="text-gray-600 dark:text-gray-400">
 					Important announcements and featured content
 				</p>
-			</div>
+			</div> */}
+
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbLink href="#">Home</BreadcrumbLink>
+					</BreadcrumbItem>
+					<BreadcrumbSeparator />
+					<BreadcrumbItem>
+						<BreadcrumbPage>Priority</BreadcrumbPage>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
+			{/* Banner Section */}
+			<Card className="bg-green-1 text-white shadow-md border-none rounded-xl">
+				<CardHeader>
+					<CardTitle className="text-2xl font-bold">
+						Priority Post
+					</CardTitle>
+				</CardHeader>
+				<CardContent className="flex items-center justify-between">
+					<p className="text-sm">
+						Important Posts from Teachers, Staffs & Admin.
+					</p>
+					{session?.user.role === 'admin' && (
+						<Button
+							variant="secondary"
+							className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer hover:scale-105"
+						>
+							+ New Post
+						</Button>
+					)}
+				</CardContent>
+			</Card>
 
 			<Card className="shadow-sm overflow-hidden rounded-lg">
 				<CardHeader className="text-green-2">
@@ -100,7 +143,7 @@ export default function PriorityPostsPage() {
 						Important Posts
 					</CardTitle>
 				</CardHeader>
-				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
+				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0 mt-[-20]">
 					{posts.map((post) => (
 						<div
 							key={post.id}
