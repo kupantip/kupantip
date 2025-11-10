@@ -11,6 +11,7 @@ import { User } from '@/types/dashboard/user';
 import { getCommentByPostId } from '@/services/dashboard/getCommentByPostId';
 import CommentBox from './CommentBox';
 import { deletePost } from '@/services/user/delete_post';
+import { deleteComment } from '@/services/delete_comment';
 import { votePost, deletevotePost, voteComment, deletevoteComment } from '@/services/user/vote';
 import { jwtDecode } from 'jwt-decode';
 import { useSession } from 'next-auth/react';
@@ -19,6 +20,18 @@ import { Trash2 } from 'lucide-react';
 import { Pen } from 'lucide-react';
 import { Flag } from 'lucide-react';
 import ReportModal from '@/app/posts/report/page';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { toast } from 'sonner';
+import { useSidebar } from '../ui/sidebar';
 
 type PostDetailProps = {
 	post: t.Post;
@@ -45,6 +58,10 @@ type CommentProps = {
 const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 	const [showReplyBox, setShowReplyBox] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
+
+	const [isEditing, setIsEditing] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
+	const {open : isSidebarOpen} = useSidebar();
 
 	const [showReportCommentDialog, setShowReportCommentDialog] = useState(false);
 
@@ -112,6 +129,27 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		}
 	};
 
+	const handleEditComment = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		console.log('Edit Comment on', comment.id);
+		setMenuOpen(false);
+		setIsEditing(true);
+	};
+
+	const handleDeleteComment = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		console.log('Delete Comment on', comment.id);
+		try {
+			await deleteComment(comment.id);
+			console.log('Delete comment', comment.id, ' success');
+			toast.warning('Comment deleted successfully!')
+			refreshComments();
+		} catch {
+			console.log('Delete Failed');
+			toast.error('Failed to delete comment. Please try again.')
+		}
+	};
+
 	const handleReportComment = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Report Comment on', comment.id);
@@ -138,46 +176,88 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 							{formatTime(comment.minutes_since_commented || 0)}
 						</span>
 					</div>
-					<p className="text-gray-700 mt-1">{comment.body_md}</p>
 
-					<div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
-						<div className="flex items-center gap-1 px-2 py-1">
-						<ArrowUp
-							className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
-								${comment.liked_by_requesting_user ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
-							onClick={handleUpVote}
-						/>
-						<span>{comment.vote_score}</span>
-						<ArrowDown
-							className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
-								${comment.disliked_by_requesting_user ? "bg-red-400 text-black" : "hover:bg-gray-200"}`}
-							onClick={handleDownVote}
-						/>
-						</div>
-						<div
-							className="flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 cursor-pointer"
-							onClick={() => setShowReplyBox(!showReplyBox)}
-						>
-							<MessageSquare className="w-4 h-4" />
-							<span>Reply</span>
-						</div>
-						<div
-							className="flex items-center gap-1 px-2 py-1 "
-							onClick={(e) => {
-								e.stopPropagation();
-								setMenuOpen(!menuOpen);
-							}}
-						>
-							<button
-								className="p-1 rounded-full hover:bg-gray-100 cursor-pointer cursor-pointer"
+                    {isEditing ? (
+                        <CommentBox
+                            className="mt-2"
+                            postId={comment.post_id}
+                            parentId={comment.parent_id || ''}
+                            refresh={refreshComments}
+                            onClose={() => setIsEditing(false)}
+                            editComment={{ id: comment.id, body_md: comment.body_md }}
+                        />
+                    ) : (
+                        <p className="text-gray-700 mt-1">{comment.body_md}</p>
+                    )}
+					{!isEditing &&
+						<div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
+							<div className="flex items-center gap-1 px-2 py-1">
+							<ArrowUp
+								className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+									${comment.liked_by_requesting_user ? "bg-green-400 text-black" : "hover:bg-gray-200"}`}
+								onClick={handleUpVote}
+							/>
+							<span>{comment.vote_score}</span>
+							<ArrowDown
+								className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+									${comment.disliked_by_requesting_user ? "bg-red-400 text-black" : "hover:bg-gray-200"}`}
+								onClick={handleDownVote}
+							/>
+							</div>
+							<div
+								className="flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 cursor-pointer"
+								onClick={() => setShowReplyBox(!showReplyBox)}
+							>
+								<MessageSquare className="w-4 h-4" />
+								<span>Reply</span>
+							</div>
+							<div
+								className="flex items-center gap-1 px-2 py-1 "
 								onClick={(e) => {
 									e.stopPropagation();
 									setMenuOpen(!menuOpen);
 								}}
 							>
-								<Ellipsis />
-							</button>
-							{comment.author_id != currentUserId && (
+								<button
+									className="p-1 rounded-full hover:bg-gray-100 cursor-pointer"
+									onClick={(e) => {
+										e.stopPropagation();
+										setMenuOpen(!menuOpen);
+									}}
+								>
+									<Ellipsis />
+								</button>
+							{comment.author_id === currentUserId ? (
+								<AnimatePresence>
+									{menuOpen && (
+										<motion.div
+											ref={menuRef}
+											className="absolute mt-32 w-24 bg-white shadow-md rounded-lg"
+											initial={{ opacity: 0, x: 0, y: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={{ duration: 0.15 }}
+										>
+											<button
+												className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
+												onClick={handleEditComment}
+											>
+												<Pen className="px-1 mr-2" />
+												<span className="mt-0.5">Edit</span>
+											</button>
+											<button
+												className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-b-lg cursor-pointer"
+												onClick={() => setIsDeleting(true)}
+											>
+												<Trash2 className="mr-2" />
+												<span className="mt-0.5">
+													Delete
+												</span>
+											</button>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							) : (
 								<AnimatePresence>
 									{menuOpen && (
 										<motion.div
@@ -201,14 +281,45 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 									)}
 								</AnimatePresence>
 							)}
+							</div>
 						</div>
-					</div>
+					}
+
+
+					<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
+						<AlertDialogContent className={isSidebarOpen ? "ml-32" : "ml-6"}>
+							<AlertDialogHeader>
+								<AlertDialogTitle>Delete comment?</AlertDialogTitle>
+								<AlertDialogDescription>
+									Are you sure you want to delete your comment? You can&apos;t undo this.
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<AlertDialogCancel
+									type="button"
+									onClick={() => setIsDeleting(false)}
+									className='cursor-pointer'
+								>
+									Cancel
+								</AlertDialogCancel>
+								<AlertDialogAction
+									type="submit"
+									onClick={handleDeleteComment}
+									className='cursor-pointer hover:bg-red-700 bg-red-600'
+								>
+									Delete
+								</AlertDialogAction>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
 
 					{showReplyBox && (
 						<CommentBox
 							className="mt-2"
 							postId={comment.post_id}
 							parentId={comment.id}
+							refresh={refreshComments}
+							onClose={() => setShowReplyBox(false)}
 						/>
 					)}
 
@@ -221,16 +332,14 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 					)}
 				</div>
 			</div>
-			<AnimatePresence>
-				{reportingComment && (
-					<ReportModal
-						targetType="comment"
-						target={comment}
-						open={showReportCommentDialog}
-						onOpenChange={setShowReportCommentDialog}
-					></ReportModal>
-				)}
-			</AnimatePresence>
+			{reportingComment && (
+				<ReportModal
+					targetType="comment"
+					target={comment}
+					open={showReportCommentDialog}
+					onOpenChange={setShowReportCommentDialog}
+				></ReportModal>
+			)}
 		</div>
 	);
 };
@@ -248,6 +357,9 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const router = useRouter();
 	const menuRef = useRef<HTMLDivElement>(null);
+
+	const {open: isSidebarOpen} = useSidebar();
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	const{
 		data: commentsData,
@@ -323,8 +435,10 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			await deletePost(post.id);
 			console.log('Delete post', post.id, ' success');
 			router.push(`/posts/category/${post.category_id}`);
+			toast.warning('Post deleted successfully!')
 		} catch {
 			console.log('Delete Failed');
+			toast.error('Failed to delete comment. Please try again.')
 		}
 	};
 
@@ -390,7 +504,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 										</button>
 										<button
 											className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-b-lg cursor-pointer"
-											onClick={handleDelete}
+											onClick={() => setIsDeleting(true)}
 										>
 											<Trash2 className="mr-2" />
 											<span className="mt-0.5">
@@ -481,6 +595,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 				className="w-full max-w-3xl mt-4"
 				postId={post.id}
 				parentId=""
+				refresh={refreshComments}
 			/>
 
 			{/* Comments Section */}
@@ -504,6 +619,33 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					onOpenChange={setShowReportPostDialog}
 				></ReportModal>
 			)}
+
+			<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
+				<AlertDialogContent className={isSidebarOpen ? "ml-32" : "ml-6"}>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete post?</AlertDialogTitle>
+						<AlertDialogDescription>
+							Once you delete this post, it can&apos;t be restored.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							type="button"
+							onClick={() => setIsDeleting(false)}
+							className='cursor-pointer'
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction
+							type="submit"
+							onClick={handleDelete}
+							className='cursor-pointer hover:bg-red-700 bg-red-600'
+						>
+							Delete
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

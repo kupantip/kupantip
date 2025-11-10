@@ -14,6 +14,7 @@ import reportRoutes from './routes/report.route';
 import banRoutes from './routes/ban.route';
 import moderationActionRoutes from './routes/moderationAction.route';
 import statsRoutes from './routes/stats.route';
+import announcementRoute from './routes/announcement.route';
 import * as z from 'zod';
 import { getDbConnection } from './database/mssql.database';
 
@@ -52,6 +53,7 @@ apiV1.use('/report', reportRoutes);
 apiV1.use('/ban', banRoutes);
 apiV1.use('/moderation-actions', moderationActionRoutes);
 apiV1.use('/stats', statsRoutes);
+apiV1.use('/announcement', announcementRoute);
 
 app.use('/api/v1', apiV1);
 

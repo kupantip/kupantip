@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { postComment } from '@/services/dashboard/postComment';
+import { updateComment } from '@/services/user/updateComment';
 import { Image as ImageIcon } from 'lucide-react';
 
 // interface Content {
@@ -18,18 +19,31 @@ interface CommentBoxProps {
 	className?: string;
 	postId: string;
 	parentId: string;
+	refresh: () => void;
+	onClose?: () => void;
+    editComment?: {
+        id: string;
+        body_md: string;
+    };
 }
 
 export default function CommentBox({
 	className,
 	postId,
 	parentId,
+	refresh,
+	onClose,
+	editComment
 }: CommentBoxProps) {
 	const { status } = useSession();
 	const isLoggedIn = status === 'authenticated';
 
-	const [comment, setComment] = useState('');
-	const [showActions, setShowActions] = useState(false);
+	const isEditing = !!editComment;
+
+	const [comment, setComment] = useState(isEditing ? editComment.body_md : '');
+	const [showActions, setShowActions] = useState(isEditing);
+
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	if (!postId) {
 		postId = '';
@@ -39,42 +53,89 @@ export default function CommentBox({
 		parentId = '';
 	}
 
-	async function handlePostComment() {
-		try {
-			const success = await postComment({
-				content: {
-					post_id: postId,
-					parent_id: parentId,
-					body_md: comment,
-				},
-			});
-
-			if (success && isLoggedIn) {
-				toast.message('Comment Succuss');
-				console.log('Comment posted successfully!');
-				setComment('');
-				setShowActions(false);
-			}
-		} catch (err) {
-			toast.error('Please login first');
-			console.error('Failed to post comment:', err);
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+		if (!comment.trim()){
+			return;
 		}
+
+		setIsSubmitting(true);
+
+		try {
+			if (isEditing){
+				const success = await updateComment({body_md : comment, id: editComment.id});
+				if (success) {
+					toast.success('Comment updated successfully!');
+					if (onClose){
+						onClose();
+					}
+				}
+			} else {
+					const success = await postComment({
+						content: {
+							post_id: postId,
+							parent_id: parentId,
+							body_md: comment
+						}
+					});
+
+					if (success && isLoggedIn) {
+						toast.message('Comment Succuss!');
+						setComment('');
+						setShowActions(false);
+						if (onClose) {
+							onClose();
+						}
+					}
+				}
+
+			refresh();
+
+		} catch (err) {
+			if (isEditing){
+				toast.error('Failed to update comment. Please try again.');
+			} else if (!isLoggedIn) {
+				toast.error('Please login first to comment.');
+			} else {
+				toast.error('Failed to post comment. Please try again.');
+			}
+			console.error('Failed to submit comment: ', err);
+		} finally {
+			setIsSubmitting(false);
+		}
+
 	}
 
+    const handleCancel = () => {
+        setComment(isEditing ? editComment.body_md : '');
+        setShowActions(isEditing);
+        if (onClose) {
+            onClose();
+        }
+    };
+
 	return (
-		<div
+		<form
+			onSubmit={handleSubmit}
 			className={cn(
 				'w-full rounded-3xl border px-4 py-2 shadow-sm',
+				isEditing && 'border-emerald-600',
 				className
 			)}
 		>
 			<Textarea
-				placeholder="Write a comment..."
+				placeholder={isEditing ? "Editing comment..." : "Write a comment..."}
 				value={comment}
 				onChange={(e) => setComment(e.target.value)}
-				onFocus={() => setShowActions(true)}
+				onFocus={() => {
+					if(isEditing){
+						return;
+					}
+					setShowActions(true);
+				}}
 				className="resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
 				rows={1}
+				disabled={isSubmitting}
 			/>
 
 			<div className="mt-3 flex items-center justify-between">
@@ -89,28 +150,25 @@ export default function CommentBox({
 				{showActions && (
 					<div className="flex gap-2">
 						<Button
-							variant="secondary"
-							onClick={() => {
-								setComment('');
-								setShowActions(false);
-							}}
+							variant="ghost"
+							onClick={handleCancel}
+                            className='cursor-pointer text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            size='sm'
+							disabled={isSubmitting}
 						>
 							Cancel
 						</Button>
 						<Button
-							onClick={() => {
-								console.log('Comment submitted:', comment);
-								handlePostComment();
-								setComment('');
-								setShowActions(false);
-							}}
-							disabled={!comment.trim()}
+							type="submit"
+							disabled={!comment.trim() || isSubmitting}
+							className='cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50'
+							size='sm'
 						>
-							Comment
+							{isSubmitting ? (isEditing ? 'Saving...' : 'Posting...') : (isEditing ? 'Save' : 'Comment')}
 						</Button>
 					</div>
 				)}
 			</div>
-		</div>
+		</form>
 	);
 }
