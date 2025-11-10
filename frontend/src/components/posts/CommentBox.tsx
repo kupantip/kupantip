@@ -18,7 +18,6 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { TriangleAlert } from 'lucide-react';
 import { useSidebar } from '../ui/sidebar';
 
 interface CommentBoxProps {

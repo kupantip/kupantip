@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
 import { createPost } from '@/services/user/create-post_page';
 import { useCategories } from '@/services/post/category';
@@ -20,6 +21,17 @@ import {
 import Image from 'next/image';
 import { Upload } from 'lucide-react';
 import { X } from 'lucide-react';
+import {
+	AlertDialog,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { AlertTriangle } from 'lucide-react';
+import { useSidebar } from '@/components/ui/sidebar';
 
 export default function CreatePostPage() {
 	const [tab, setTab] = useState<'text' | 'media'>('text');
@@ -35,6 +47,14 @@ export default function CreatePostPage() {
 
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
+
+	const [banInfo, setBanInfo] = useState<{
+		message: string;
+		reason: string;
+		end_at: string;
+	} | null>(null);
+
+	const {open: isSidebarOpen} = useSidebar();
 
 	useEffect(() => {
 		AOS.init({
@@ -72,8 +92,24 @@ export default function CreatePostPage() {
 		try {
 			await createPost({ ...formData, url: postUrl });
 			router.push(`/posts/category/${formData.category_id}`);
-		} catch (err: unknown) {
-			console.error('Error: ', err);
+		} catch (err : unknown) {
+			console.error("Failed to create post: ", err);
+
+			if (
+				typeof err === "object" &&
+				err !== null &&
+				"status" in err &&
+				(err as { status?: number }).status === 403
+			) {
+				const e = err as { message?: string; reason?: string; end_at?: string };
+				setBanInfo({
+					message: e.message ?? "You are banned",
+					reason: e.reason ?? "-",
+					end_at: e.end_at ?? "-",
+				});
+				return;
+			}
+
 		} finally {
 			setLoading(false);
 		}
@@ -241,17 +277,56 @@ export default function CreatePostPage() {
 						</div>
 					)}
 
-					<div className="flex justify-end">
+					<div className="flex justify-end gap-2">
+						<Link href={`/posts`}>
+							<Button className="bg-gray-200 text-black rounded-full hover:bg-gray-300 hover:shadow-md hover:scale-105 cursor-pointer">
+								Cancel
+							</Button>
+						</Link>					
 						<Button
 							type="submit"
 							disabled={loading}
-							className="bg-emerald-700 hover:bg-emerald-800 hover:shadow-md hover:scale-105 p-8 py-2 rounded-full cursor-pointer"
+							className="bg-emerald-700 hover:bg-emerald-800 hover:shadow-md hover:scale-105 rounded-full cursor-pointer"
 						>
 							{loading ? 'Posting...' : 'Post'}
 						</Button>
 					</div>
 				</form>
 			</div>
+	
+			<AlertDialog open={!!banInfo} onOpenChange={() => setBanInfo}>
+				<AlertDialogContent className={isSidebarOpen ? "ml-32" : "ml-6"}>
+					<AlertDialogHeader>
+						<div className='flex gap-2 text-red-500 items-center'>
+							<AlertTriangle className='w-5 h-5'/>
+							<AlertDialogTitle>
+								You&apos;ve been banned from posting.
+							</AlertDialogTitle>
+						</div>
+						<AlertDialogDescription>
+                			<strong className='text-black/75'>Reason:</strong> {banInfo?.reason}
+						</AlertDialogDescription>
+						<AlertDialogDescription>
+							<strong className='text-black/75'>Ban expires on:</strong>{" "}
+							{banInfo?.end_at
+							? new Date(banInfo.end_at).toLocaleString("en-En", {
+								dateStyle: 'long',
+								timeStyle: 'short'
+							})
+							: "-"}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							type="button"
+							onClick={() => setBanInfo(null)}
+							className='cursor-pointer w-full'
+						>
+							Close
+						</AlertDialogCancel>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
