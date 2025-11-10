@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env';
+import * as jwt from 'jsonwebtoken';
 
 const transporter = nodemailer.createTransport({
 	service: 'Gmail',
@@ -32,6 +33,12 @@ export const sendPasswordResetEmail = async (
 ) => {
 	const baseURL = origin || 'http://localhost:3000';
 	const resetLink = `${baseURL}/reset-password/${token}`;
+
+	const data = jwt.verify(token, env.jwtSecret) as {
+		email: string;
+		user_id: string;
+		display_name: string;
+	};
 
 	const html = `
 	<!DOCTYPE html>
@@ -72,7 +79,7 @@ export const sendPasswordResetEmail = async (
 				<tr>
 					<td align="left" style="padding: 20px 40px; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5; color: #555555;">
 					<h2 style="font-size: 20px; font-weight: bold; color: #333333; margin-top: 0;">Password Reset Request</h2>
-					<p>Hi [User's Name],</p>
+					<p>Hi ${data.display_name},</p>
 					<p>We received a request to reset the password for your account. You can reset your password by clicking the button below:</p>
 					</td>
 				</tr>
@@ -101,7 +108,7 @@ export const sendPasswordResetEmail = async (
 				<tr>
 					<td align="center" style="padding: 40px; font-family: Arial, sans-serif; font-size: 12px; line-height: 1.5; color: #888888;">
 					<p>&copy; 2025 Kupantip. All rights reserved.</p>
-					<p>123 Your Street, Your City, ST 12345</p>
+					<p>Thailand, Kasetsart University</p>
 					</td>
 				</tr>
 				

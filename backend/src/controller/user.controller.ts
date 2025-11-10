@@ -199,9 +199,13 @@ export const forgetPasswordController = async (
 				.json({ message: 'Email not found in our records' });
 		}
 
-		const token = jwt.sign({ email }, env.jwtSecret, {
-			expiresIn: '24h',
-		});
+		const token = jwt.sign(
+			{ email, user_id: user.id, display_name: user.display_name },
+			env.jwtSecret,
+			{
+				expiresIn: '24h',
+			}
+		);
 
 		await createResetToken(email, token);
 		await sendPasswordResetEmail(email, token, req.headers.origin || '');
