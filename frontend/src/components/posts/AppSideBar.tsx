@@ -29,6 +29,7 @@ const HOVER_OPEN_DELAY_MS = 250;
 // ];
 
 const topicItems = [
+	{ title: 'Important Post', url: '/posts/priority', icon: '📌' },
 	{ title: 'Games', url: '/games', icon: '🎮' },
 	{ title: 'Technology', url: '/technology', icon: '💻' },
 ];
@@ -105,9 +106,7 @@ export function AppSidebar() {
 				<button
 					type="button"
 					onClick={toggleCollapse}
-					aria-label={
-						!open ? 'Expand sidebar' : 'Collapse sidebar'
-					}
+					aria-label={!open ? 'Expand sidebar' : 'Collapse sidebar'}
 					className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-gray-200 hover:bg-gray-100 transition"
 				>
 					{expanded ? (
