@@ -30,6 +30,7 @@ const HOVER_OPEN_DELAY_MS = 250;
 // ];
 
 const topicItems = [
+	{ title: 'Important Post', url: '/posts/priority', icon: '📌' },
 	{ title: 'Games', url: '/games', icon: '🎮' },
 	{ title: 'Technology', url: '/technology', icon: '💻' },
 ];

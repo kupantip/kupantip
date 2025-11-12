@@ -24,6 +24,17 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 import { X } from 'lucide-react';
+import {
+	AlertDialog,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { AlertTriangle } from 'lucide-react';
+import { useSidebar } from '@/components/ui/sidebar';
 
 type ExistingAttachment = {
     id: string;
@@ -60,6 +71,14 @@ export default function EditPostPage() {
 	const [attachmentsToDelete, setAttachmentsToDelete] = useState<string[]>([]);
 
 	const { data: categories } = useCategories();
+
+	const [banInfo, setBanInfo] = useState<{
+		message: string;
+		reason: string;
+		end_at: string;
+	} | null>(null);
+
+	const {open: isSidebarOpen} = useSidebar();
 
 	useEffect(() => {
 			AOS.init({
@@ -121,13 +140,28 @@ export default function EditPostPage() {
 		try {
 			await updatePost({ title, body_md: body, category_id, files }, post.id);
 			await queryClient.invalidateQueries({ queryKey: ['postDetail', post.id] });
+			toast.success('Edit Post Successfully!');
 			router.push(`/posts/${post.id}`);
-		} catch (err) {
-			console.error('Failed to update post', err);
-			toast.error('Failed to update post, Please try again.')
+		} catch (err : unknown) {
+			console.error("Failed to edit post: ", err);
+
+			if (
+				typeof err === "object" &&
+				err !== null &&
+				"status" in err &&
+				(err as { status?: number }).status === 403
+			) {
+				const e = err as { message?: string; reason?: string; end_at?: string };
+				setBanInfo({
+					message: e.message ?? "You are banned",
+					reason: e.reason ?? "-",
+					end_at: e.end_at ?? "-",
+				});
+				return;
+			}
+
 		} finally {
 			setLoading(false);
-			toast.success('Edit Post Successfully!');
 		}
 	};
 
@@ -307,6 +341,39 @@ export default function EditPostPage() {
 					</div>
 				</form>
 			</div>
+			<AlertDialog open={!!banInfo} onOpenChange={() => setBanInfo}>
+				<AlertDialogContent className={isSidebarOpen ? "ml-32" : "ml-6"}>
+					<AlertDialogHeader>
+						<div className='flex gap-2 text-red-500 items-center'>
+							<AlertTriangle className='w-5 h-5'/>
+							<AlertDialogTitle>
+								You&apos;ve been banned from posting.
+							</AlertDialogTitle>
+						</div>
+						<AlertDialogDescription>
+                			<strong className='text-black/75'>Reason:</strong> {banInfo?.reason}
+						</AlertDialogDescription>
+						<AlertDialogDescription>
+							<strong className='text-black/75'>Ban expires on:</strong>{" "}
+							{banInfo?.end_at
+							? new Date(banInfo.end_at).toLocaleString("en-En", {
+								dateStyle: 'long',
+								timeStyle: 'short'
+							})
+							: "-"}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							type="button"
+							onClick={() => setBanInfo(null)}
+							className='cursor-pointer w-full'
+						>
+							Close
+						</AlertDialogCancel>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

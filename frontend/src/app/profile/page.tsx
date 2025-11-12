@@ -190,7 +190,7 @@ export default function MyProfilePage() {
 			</Card>
 
 			{/* Stats Grid */}
-			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
 				<Card>
 					<CardContent className="pt-6 text-center">
 						<FileText className="w-8 h-8 mx-auto mb-2 text-green-1" />
@@ -216,33 +216,6 @@ export default function MyProfilePage() {
 							{userStats.upvotes}
 						</div>
 						<div className="text-sm text-gray-600">Upvotes</div>
-					</CardContent>
-				</Card>
-				<Card>
-					<CardContent className="pt-6 text-center">
-						<User className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-						<div className="text-2xl font-bold">
-							{userStats.followers}
-						</div>
-						<div className="text-sm text-gray-600">Followers</div>
-					</CardContent>
-				</Card>
-				<Card>
-					<CardContent className="pt-6 text-center">
-						<User className="w-8 h-8 mx-auto mb-2 text-pink-600" />
-						<div className="text-2xl font-bold">
-							{userStats.following}
-						</div>
-						<div className="text-sm text-gray-600">Following</div>
-					</CardContent>
-				</Card>
-				<Card>
-					<CardContent className="pt-6 text-center">
-						<Award className="w-8 h-8 mx-auto mb-2 text-yellow-600" />
-						<div className="text-2xl font-bold">
-							{userStats.reputation}
-						</div>
-						<div className="text-sm text-gray-600">Reputation</div>
 					</CardContent>
 				</Card>
 			</div>

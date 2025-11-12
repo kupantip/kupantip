@@ -75,7 +75,7 @@ export default function SignUp() {
 					/>
 					<button
 						type="submit"
-						className="bg-emerald-800 text-white font-bold py-2 rounded-lg hover:bg-emerald-900"
+						className="bg-emerald-600 text-white font-bold py-2 rounded-lg hover:bg-emerald-700 cursor-pointer"
 					>
 						Sign Up
 					</button>

@@ -144,7 +144,7 @@ export function usePostByUserId(user_id: string) {
 	});
 }
 
-export const fetchHotPosts = async (): Promise<Post[]> => {
+export const fetchPriorityPosts = async (): Promise<Post[]> => {
 	try {
 		const session = await getSession();
 
@@ -152,14 +152,15 @@ export const fetchHotPosts = async (): Promise<Post[]> => {
 			Authorization: `Bearer ${session?.user?.accessToken}`,
 		};
 
-		const response = await instance.get<Post[]>('/post/hot', {
+		const response = await instance.get<Post[]>('/post/priority', {
 			headers: header,
 		});
+
 		return response.data;
 	} catch (error: unknown) {
 		if (axios.isAxiosError(error)) {
 			throw new Error(
-				`Failed to fetch hot posts: ${error.response?.status} ${error.response?.statusText}`
+				`Failed to fetch priority posts: ${error.response?.status} ${error.response?.statusText}`
 			);
 		} else if (error instanceof Error) {
 			throw new Error(error.message);
@@ -169,10 +170,10 @@ export const fetchHotPosts = async (): Promise<Post[]> => {
 	}
 };
 
-export function useHotPosts() {
+export function usePriorityPosts() {
 	return useQuery<Post[], Error>({
-		queryKey: ['hotPosts'],
-		queryFn: fetchHotPosts,
+		queryKey: ['priorityPosts'],
+		queryFn: () => fetchPriorityPosts(),
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 }
