@@ -3,8 +3,11 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Paperclip } from 'lucide-react';
+import { Heart, Paperclip, Trash2 } from 'lucide-react';
 import { Attachment } from '@/services/post/post';
+import { useSession } from 'next-auth/react';
+import { useDeleteAnnouncement } from '@/services/post/annoucement';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface PostItemProps {
 	id: string;
@@ -14,6 +17,8 @@ interface PostItemProps {
 	time: number; // time in minutes
 	comments?: number;
 	attachments?: Attachment[];
+	authorId?: string;
+	authorRole?: 'admin' | 'teacher' | 'staff' | 'user';
 }
 
 export const PostItem: React.FC<PostItemProps> = ({
@@ -24,7 +29,27 @@ export const PostItem: React.FC<PostItemProps> = ({
 	time,
 	comments = 0,
 	attachments = [],
+	authorId,
+	authorRole,
 }) => {
+	const { data: session } = useSession();
+	const queryClient = useQueryClient();
+	const { mutate: deleteAnnouncement, isPending: isDeleting } =
+		useDeleteAnnouncement();
+
+	const handleDelete = (e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		deleteAnnouncement(id, {
+			onSuccess: () => {
+				queryClient.invalidateQueries({ queryKey: ['annoucements'] });
+			},
+		});
+	};
+
+	const canDelete =
+		session?.user?.role === 'admin' || session?.user?.id === authorId;
+
 	const formatTime = (minutes: number) => {
 		if (minutes < 60) return `${minutes} min ago`;
 		if (minutes < 60 * 24)
@@ -71,6 +96,15 @@ export const PostItem: React.FC<PostItemProps> = ({
 					<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
 						💬 <span className="ml-1 text-sm">{comments}</span>
 					</Button>
+					{canDelete && (
+						<Button
+							className="group cursor-pointer bg-red-500 hover:bg-red-600 hover:scale-105 text-white"
+							onClick={handleDelete}
+							disabled={isDeleting}
+						>
+							<Trash2 className="w-4 h-4" />
+						</Button>
+					)}
 				</div>
 			</div>
 		</Link>

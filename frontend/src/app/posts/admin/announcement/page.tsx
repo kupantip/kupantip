@@ -6,6 +6,7 @@ import {
 	AnnouncementSubmitData,
 } from '@/components/admin/AnnouncementForm';
 import { toast } from 'sonner';
+import { createAnnouncement } from '@/services/announcement/announcement';
 
 export default function AnnouncementPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,17 +18,10 @@ export default function AnnouncementPage() {
 			setIsSubmitting(true);
 			console.log('Form data received:', data);
 
+			await createAnnouncement(data);
+
 			// Store the submitted data
 			setSubmittedData(data);
-
-			// TODO: Replace with actual API call
-			// const response = await fetch('/api/announcements', {
-			//   method: 'POST',
-			//   headers: { 'Content-Type': 'application/json' },
-			//   body: JSON.stringify(data),
-			// });
-
-			// if (!response.ok) throw new Error('Failed to create announcement');
 
 			toast.success('Announcement Created', {
 				description: 'The announcement has been created successfully.',

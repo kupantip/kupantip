@@ -143,3 +143,36 @@ export function usePostByUserId(user_id: string) {
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 }
+
+export const fetchHotPosts = async (): Promise<Post[]> => {
+	try {
+		const session = await getSession();
+
+		const header = {
+			Authorization: `Bearer ${session?.user?.accessToken}`,
+		};
+
+		const response = await instance.get<Post[]>('/post/hot', {
+			headers: header,
+		});
+		return response.data;
+	} catch (error: unknown) {
+		if (axios.isAxiosError(error)) {
+			throw new Error(
+				`Failed to fetch hot posts: ${error.response?.status} ${error.response?.statusText}`
+			);
+		} else if (error instanceof Error) {
+			throw new Error(error.message);
+		} else {
+			throw new Error(String(error));
+		}
+	}
+};
+
+export function useHotPosts() {
+	return useQuery<Post[], Error>({
+		queryKey: ['hotPosts'],
+		queryFn: fetchHotPosts,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+}

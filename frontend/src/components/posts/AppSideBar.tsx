@@ -119,6 +119,19 @@ export function AppSidebar() {
 
 			<nav className="h-[calc(100%-3rem)] overflow-y-auto pb-6">
 				<ul className="space-y-1 px-4">
+					<li>
+						<a
+							href="/posts"
+							className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
+								expanded ? 'justify-start' : 'justify-center'
+							}`}
+							aria-label={expanded ? undefined : 'Hot Posts'}
+							title={!expanded ? 'Hot Posts' : undefined}
+						>
+							<span className="text-base">🔥</span>
+							{expanded && <span>Hot Posts</span>}
+						</a>
+					</li>
 					{!isLoadingCategories &&
 						categories?.map((category) => {
 							const Icon = iconMenu[category.label] || Home;

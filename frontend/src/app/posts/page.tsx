@@ -4,6 +4,8 @@ import React, { useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
+import { useHotPosts } from '@/services/post/post';
+import { useAnnouncements } from '@/services/announcement/announcement';
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -18,29 +20,16 @@ import { Heart } from 'lucide-react';
 // still using mock data
 
 export default function HomePage() {
-	const hotPosts = [
-		{
-			title: 'How to Prepare for the Next KU Tech Expo',
-			category: 'Community',
-			author: 'Student Affairs',
-			time: '2 hours ago',
-			comments: 24,
-		},
-		{
-			title: 'Job Openings at the Engineering Faculty 🚀',
-			category: 'Recruitment',
-			author: 'HR Office',
-			time: '5 hours ago',
-			comments: 18,
-		},
-		{
-			title: 'New Dormitory Rules Announcement',
-			category: 'Announcement',
-			author: 'Admin Team',
-			time: '1 day ago',
-			comments: 12,
-		},
-	];
+	const {
+		data: hotPosts,
+		isLoading: isLoadingHotPosts,
+		isError: isErrorHotPosts,
+	} = useHotPosts();
+	const {
+		data: announcements,
+		isLoading: isLoadingAnnouncements,
+		isError: isErrorAnnouncements,
+	} = useAnnouncements();
 
 	const summaryStats = [
 		{ label: 'Announcements', count: 1240, url: 'annoucement' },
@@ -90,15 +79,15 @@ export default function HomePage() {
 					</Button>
 				</CardContent>
 			</Card>
-			{/* Hot Posts */}
+			{/* Announcements */}
 			<Card className="shadow-sm overflow-hidden rounded-lg">
 				<CardHeader className="text-green-2 mb-[-20]">
 					<CardTitle className="text-lg font-semibold">
-						🔥 Hot Post
+						📢 Announcements
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
-					{hotPosts.map((post, i) => (
+					{announcements?.map((post, i) => (
 						<div
 							key={i}
 							className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
@@ -116,19 +105,73 @@ export default function HomePage() {
 										variant="secondary"
 										className="mr-2 bg-green-100 text-green-800"
 									>
-										{post.category}
+										{post.category_label}
 									</Badge>
-									{post.author} • {post.time}
+									{post.author_name} •{' '}
+									{post.minutes_since_posted} mins ago
 								</p>
 							</div>
 							<div className="flex flex-wrap gap-x-2">
-								<Button className='group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105'>
-									<Heart className="text-red-500" fill="currentColor" />
+								<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+									<Heart
+										className="text-red-500"
+										fill="currentColor"
+									/>
 								</Button>
 								<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
 									💬{' '}
 									<span className="ml-1 text-sm">
-										{post.comments}
+										{post.comment_count}
+									</span>
+								</Button>
+							</div>
+						</div>
+					))}
+				</CardContent>
+			</Card>
+			{/* Hot Posts */}
+			<Card className="shadow-sm overflow-hidden rounded-lg">
+				<CardHeader className="text-green-2 mb-[-20]">
+					<CardTitle className="text-lg font-semibold">
+						🔥 Hot Post
+					</CardTitle>
+				</CardHeader>
+				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
+					{hotPosts?.map((post, i) => (
+						<div
+							key={i}
+							className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
+									hover:bg-gray-100 dark:hover:bg-gray-800 
+									rounded-lg 
+									transition-all duration-300 ease-in-out 
+									hover:shadow-md"
+						>
+							<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
+								<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline cursor-pointer">
+									{post.title}
+								</h3>
+								<p className="text-sm text-gray-500">
+									<Badge
+										variant="secondary"
+										className="mr-2 bg-green-100 text-green-800"
+									>
+										{post.category_label}
+									</Badge>
+									{post.author_name} •{' '}
+									{post.minutes_since_posted} mins ago
+								</p>
+							</div>
+							<div className="flex flex-wrap gap-x-2">
+								<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+									<Heart
+										className="text-red-500"
+										fill="currentColor"
+									/>
+								</Button>
+								<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+									💬{' '}
+									<span className="ml-1 text-sm">
+										{post.comment_count}
 									</span>
 								</Button>
 							</div>
