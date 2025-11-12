@@ -9,6 +9,7 @@ import {
 	ChevronsRight,
 	PersonStanding,
 	BriefcaseBusiness,
+	Megaphone,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -105,9 +106,7 @@ export function AppSidebar() {
 				<button
 					type="button"
 					onClick={toggleCollapse}
-					aria-label={
-						!open ? 'Expand sidebar' : 'Collapse sidebar'
-					}
+					aria-label={!open ? 'Expand sidebar' : 'Collapse sidebar'}
 					className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-gray-200 hover:bg-gray-100 transition"
 				>
 					{expanded ? (
@@ -207,6 +206,31 @@ export function AppSidebar() {
 								>
 									<Calendar className="h-4 w-4 shrink-0" />
 									{expanded && <span>Admin Panel</span>}
+								</Link>
+							</li>
+							<li>
+								<Link
+									href="/posts/admin/announcement"
+									className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
+										expanded
+											? 'justify-start'
+											: 'justify-center'
+									}`}
+									aria-label={
+										expanded
+											? undefined
+											: 'Announcement Panel'
+									}
+									title={
+										!expanded
+											? 'Announcement Panel'
+											: undefined
+									}
+								>
+									<Megaphone className="h-4 w-4 shrink-0" />
+									{expanded && (
+										<span>Announcement Panel</span>
+									)}
 								</Link>
 							</li>
 						</>
