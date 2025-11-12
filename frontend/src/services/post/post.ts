@@ -31,6 +31,29 @@ export type Post = {
 	disliked_by_requesting_user: boolean;
 };
 
+export type AdminPost = {
+	id: string;
+	title: string;
+	body_md: string;
+	url: string;
+	created_at: string;
+	updated_at: string;
+	author_name: string;
+	author_id: string;
+	category_label: string;
+	category_color: string;
+	category_id: string;
+	attachments: Attachment[];
+	minutes_since_announced: number;
+	comment_count: number;
+	vote_count: number;
+	vote_score: number;
+	like_count: number;
+	dislike_count: number;
+	liked_by_requesting_user: boolean;
+	disliked_by_requesting_user: boolean;
+};
+
 const instance = axios.create({
 	baseURL: '/backend',
 	timeout: 5000,
@@ -174,6 +197,85 @@ export function usePriorityPosts() {
 	return useQuery<Post[], Error>({
 		queryKey: ['priorityPosts'],
 		queryFn: () => fetchPriorityPosts(),
+		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+}
+
+export const fetchHotPosts = async (): Promise<Post[]> => {
+	try {
+		const session = await getSession();
+
+		const header = {
+			Authorization: `Bearer ${session?.user?.accessToken}`,
+		};
+
+		const response = await instance.get<Post[]>('/post/hot', {
+			headers: header,
+		});
+		return response.data;
+	} catch (error: unknown) {
+		if (axios.isAxiosError(error)) {
+			throw new Error(
+				`Failed to fetch hot posts: ${error.response?.status} ${error.response?.statusText}`
+			);
+		} else if (error instanceof Error) {
+			throw new Error(error.message);
+		} else {
+			throw new Error(String(error));
+		}
+	}
+};
+
+export function useHotPosts() {
+	return useQuery<Post[], Error>({
+		queryKey: ['hotPosts'],
+		queryFn: fetchHotPosts,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+}
+
+export type SummaryStat = {
+	category_id: string;
+	category_label: string;
+	category_color: string;
+	post_count: number;
+	total_vote_count: number;
+	total_comment: number;
+	total_engagement: number;
+};
+
+export const fetchSummaryStats = async (): Promise<SummaryStat[]> => {
+	try {
+		const session = await getSession();
+
+		const header = {
+			Authorization: `Bearer ${session?.user?.accessToken}`,
+		};
+
+		const response = await instance.get<SummaryStat[]>(
+			'/post/summarystats',
+			{
+				headers: header,
+			}
+		);
+		return response.data;
+	} catch (error: unknown) {
+		if (axios.isAxiosError(error)) {
+			throw new Error(
+				`Failed to fetch summary stats: ${error.response?.status} ${error.response?.statusText}`
+			);
+		} else if (error instanceof Error) {
+			throw new Error(error.message);
+		} else {
+			throw new Error(String(error));
+		}
+	}
+};
+
+export function useSummaryStats() {
+	return useQuery<SummaryStat[], Error>({
+		queryKey: ['summaryStats'],
+		queryFn: fetchSummaryStats,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 }

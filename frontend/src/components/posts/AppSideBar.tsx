@@ -9,6 +9,7 @@ import {
 	ChevronsRight,
 	PersonStanding,
 	BriefcaseBusiness,
+	Megaphone,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -119,13 +120,26 @@ export function AppSidebar() {
 
 			<nav className="h-[calc(100%-3rem)] overflow-y-auto pb-6">
 				<ul className="space-y-1 px-4">
+					<li>
+						<Link
+							href="/posts"
+							className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
+								expanded ? 'justify-start' : 'justify-center'
+							}`}
+							aria-label={expanded ? undefined : 'Hot Posts'}
+							title={!expanded ? 'Hot Posts' : undefined}
+						>
+							<span className="text-base">🔥</span>
+							{expanded && <span>Hot Posts</span>}
+						</Link>
+					</li>
 					{!isLoadingCategories &&
 						categories?.map((category) => {
 							const Icon = iconMenu[category.label] || Home;
 
 							return (
 								<li key={category.id}>
-									<a
+									<Link
 										href={`/posts/category/${category.id}`}
 										className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
 											expanded
@@ -147,7 +161,7 @@ export function AppSidebar() {
 										{expanded && (
 											<span>{category.label}</span>
 										)}
-									</a>
+									</Link>
 								</li>
 							);
 						})}
@@ -206,6 +220,31 @@ export function AppSidebar() {
 								>
 									<Calendar className="h-4 w-4 shrink-0" />
 									{expanded && <span>Admin Panel</span>}
+								</Link>
+							</li>
+							<li>
+								<Link
+									href="/posts/admin/announcement"
+									className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
+										expanded
+											? 'justify-start'
+											: 'justify-center'
+									}`}
+									aria-label={
+										expanded
+											? undefined
+											: 'Announcement Panel'
+									}
+									title={
+										!expanded
+											? 'Announcement Panel'
+											: undefined
+									}
+								>
+									<Megaphone className="h-4 w-4 shrink-0" />
+									{expanded && (
+										<span>Announcement Panel</span>
+									)}
 								</Link>
 							</li>
 						</>

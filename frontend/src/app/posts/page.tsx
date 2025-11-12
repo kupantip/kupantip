@@ -4,49 +4,44 @@ import React, { useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
+import { useHotPosts, useSummaryStats } from '@/services/post/post';
+import { useAnnouncements } from '@/services/announcement/announcement';
 import {
 	Breadcrumb,
 	BreadcrumbItem,
 	BreadcrumbList,
 	BreadcrumbPage,
 } from '@/components/ui/breadcrumb';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	CardFooter,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart } from 'lucide-react';
+import { Heart, ThumbsUp, MessageSquare, ArrowRight } from 'lucide-react';
+import { formatMinutes } from '@/lib/time';
 
 // still using mock data
 
 export default function HomePage() {
-	const hotPosts = [
-		{
-			title: 'How to Prepare for the Next KU Tech Expo',
-			category: 'Community',
-			author: 'Student Affairs',
-			time: '2 hours ago',
-			comments: 24,
-		},
-		{
-			title: 'Job Openings at the Engineering Faculty 🚀',
-			category: 'Recruitment',
-			author: 'HR Office',
-			time: '5 hours ago',
-			comments: 18,
-		},
-		{
-			title: 'New Dormitory Rules Announcement',
-			category: 'Announcement',
-			author: 'Admin Team',
-			time: '1 day ago',
-			comments: 12,
-		},
-	];
-
-	const summaryStats = [
-		{ label: 'Announcements', count: 1240, url: 'annoucement' },
-		{ label: 'Community Posts', count: 3480, url: 'community' },
-		{ label: 'Recruitment Posts', count: 640, url: 'recruitment' },
-	];
+	const {
+		data: hotPosts,
+		isLoading: isLoadingHotPosts,
+		isError: isErrorHotPosts,
+	} = useHotPosts();
+	const {
+		data: announcements,
+		isLoading: isLoadingAnnouncements,
+		isError: isErrorAnnouncements,
+	} = useAnnouncements();
+	const {
+		data: summaryStats,
+		isLoading: isLoadingSummary,
+		isError: isErrorSummary,
+	} = useSummaryStats();
 
 	useEffect(() => {
 		AOS.init({
@@ -55,6 +50,10 @@ export default function HomePage() {
 			offset: 80,
 		});
 	}, []);
+
+	const topSummaryStats = summaryStats
+		?.sort((a, b) => b.post_count - a.post_count)
+		.slice(0, 3);
 
 	return (
 		<div
@@ -90,15 +89,15 @@ export default function HomePage() {
 					</Button>
 				</CardContent>
 			</Card>
-			{/* Hot Posts */}
+			{/* Announcements */}
 			<Card className="shadow-sm overflow-hidden rounded-lg">
 				<CardHeader className="text-green-2 mb-[-20]">
 					<CardTitle className="text-lg font-semibold">
-						🔥 Hot Post
+						📢 Announcements
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
-					{hotPosts.map((post, i) => (
+					{announcements?.map((post, i) => (
 						<div
 							key={i}
 							className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
@@ -116,19 +115,75 @@ export default function HomePage() {
 										variant="secondary"
 										className="mr-2 bg-green-100 text-green-800"
 									>
-										{post.category}
+										{post.category_label}
 									</Badge>
-									{post.author} • {post.time}
+									{post.author_name} •{' '}
+									{formatMinutes(
+										post.minutes_since_announced
+									)}
 								</p>
 							</div>
 							<div className="flex flex-wrap gap-x-2">
-								<Button className='group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105'>
-									<Heart className="text-red-500" fill="currentColor" />
+								<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+									<Heart
+										className="text-red-500"
+										fill="currentColor"
+									/>
 								</Button>
 								<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
 									💬{' '}
 									<span className="ml-1 text-sm">
-										{post.comments}
+										{post.comment_count}
+									</span>
+								</Button>
+							</div>
+						</div>
+					))}
+				</CardContent>
+			</Card>
+			{/* Hot Posts */}
+			<Card className="shadow-sm overflow-hidden rounded-lg">
+				<CardHeader className="text-green-2 mb-[-20]">
+					<CardTitle className="text-lg font-semibold">
+						🔥 Hot Post
+					</CardTitle>
+				</CardHeader>
+				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
+					{hotPosts?.map((post, i) => (
+						<div
+							key={i}
+							className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
+									hover:bg-gray-100 dark:hover:bg-gray-800 
+									rounded-lg 
+									transition-all duration-300 ease-in-out 
+									hover:shadow-md"
+						>
+							<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
+								<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline cursor-pointer">
+									{post.title}
+								</h3>
+								<p className="text-sm text-gray-500">
+									<Badge
+										variant="secondary"
+										className="mr-2 bg-green-100 text-green-800"
+									>
+										{post.category_label}
+									</Badge>
+									{post.author_name} •{' '}
+									{formatMinutes(post.minutes_since_posted)}
+								</p>
+							</div>
+							<div className="flex flex-wrap gap-x-2">
+								<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+									<Heart
+										className="text-red-500"
+										fill="currentColor"
+									/>
+								</Button>
+								<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+									💬{' '}
+									<span className="ml-1 text-sm">
+										{post.comment_count}
 									</span>
 								</Button>
 							</div>
@@ -137,28 +192,60 @@ export default function HomePage() {
 				</CardContent>
 			</Card>
 			{/* Summary Section */}
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-				{summaryStats.map((item, i) => (
+			{/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+				{topSummaryStats?.map((item) => (
 					<Card
-						key={i}
-						className="text-center shadow-sm hover:shadow-md transition hover:scale-102"
+						key={item.category_id}
+						className="shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-xl border-t-4 flex flex-col"
+						style={{
+							borderTopColor: item.category_color || '#10B981',
+						}}
 					>
-						<CardHeader>
-							<CardTitle className="text-green-1">
-								{item.label}
+						<CardHeader className="pb-1 pt-2">
+							<CardTitle className="text-xl font-bold text-gray-800 dark:text-gray-100 text-center">
+								{item.category_label}
 							</CardTitle>
 						</CardHeader>
-						<CardContent>
-							<p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-								{item.count.toLocaleString()}
+						<CardContent className="flex flex-col items-center justify-center p-1 flex-grow">
+							<p className="text-3xl font-bold text-gray-900 dark:text-white">
+								{item.post_count.toLocaleString()}
 							</p>
-							<p className="text-sm text-gray-500 mt-1">
-								View more →
+							<p className="text-xs text-gray-500 dark:text-gray-400">
+								Total Posts
 							</p>
+							<div className="flex space-x-4 mt-1 text-xs text-gray-600 dark:text-gray-300">
+								<div className="flex items-center">
+									<ThumbsUp className="w-3 h-3 mr-1" />
+									<span>
+										{item.total_vote_count.toLocaleString()}
+									</span>
+								</div>
+								<div className="flex items-center">
+									<MessageSquare className="w-3 h-3 mr-1" />
+									<span>
+										{item.total_comment.toLocaleString()}
+									</span>
+								</div>
+							</div>
 						</CardContent>
+						<CardFooter className="p-1 mt-auto">
+							<a
+								href={`/posts/category/${item.category_id}`}
+								className="w-full"
+							>
+								<Button
+									variant="ghost"
+									size="sm"
+									className="w-full text-green-1 hover:bg-green-50 dark:hover:bg-gray-800"
+								>
+									View More{' '}
+									<ArrowRight className="w-4 h-4 ml-2" />
+								</Button>
+							</a>
+						</CardFooter>
 					</Card>
 				))}
-			</div>
+			</div> */}
 		</div>
 	);
 }
