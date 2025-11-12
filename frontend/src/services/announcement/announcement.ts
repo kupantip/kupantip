@@ -2,13 +2,14 @@ import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { getSession } from 'next-auth/react';
 import { Post } from '../post/post';
+import { AdminPost } from '../post/post';
 
 const instance = axios.create({
 	baseURL: '/backend',
 	timeout: 5000,
 });
 
-export async function fetchAnnouncements(): Promise<Post[]> {
+export async function fetchAnnouncements(): Promise<AdminPost[]> {
 	try {
 		const session = await getSession();
 
@@ -16,7 +17,7 @@ export async function fetchAnnouncements(): Promise<Post[]> {
 			Authorization: `Bearer ${session?.user?.accessToken}`,
 		};
 
-		const response = await instance.get<{ announcements: Post[] }>(
+		const response = await instance.get<{ announcements: AdminPost[] }>(
 			'/announcement',
 			{
 				headers: header,
@@ -37,7 +38,7 @@ export async function fetchAnnouncements(): Promise<Post[]> {
 }
 
 export function useAnnouncements() {
-	return useQuery<Post[], Error>({
+	return useQuery<AdminPost[], Error>({
 		queryKey: ['announcements'],
 		queryFn: fetchAnnouncements,
 		staleTime: 5 * 60 * 1000, // 5 minutes
