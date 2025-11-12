@@ -66,6 +66,7 @@ export function BanUserDialog({
 				ban_type: banType,
 				reason_admin: reasonAdmin,
 				reason_user: reasonUser,
+				end_at: endDate,
 				related_report_id: reportId,
 			},
 			{

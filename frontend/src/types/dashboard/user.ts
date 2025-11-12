@@ -4,3 +4,10 @@ export interface User {
   email?: string;
   display_name?: string;
 }
+
+export interface BanResponse {
+  message: string;
+  reason: string;
+  end_at: string;
+  status: number;
+}

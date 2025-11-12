@@ -11,6 +11,7 @@ interface CreateBanBody {
 	ban_type: string;
 	reason_admin: string;
 	reason_user: string;
+	end_at: Date;
 	related_report_id: string;
 }
 

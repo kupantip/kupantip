@@ -8,12 +8,17 @@ import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { postComment } from '@/services/dashboard/postComment';
 import { updateComment } from '@/services/user/updateComment';
-import { Image as ImageIcon } from 'lucide-react';
-
-// interface Content {
-// 	parent_id: string;
-// 	body_md: string;
-// }
+import { AlertTriangle, Image as ImageIcon } from 'lucide-react';
+import {
+	AlertDialog,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useSidebar } from '../ui/sidebar';
 
 interface CommentBoxProps {
 	className?: string;
@@ -44,6 +49,14 @@ export default function CommentBox({
 	const [showActions, setShowActions] = useState(isEditing);
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	const [banInfo, setBanInfo] = useState<{
+		message: string;
+		reason: string;
+		end_at: string;
+	} | null>(null);
+
+	const {open: isSidebarOpen} = useSidebar();
 
 	if (!postId) {
 		postId = '';
@@ -91,19 +104,34 @@ export default function CommentBox({
 
 			refresh();
 
-		} catch (err) {
-			if (isEditing){
-				toast.error('Failed to update comment. Please try again.');
-			} else if (!isLoggedIn) {
-				toast.error('Please login first to comment.');
-			} else {
-				toast.error('Failed to post comment. Please try again.');
+		} catch (err : unknown) {
+			console.error("Failed to submit comment: ", err);
+
+			if (
+				typeof err === "object" &&
+				err !== null &&
+				"status" in err &&
+				(err as { status?: number }).status === 403
+			) {
+				const e = err as { message?: string; reason?: string; end_at?: string };
+				setBanInfo({
+					message: e.message ?? "You are banned",
+					reason: e.reason ?? "-",
+					end_at: e.end_at ?? "-",
+				});
+				return;
 			}
-			console.error('Failed to submit comment: ', err);
+
+			if (isEditing) {
+				toast.error("Failed to update comment. Please try again.");
+			} else if (!isLoggedIn) {
+				toast.error("Please login first to comment.");
+			} else {
+				toast.error("Failed to post comment. Please try again.");
+			}
 		} finally {
 			setIsSubmitting(false);
 		}
-
 	}
 
     const handleCancel = () => {
@@ -169,6 +197,41 @@ export default function CommentBox({
 					</div>
 				)}
 			</div>
+
+			<AlertDialog open={!!banInfo} onOpenChange={() => setBanInfo}>
+				<AlertDialogContent className={isSidebarOpen ? "ml-32" : "ml-6"}>
+					<AlertDialogHeader>
+						<div className='flex gap-2 text-red-500 items-center'>
+							<AlertTriangle className='w-5 h-5'/>
+							<AlertDialogTitle>
+								You&apos;ve been banned from commenting.
+							</AlertDialogTitle>
+						</div>
+						<AlertDialogDescription>
+                			<strong className='text-black/75'>Reason:</strong> {banInfo?.reason}
+						</AlertDialogDescription>
+						<AlertDialogDescription>
+							<strong className='text-black/75'>Ban expires on:</strong>{" "}
+							{banInfo?.end_at
+							? new Date(banInfo.end_at).toLocaleString("en-En", {
+								dateStyle: 'long',
+								timeStyle: 'short'
+							})
+							: "-"}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							type="button"
+							onClick={() => setBanInfo(null)}
+							className='cursor-pointer w-full'
+						>
+							Close
+						</AlertDialogCancel>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</form>
+
 	);
 }
