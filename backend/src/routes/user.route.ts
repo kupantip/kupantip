@@ -2,6 +2,9 @@ import { Router } from 'express';
 import {
 	signupController,
 	loginController,
+	forgetPasswordController,
+	verifyTokenController,
+	resetPasswordController,
 } from '../controller/user.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { checkSuspend } from '../middleware/banCheck.middleware';
@@ -20,5 +23,10 @@ router.get('/profile', authMiddleware, checkSuspend, (req, res) => {
 router.post('/login', loginController);
 
 router.post('/signup', signupController);
+
+router.post('/forget', forgetPasswordController);
+
+router.put('/reset/:rt_id', resetPasswordController);
+router.get('/reset/verify/:token', verifyTokenController);
 
 export default router;

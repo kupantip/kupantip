@@ -75,3 +75,137 @@ export const signup = async (
 		return { message: 'Register failed', error: err };
 	}
 };
+
+export const getUserByEmail = async (email: string) => {
+	try {
+		const cnt: ConnectionPool = await getDbConnection();
+
+		const result = await cnt
+			.request()
+			.input('email', VarChar, email)
+			.query(
+				'SELECT id, email, display_name FROM [dbo].[app_user] WHERE email = @email'
+			);
+
+		if (result.recordset.length === 0) {
+			return null; // User not found
+		}
+
+		return result.recordset[0];
+	} catch (err) {
+		throw new Error('Failed to get user by email: ' + err);
+	}
+};
+
+export const createResetToken = async (email: string, token: string) => {
+	try {
+		const cnt: ConnectionPool = await getDbConnection();
+
+		// Insert reset token into reset_token table
+		await cnt
+			.request()
+			.input('email', VarChar, email)
+			.input('token', VarChar, token)
+			.query(
+				`
+				INSERT INTO [dbo].[reset_token] ([user_id], [token]) 
+				SELECT id, @token 
+				FROM [dbo].[app_user] 
+				WHERE email = @email
+				`
+			);
+
+		return { message: 'Reset token created successfully' };
+	} catch (err) {
+		throw new Error('Failed to create reset token' + err);
+	}
+};
+
+export const getResetToken = async (token: string) => {
+	try {
+		const cnt: ConnectionPool = await getDbConnection();
+
+		const result = await cnt
+			.request()
+			.input('token', VarChar, token)
+			.query(
+				`SELECT rt.id, rt.user_id, rt.token, rt.create_at, rt.isValid, au.email 
+				FROM [dbo].[reset_token] rt 
+				INNER JOIN [dbo].[app_user] au 
+				ON rt.user_id = au.id 
+				WHERE rt.token = @token AND rt.isValid = 1
+				`
+			);
+
+		if (result.recordset.length === 0) {
+			return null;
+		}
+
+		return result.recordset[0];
+	} catch (err) {
+		throw new Error('Failed to get reset token: ' + err);
+	}
+};
+
+export const getResetTokenById = async (rt_id: string) => {
+	try {
+		const cnt: ConnectionPool = await getDbConnection();
+
+		const result = await cnt
+			.request()
+			.input('rt_id', VarChar, rt_id)
+			.query(
+				`SELECT rt.id, rt.user_id, rt.token, rt.create_at, rt.isValid, au.email 
+				FROM [dbo].[reset_token] rt 
+				INNER JOIN [dbo].[app_user] au 
+				ON rt.user_id = au.id 
+				WHERE rt.id = @rt_id AND rt.isValid = 1
+				`
+			);
+
+		if (result.recordset.length === 0) {
+			return null;
+		}
+
+		return result.recordset[0];
+	} catch (err) {
+		throw new Error('Failed to get reset token by id: ' + err);
+	}
+};
+
+export const resetPassword = async (rt_id: string, newPassword: string) => {
+	try {
+		const cnt: ConnectionPool = await getDbConnection();
+
+		const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+		const result = await cnt
+			.request()
+			.input('rt_id', VarChar, rt_id)
+			.input('hashed_password', VarChar, hashedPassword)
+			.query(
+				`
+				BEGIN TRANSACTION;
+					UPDATE user_secret
+					SET password_hash = @hashed_password
+					FROM user_secret us
+					INNER JOIN reset_token rt 
+					ON us.user_id = rt.user_id
+					WHERE rt.id = @rt_id
+
+					UPDATE reset_token
+					SET isValid = 0
+					WHERE id = @rt_id
+				COMMIT TRANSACTION;
+				`
+			);
+
+		if (result.rowsAffected[0] === 0) {
+			return { message: 'Email not found' };
+		}
+		console.log(result);
+		return { message: 'Password reset successful' };
+	} catch (err) {
+		return { message: 'Password reset failed', error: err };
+	}
+};

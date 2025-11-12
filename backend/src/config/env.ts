@@ -9,4 +9,7 @@ export const env = {
 	dbPassword: process.env.SQL_PASSWORD || '',
 	dbName: process.env.SQL_NAME || '',
 	dbPort: Number(process.env.SQL_PORT || 1433),
+
+	smtpUser: process.env.SMTP_USER || '',
+	smtpPass: process.env.SMTP_PASS || '',
 };
