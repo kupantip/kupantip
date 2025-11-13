@@ -26,6 +26,7 @@ import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import Link from 'next/link';
 
 export default function PriorityPostsPage() {
 	const {
@@ -53,17 +54,20 @@ export default function PriorityPostsPage() {
 		router.push(`/posts/${postId}`);
 	};
 
-
 	return (
 		<div
 			data-aos="fade-up"
 			className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
 		>
-
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
-						<BreadcrumbLink href="/posts" className='bg-green-3 text-black py-1 px-2 rounded-lg hover:scale-102 hover:bg-emerald-600 hover:text-white border-1'>Home</BreadcrumbLink>
+						<Link
+							href="/posts"
+							className="bg-green-3 text-black py-1 px-2 rounded-lg hover:scale-102 hover:bg-emerald-600 hover:text-white border-1"
+						>
+							Home
+						</Link>{' '}
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>

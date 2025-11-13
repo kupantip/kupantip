@@ -31,6 +31,7 @@ import {
 	Edit,
 } from 'lucide-react';
 import { usePostByUserId } from '@/services/post/post';
+import Link from 'next/link';
 
 type UserPayload = {
 	user_id: string;
@@ -113,7 +114,12 @@ export default function MyProfilePage() {
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
-						<BreadcrumbLink href="/posts" className='bg-green-3 text-black py-1 px-2 rounded-lg hover:scale-102 hover:bg-emerald-600 hover:text-white border-1'>Home</BreadcrumbLink>
+						<Link
+							href="/posts"
+							className="bg-green-3 text-black py-1 px-2 rounded-lg hover:scale-102 hover:bg-emerald-600 hover:text-white border-1"
+						>
+							Home
+						</Link>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
@@ -248,24 +254,27 @@ export default function MyProfilePage() {
 							) : post && post.length > 0 ? (
 								// Show first 3 posts
 								firstThreePost.map((activity) => (
-									<div
+									<Link
 										key={activity.id}
-										className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition hover:scale-102"
+										href={`/posts/${activity.id}`}
+										className="block"
 									>
-										<div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
-											<FileText className="w-4 h-4 text-green-600" />
+										<div className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition hover:scale-102 cursor-pointer">
+											<div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
+												<FileText className="w-4 h-4 text-green-600" />
+											</div>
+											<div className="flex-1">
+												<p className="font-medium">
+													{activity.title}
+												</p>
+												<p className="text-sm text-gray-500">
+													{formatTime(
+														activity.minutes_since_posted
+													)}
+												</p>
+											</div>
 										</div>
-										<div className="flex-1">
-											<p className="font-medium">
-												{activity.title}
-											</p>
-											<p className="text-sm text-gray-500">
-												{formatTime(
-													activity.minutes_since_posted
-												)}
-											</p>
-										</div>
-									</div>
+									</Link>
 								))
 							) : (
 								// No posts found
