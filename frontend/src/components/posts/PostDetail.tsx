@@ -496,12 +496,12 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	};
 
 	return (
-		<div className="flex flex-col items-center py-10">
-			<div className="relative w-full max-w-3xl">
+		<div className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
+			<div className="relative w-full max-w-4xl mx-auto">
 				{/* Back Button */}
 				<button
 					onClick={() => router.back()}
-					className="absolute -left-16 top-0 flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
+					className="absolute -left-16 top-0 flex items-center justify-center p-2 rounded-lg hover:bg-gray-200 transition cursor-pointer"
 					aria-label="Go back"
 				>
 					<ArrowLeft className="w-5 h-5" />
@@ -649,17 +649,15 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					</div>
 				</div>
 			</div>
-
 			{/* Comment Box */}
 			<CommentBox
-				className="w-full max-w-3xl mt-4"
+				className="w-full max-w-4xl mt-4 mx-auto"
 				postId={post.id}
 				parentId=""
 				refresh={refreshComments}
-			/>
-
+			/>{' '}
 			{/* Comments Section */}
-			<div className="w-full max-w-3xl mt-6 space-y-4">
+			<div className="w-full max-w-4xl mt-6 space-y-4 mx-auto">
 				{loadingComments ? (
 					<p className="text-gray-500 italic">Loading comments...</p>
 				) : commentsData && commentsData.comments.length > 0 ? (
@@ -674,7 +672,6 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					<p className="text-gray-500 italic">No comments yet.</p>
 				)}
 			</div>
-
 			{reportingPost && (
 				<ReportModal
 					targetType="post"
@@ -683,7 +680,6 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					onOpenChange={setShowReportPostDialog}
 				></ReportModal>
 			)}
-
 			<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
 				<AlertDialogContent
 					className={isSidebarOpen ? 'ml-32' : 'ml-6'}

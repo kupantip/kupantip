@@ -53,7 +53,7 @@ export default function AdminPage() {
 	// };
 
 	return (
-		<div data-aos="fade-up" className="space-y-4">
+		<div data-aos="fade-up" className="space-y-4 bg-gray-100 p-5 rounded-lg">
 			<div className="grid grid-cols-4 gap-4">
 				<ReportCard
 					num={statsData?.users.new_today || 0}

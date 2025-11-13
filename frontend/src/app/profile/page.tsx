@@ -113,7 +113,7 @@ export default function MyProfilePage() {
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
-						<BreadcrumbLink href="/">Home</BreadcrumbLink>
+						<BreadcrumbLink href="/posts" className='bg-green-3 text-black py-1 px-2 rounded-lg hover:scale-102 hover:bg-emerald-600 hover:text-white border-1'>Home</BreadcrumbLink>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
@@ -173,7 +173,7 @@ export default function MyProfilePage() {
 							</div>
 
 							<div className="flex gap-2 pt-2">
-								<Button className="bg-green-1 hover:bg-green-600 cursor-pointer">
+								<Button className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer">
 									<Edit className="w-4 h-4 mr-2" />
 									Edit Profile
 								</Button>

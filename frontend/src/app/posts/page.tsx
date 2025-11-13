@@ -57,8 +57,12 @@ export default function HomePage() {
 		});
 	}, []);
 
-	const handlePostClick = (postId: string) => {
-		router.push(`/posts/${postId}`);
+	const handlePostClick = (postId: string, isAnnouncement?: boolean) => {
+		if (isAnnouncement) {
+			router.push(`/posts/${postId}?type=announcement`);
+		} else {
+			router.push(`/posts/${postId}`);
+		}
 	};
 
 	const topSummaryStats = summaryStats
@@ -94,6 +98,7 @@ export default function HomePage() {
 					<Button
 						variant="secondary"
 						className="bg-white text-green-1 hover:bg-gray-100 cursor-pointer hover:scale-105"
+						onClick={() => router.push('/posts/create')}
 					>
 						+ New Post
 					</Button>
@@ -115,8 +120,8 @@ export default function HomePage() {
 						announcements?.map((post, i) => (
 							<div
 								key={i}
-								onClick={() => handlePostClick(post.id)}
-								className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
+								onClick={() => handlePostClick(post.id, true)}
+								className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900
 									hover:bg-gray-100 dark:hover:bg-gray-800 
 									rounded-lg 
 									transition-all duration-300 ease-in-out 

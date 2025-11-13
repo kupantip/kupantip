@@ -52,7 +52,12 @@ export default function PostCategoryPage() {
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
-						<BreadcrumbLink href="/posts" className='bg-green-3 text-black py-1 px-2 rounded-lg hover:scale-102 hover:bg-emerald-600 hover:text-white border-1'>Home</BreadcrumbLink>
+						<BreadcrumbLink
+							href="/posts"
+							className="bg-green-3 text-black py-1 px-2 rounded-lg hover:scale-102 hover:bg-emerald-600 hover:text-white border-1"
+						>
+							Home
+						</BreadcrumbLink>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
@@ -103,6 +108,8 @@ export default function PostCategoryPage() {
 								time={post.minutes_since_posted}
 								comments={post.comment_count}
 								attachments={post.attachments}
+								likeCount={post.like_count}
+								likedByUser={post.liked_by_requesting_user}
 							/>
 						))
 					)}

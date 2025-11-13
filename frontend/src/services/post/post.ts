@@ -201,6 +201,8 @@ export function usePriorityPosts() {
 	});
 }
 
+
+
 export const fetchHotPosts = async (): Promise<Post[]> => {
 	try {
 		const session = await getSession();

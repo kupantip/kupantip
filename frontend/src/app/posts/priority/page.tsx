@@ -155,7 +155,7 @@ export default function PriorityPostsPage() {
 													: 'none'
 											}
 										/>
-										<span className="ml-1 text-sm">
+										<span className="ml-1 text-sm text-black">
 											{post.like_count}
 										</span>
 									</Button>

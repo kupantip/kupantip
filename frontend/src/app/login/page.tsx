@@ -111,12 +111,24 @@ export default function LoginPage() {
 				<Button
 					type="submit"
 					disabled={loading}
-					className={`w-full bg-green-600 hover:bg-green-500 text-white p-2 rounded flex items-center justify-center ${
+					className={`w-full bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg flex items-center justify-center cursor-pointer ${
 						loading ? 'opacity-70 cursor-not-allowed' : ''
 					}`}
 				>
 					{loading ? 'Signing In...' : 'Sign In'}
 				</Button>
+
+				<hr className="border-t border-gray-300 mt-6 mb-6" />
+				<Link
+					href="/posts"
+					className="text-center block text-blue-600 hover:underline"
+					onClick={(e) => {
+						e.preventDefault();
+						router.push('/posts');
+					}}
+				>
+					GO TO HOME
+				</Link>
 			</form>
 
 			{/* Fullscreen Loading Overlay */}
