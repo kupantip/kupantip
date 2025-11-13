@@ -37,6 +37,12 @@ export default function PriorityPostsPage() {
 
 	const { data: session, status } = useSession();
 	const router = useRouter();
+	const refreshPage = async () => {
+		refetchPosts();
+	};
+	const handlePostClick = (postId: string) => {
+		router.push(`/posts/${postId}`);
+	};
 
 	useEffect(() => {
 		AOS.init({
@@ -45,14 +51,6 @@ export default function PriorityPostsPage() {
 			offset: 80,
 		});
 	}, []);
-
-	const refreshPage = async () => {
-		refetchPosts();
-	};
-
-	const handlePostClick = (postId: string) => {
-		router.push(`/posts/${postId}`);
-	};
 
 	return (
 		<div

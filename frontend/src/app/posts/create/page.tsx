@@ -44,6 +44,7 @@ export default function CreatePostPage() {
 	});
 
 	const { data: categories } = useCategories();
+	const { open: isSidebarOpen } = useSidebar();
 
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
@@ -53,16 +54,6 @@ export default function CreatePostPage() {
 		reason: string;
 		end_at: string;
 	} | null>(null);
-
-	const { open: isSidebarOpen } = useSidebar();
-
-	useEffect(() => {
-		AOS.init({
-			duration: 500,
-			once: true,
-			offset: 80,
-		});
-	}, []);
 
 	const onDrop = (acceptedFiles: File[]) => {
 		setFormData((prev) => ({
@@ -117,6 +108,14 @@ export default function CreatePostPage() {
 			setLoading(false);
 		}
 	};
+
+	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
 
 	return (
 		<div

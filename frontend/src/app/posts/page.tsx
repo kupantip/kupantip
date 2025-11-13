@@ -42,20 +42,12 @@ export default function HomePage() {
 		isLoading: isLoadingAnnouncements,
 		isError: isErrorAnnouncements,
 	} = useAnnouncements();
-	const {
-		data: summaryStats,
-		isLoading: isLoadingSummary,
-		isError: isErrorSummary,
-	} = useSummaryStats();
+	// const {
+	// 	data: summaryStats,
+	// 	isLoading: isLoadingSummary,
+	// 	isError: isErrorSummary,
+	// } = useSummaryStats();
 	const router = useRouter();
-
-	useEffect(() => {
-		AOS.init({
-			duration: 500,
-			once: true,
-			offset: 80,
-		});
-	}, []);
 
 	const handlePostClick = (postId: string, isAnnouncement?: boolean) => {
 		if (isAnnouncement) {
@@ -65,9 +57,13 @@ export default function HomePage() {
 		}
 	};
 
-	const topSummaryStats = summaryStats
-		?.sort((a, b) => b.post_count - a.post_count)
-		.slice(0, 3);
+	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
 
 	return (
 		<div

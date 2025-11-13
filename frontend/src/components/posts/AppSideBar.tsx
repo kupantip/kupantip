@@ -17,23 +17,8 @@ import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { useSidebar } from '@/components/ui/sidebar';
 
-const HOVER_OPEN_DELAY_MS = 250;
-
-// const items = [
-// 	{ title: 'Home', url: '/posts', icon: Home },
-// 	{ title: 'Announcement', url: '/posts/annoucement', icon: Inbox },
-// 	{ title: 'Community', url: '/posts/community', icon: PersonStanding },
-// 	{
-// 		title: 'Recruitment',
-// 		url: '/posts/recruitment',
-// 		icon: BriefcaseBusiness,
-// 	},
-// ];
-
 const topicItems = [
 	{ title: 'Important Post', url: '/posts/priority', icon: '📌' },
-	// { title: 'Games', url: '/games', icon: '🎮' },
-	// { title: 'Technology', url: '/technology', icon: '💻' },
 ];
 
 export function AppSidebar() {

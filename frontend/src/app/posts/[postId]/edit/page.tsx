@@ -57,12 +57,7 @@ export default function EditPostPage() {
 	const postId = params.postId;
 
 	const queryClient = useQueryClient();
-
-	const { data: posts, isLoading: isLoadingPost } = usePostById(postId);
-	const post = posts?.[0] || null;
-
 	const [loading, setLoading] = useState(false);
-
 	const [tab, setTab] = useState<'text' | 'media'>('text');
 
 	const [title, setTitle] = useState('');
@@ -74,23 +69,17 @@ export default function EditPostPage() {
 		[]
 	);
 
+	const { data: posts, isLoading: isLoadingPost } = usePostById(postId);
 	const { data: categories } = useCategories();
+	const { open: isSidebarOpen } = useSidebar();
+
+	const post = posts?.[0] || null;
 
 	const [banInfo, setBanInfo] = useState<{
 		message: string;
 		reason: string;
 		end_at: string;
 	} | null>(null);
-
-	const { open: isSidebarOpen } = useSidebar();
-
-	useEffect(() => {
-		AOS.init({
-			duration: 500,
-			once: true,
-			offset: 80,
-		});
-	}, []);
 
 	const onDrop = (acceptedFiles: File[]) => {
 		setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
@@ -102,6 +91,14 @@ export default function EditPostPage() {
 			'image/*': [],
 		},
 	});
+
+	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
 
 	useEffect(() => {
 		if (post) {

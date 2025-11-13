@@ -89,22 +89,6 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		null
 	);
 
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				menuRef.current &&
-				!menuRef.current.contains(event.target as Node)
-			) {
-				setMenuOpen(false);
-			}
-		};
-
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside);
-		};
-	}, []);
-
 	const handleUpVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Upvote on', comment.id);
@@ -169,6 +153,22 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		setReportingComment(comment);
 		setShowReportCommentDialog(true);
 	};
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				menuRef.current &&
+				!menuRef.current.contains(event.target as Node)
+			) {
+				setMenuOpen(false);
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
 
 	return (
 		<div className="mb-4">

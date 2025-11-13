@@ -15,14 +15,6 @@ export default function LoginPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 
-	useEffect(() => {
-		AOS.init({
-			duration: 500,
-			once: true,
-			offset: 80,
-		});
-	}, []);
-
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setLoading(true);
@@ -44,6 +36,14 @@ export default function LoginPage() {
 			router.push('/posts');
 		}
 	};
+
+	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
 
 	return (
 		<div
