@@ -22,7 +22,6 @@ import Link from 'next/link';
 import NavButtons from '@/components/NavButton';
 import ProfileDropDown from '@/components/ProfileDropdown';
 
-
 export default function DashboardLayout({
 	children,
 }: {
@@ -38,9 +37,11 @@ export default function DashboardLayout({
 
 	return (
 		<SidebarProvider>
-			<header className="fixed top-0 left-0 w-full h-16 bg-green-2 shadow flex items-center px-4 z-50">
+			<header className="fixed top-0 left-0 w-full h-16 bg-green-2 shadow flex items-center px-6 z-50">
 				<div className="flex justify-between items-center w-screen">
-					<h4 className="text-white">KU Pantip</h4>
+					<h4 className="text-white text-base font-semibold">
+						KU Pantip
+					</h4>
 
 					<div className="flex flex-wrap items-center gap-x-3">
 						<div className="w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">

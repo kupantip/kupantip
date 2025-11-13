@@ -16,13 +16,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PostItem } from '@/components/posts/PostItem';
 import { usePosts } from '@/services/post/post';
 import { useParams } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 
 export default function PostCategoryPage() {
 	const params = useParams();
 	const { categoryId } = params;
-	const { data: posts } = usePosts(
-		typeof categoryId === 'string' ? categoryId : null
-	);
+	const {
+		data: posts,
+		isLoading: isLoadingPosts,
+		isError: isErrorPosts,
+	} = usePosts(typeof categoryId === 'string' ? categoryId : null);
 
 	useEffect(() => {
 		AOS.init({
@@ -49,7 +52,7 @@ export default function PostCategoryPage() {
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
-						<BreadcrumbLink href="/">Home</BreadcrumbLink>
+						<BreadcrumbLink href="/posts" className='bg-green-3 text-black py-1 px-2 rounded-lg hover:scale-102 hover:bg-emerald-600 hover:text-white border-1'>Home</BreadcrumbLink>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
@@ -84,7 +87,12 @@ export default function PostCategoryPage() {
 				</CardHeader>
 
 				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
-					{posts ? (
+					{isLoadingPosts ? (
+						<div className="flex justify-center items-center h-40">
+							<Loader2 className="animate-spin w-8 h-8 text-green-1" />
+						</div>
+					) : (
+						posts &&
 						posts.map((post, i) => (
 							<PostItem
 								key={i}
@@ -97,10 +105,6 @@ export default function PostCategoryPage() {
 								attachments={post.attachments}
 							/>
 						))
-					) : (
-						<div className="p-4 text-center text-gray-500">
-							No posts available.
-						</div>
 					)}
 				</CardContent>
 			</Card>

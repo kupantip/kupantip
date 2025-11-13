@@ -15,16 +15,27 @@ import {
 	MessageCirclePlus,
 	UserRoundPlus,
 } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 export default function AdminPage() {
 	const { data: statsData, isLoading: isLoadingStats } = useStats();
 
 	const { data: dailyPostsData, isLoading: isLoadingDailyPosts } =
 		useDailyPosts(7);
-	const { data: dailyReportsData, isLoading: isLoadingDailyReport } = useDailyReport(7);
+	const { data: dailyReportsData, isLoading: isLoadingDailyReport } =
+		useDailyReport(7);
 
 	const { data: reportsData } = useReports();
+
+	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
 
 	// const onViewReport = (id: string) => {
 	// 	console.log('View report:', id);
@@ -41,12 +52,8 @@ export default function AdminPage() {
 	// 	// Call API to reject
 	// };
 
-	if (isLoadingStats) {
-		return <div>Loading...</div>;
-	}
-
 	return (
-		<div className="space-y-4">
+		<div data-aos="fade-up" className="space-y-4">
 			<div className="grid grid-cols-4 gap-4">
 				<ReportCard
 					num={statsData?.users.new_today || 0}
@@ -96,9 +103,7 @@ export default function AdminPage() {
 				{/* <AdminLineChart /> */}
 			</div>
 			{/* Table Report */}
-			<ReportDataTable
-				data={reportsData || []}
-			/>
+			<ReportDataTable data={reportsData || []} />
 		</div>
 	);
 }

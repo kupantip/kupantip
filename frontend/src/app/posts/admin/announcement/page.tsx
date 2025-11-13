@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 import {
 	AnnouncementForm,
 	AnnouncementSubmitData,
@@ -39,11 +41,19 @@ export default function AnnouncementPage() {
 		}
 	};
 
+	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
+
 	return (
-		<div className="container py-6">
-			<div className="max-w-2xl">
-				<div className="mb-8">
-					<h1 className="text-3xl font-bold tracking-tight">
+		<div data-aos="fade-up" className="container mx-auto py-6">
+			<div className="max-w-2xl mx-auto">
+				<div className="mb-4 text-center">
+					<h1 className="text-3xl font-bold tracking-tight text-green-1">
 						Create Announcement
 					</h1>
 					<p className="text-muted-foreground mt-2">

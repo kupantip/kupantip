@@ -21,10 +21,15 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, ThumbsUp, MessageSquare, ArrowRight } from 'lucide-react';
+import {
+	Heart,
+	ThumbsUp,
+	MessageSquare,
+	ArrowRight,
+	Loader2,
+} from 'lucide-react';
 import { formatMinutes } from '@/lib/time';
-
-// still using mock data
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
 	const {
@@ -42,6 +47,7 @@ export default function HomePage() {
 		isLoading: isLoadingSummary,
 		isError: isErrorSummary,
 	} = useSummaryStats();
+	const router = useRouter();
 
 	useEffect(() => {
 		AOS.init({
@@ -50,6 +56,10 @@ export default function HomePage() {
 			offset: 80,
 		});
 	}, []);
+
+	const handlePostClick = (postId: string) => {
+		router.push(`/posts/${postId}`);
+	};
 
 	const topSummaryStats = summaryStats
 		?.sort((a, b) => b.post_count - a.post_count)
@@ -97,48 +107,55 @@ export default function HomePage() {
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
-					{announcements?.map((post, i) => (
-						<div
-							key={i}
-							className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
+					{isLoadingAnnouncements ? (
+						<div className="flex justify-center items-center h-20">
+							<Loader2 className="animate-spin w-8 h-8 text-green-1" />
+						</div>
+					) : (
+						announcements?.map((post, i) => (
+							<div
+								key={i}
+								onClick={() => handlePostClick(post.id)}
+								className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
 									hover:bg-gray-100 dark:hover:bg-gray-800 
 									rounded-lg 
 									transition-all duration-300 ease-in-out 
-									hover:shadow-md"
-						>
-							<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
-								<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline cursor-pointer">
-									{post.title}
-								</h3>
-								<p className="text-sm text-gray-500">
-									<Badge
-										variant="secondary"
-										className="mr-2 bg-green-100 text-green-800"
-									>
-										{post.category_label}
-									</Badge>
-									{post.author_name} •{' '}
-									{formatMinutes(
-										post.minutes_since_announced
-									)}
-								</p>
+									hover:shadow-md cursor-pointer"
+							>
+								<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
+									<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline">
+										{post.title}
+									</h3>
+									<p className="text-sm text-gray-500">
+										<Badge
+											variant="secondary"
+											className="mr-2 bg-green-100 text-green-800"
+										>
+											{post.category_label}
+										</Badge>
+										{post.author_name} •{' '}
+										{formatMinutes(
+											post.minutes_since_announced
+										)}
+									</p>
+								</div>
+								<div className="flex flex-wrap gap-x-2">
+									<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+										<Heart
+											className="text-red-500"
+											fill="currentColor"
+										/>
+									</Button>
+									<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+										💬{' '}
+										<span className="ml-1 text-sm">
+											{post.comment_count}
+										</span>
+									</Button>
+								</div>
 							</div>
-							<div className="flex flex-wrap gap-x-2">
-								<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
-									<Heart
-										className="text-red-500"
-										fill="currentColor"
-									/>
-								</Button>
-								<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
-									💬{' '}
-									<span className="ml-1 text-sm">
-										{post.comment_count}
-									</span>
-								</Button>
-							</div>
-						</div>
-					))}
+						))
+					)}
 				</CardContent>
 			</Card>
 			{/* Hot Posts */}
@@ -149,103 +166,57 @@ export default function HomePage() {
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0">
-					{hotPosts?.map((post, i) => (
-						<div
-							key={i}
-							className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
+					{isLoadingHotPosts ? (
+						<div className="flex justify-center items-center h-20">
+							<Loader2 className="animate-spin w-8 h-8 text-green-1" />
+						</div>
+					) : (
+						hotPosts?.map((post, i) => (
+							<div
+								key={i}
+								onClick={() => handlePostClick(post.id)}
+								className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
 									hover:bg-gray-100 dark:hover:bg-gray-800 
 									rounded-lg 
 									transition-all duration-300 ease-in-out 
-									hover:shadow-md"
-						>
-							<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
-								<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline cursor-pointer">
-									{post.title}
-								</h3>
-								<p className="text-sm text-gray-500">
-									<Badge
-										variant="secondary"
-										className="mr-2 bg-green-100 text-green-800"
-									>
-										{post.category_label}
-									</Badge>
-									{post.author_name} •{' '}
-									{formatMinutes(post.minutes_since_posted)}
-								</p>
+									hover:shadow-md cursor-pointer"
+							>
+								<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
+									<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline">
+										{post.title}
+									</h3>
+									<p className="text-sm text-gray-500">
+										<Badge
+											variant="secondary"
+											className="mr-2 bg-green-100 text-green-800"
+										>
+											{post.category_label}
+										</Badge>
+										{post.author_name} •{' '}
+										{formatMinutes(
+											post.minutes_since_posted
+										)}
+									</p>
+								</div>
+								<div className="flex flex-wrap gap-x-2">
+									<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+										<Heart
+											className="text-red-500"
+											fill="currentColor"
+										/>
+									</Button>
+									<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+										💬{' '}
+										<span className="ml-1 text-sm">
+											{post.comment_count}
+										</span>
+									</Button>
+								</div>
 							</div>
-							<div className="flex flex-wrap gap-x-2">
-								<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
-									<Heart
-										className="text-red-500"
-										fill="currentColor"
-									/>
-								</Button>
-								<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
-									💬{' '}
-									<span className="ml-1 text-sm">
-										{post.comment_count}
-									</span>
-								</Button>
-							</div>
-						</div>
-					))}
+						))
+					)}
 				</CardContent>
 			</Card>
-			{/* Summary Section */}
-			{/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-				{topSummaryStats?.map((item) => (
-					<Card
-						key={item.category_id}
-						className="shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-xl border-t-4 flex flex-col"
-						style={{
-							borderTopColor: item.category_color || '#10B981',
-						}}
-					>
-						<CardHeader className="pb-1 pt-2">
-							<CardTitle className="text-xl font-bold text-gray-800 dark:text-gray-100 text-center">
-								{item.category_label}
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="flex flex-col items-center justify-center p-1 flex-grow">
-							<p className="text-3xl font-bold text-gray-900 dark:text-white">
-								{item.post_count.toLocaleString()}
-							</p>
-							<p className="text-xs text-gray-500 dark:text-gray-400">
-								Total Posts
-							</p>
-							<div className="flex space-x-4 mt-1 text-xs text-gray-600 dark:text-gray-300">
-								<div className="flex items-center">
-									<ThumbsUp className="w-3 h-3 mr-1" />
-									<span>
-										{item.total_vote_count.toLocaleString()}
-									</span>
-								</div>
-								<div className="flex items-center">
-									<MessageSquare className="w-3 h-3 mr-1" />
-									<span>
-										{item.total_comment.toLocaleString()}
-									</span>
-								</div>
-							</div>
-						</CardContent>
-						<CardFooter className="p-1 mt-auto">
-							<a
-								href={`/posts/category/${item.category_id}`}
-								className="w-full"
-							>
-								<Button
-									variant="ghost"
-									size="sm"
-									className="w-full text-green-1 hover:bg-green-50 dark:hover:bg-gray-800"
-								>
-									View More{' '}
-									<ArrowRight className="w-4 h-4 ml-2" />
-								</Button>
-							</a>
-						</CardFooter>
-					</Card>
-				))}
-			</div> */}
 		</div>
 	);
 }

@@ -11,8 +11,9 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from '@/components/ui/empty';
-import { Loader2, Folder } from 'lucide-react';
+import { Loader2, Folder, ArrowLeft } from 'lucide-react';
 import { usePostDetail } from '@/services/post/post';
+import router from 'next/router';
 
 export default function PostPage() {
 	const params = useParams();
@@ -20,13 +21,15 @@ export default function PostPage() {
 		? params.postId[0]
 		: params.postId;
 
-	const { data: post, isLoading: isLoadingPost, refetch: refetchPost } = usePostDetail(
-		postId || ''
-	);
+	const {
+		data: post,
+		isLoading: isLoadingPost,
+		refetch: refetchPost,
+	} = usePostDetail(postId || '');
 
-	const refreshPage = async() => {
+	const refreshPage = async () => {
 		refetchPost();
-	}
+	};
 
 	// Loading state
 	if (isLoadingPost) {
@@ -83,5 +86,9 @@ export default function PostPage() {
 	}
 
 	// Display post
-	return <PostDetail post={post} refresh={refreshPage} />;
+	return (
+		<div>
+			<PostDetail post={post} refresh={refreshPage} />
+		</div>
+	);
 }

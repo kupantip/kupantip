@@ -31,8 +31,8 @@ const HOVER_OPEN_DELAY_MS = 250;
 
 const topicItems = [
 	{ title: 'Important Post', url: '/posts/priority', icon: '📌' },
-	{ title: 'Games', url: '/games', icon: '🎮' },
-	{ title: 'Technology', url: '/technology', icon: '💻' },
+	// { title: 'Games', url: '/games', icon: '🎮' },
+	// { title: 'Technology', url: '/technology', icon: '💻' },
 ];
 
 export function AppSidebar() {
@@ -51,30 +51,6 @@ export function AppSidebar() {
 
 	const expanded = open || hovered;
 
-	const handleMouseEnter = () => {
-		if (open) return;
-		if (hoverTimer.current) window.clearTimeout(hoverTimer.current);
-		hoverTimer.current = window.setTimeout(() => {
-			setHovered(true);
-			hoverTimer.current = null;
-		}, HOVER_OPEN_DELAY_MS);
-	};
-
-	const handleMouseLeave = () => {
-		if (hoverTimer.current) {
-			window.clearTimeout(hoverTimer.current);
-			hoverTimer.current = null;
-		}
-
-		if (!open) setHovered(false);
-	};
-
-	useEffect(() => {
-		return () => {
-			if (hoverTimer.current) window.clearTimeout(hoverTimer.current);
-		};
-	}, []);
-
 	const toggleCollapse = () => {
 		if (hoverTimer.current) {
 			window.clearTimeout(hoverTimer.current);
@@ -84,13 +60,17 @@ export function AppSidebar() {
 		toggleSidebar();
 	};
 
+	useEffect(() => {
+		return () => {
+			if (hoverTimer.current) window.clearTimeout(hoverTimer.current);
+		};
+	}, []);
+
 	return (
 		<div
 			className={`group relative h-full border-r bg-grey-1 transition-[width] duration-200 ease-out ${
 				expanded ? 'w-64' : 'w-12'
 			}`}
-			onMouseEnter={handleMouseEnter}
-			onMouseLeave={handleMouseLeave}
 			data-expanded={expanded}
 		>
 			{/* Toggle button */}
@@ -180,7 +160,7 @@ export function AppSidebar() {
 
 					{topicItems.map((item) => (
 						<li key={item.title}>
-							<a
+							<Link
 								href={item.url}
 								className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
 									expanded
@@ -192,7 +172,7 @@ export function AppSidebar() {
 							>
 								<span className="text-base">{item.icon}</span>
 								{expanded && <span>{item.title}</span>}
-							</a>
+							</Link>
 						</li>
 					))}
 
@@ -201,6 +181,12 @@ export function AppSidebar() {
 							{expanded && (
 								<li className="pt-2">
 									<div className="mx-2 border-t border-gray-200" />
+								</li>
+							)}
+
+							{expanded && (
+								<li className="px-2 pt-3 mb-2 text-[11px] font-semibold uppercase tracking-wide text-white">
+									Admin
 								</li>
 							)}
 							<li>

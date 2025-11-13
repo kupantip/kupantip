@@ -43,5 +43,8 @@ export const useCategories = () => {
 		queryKey: ['categories'],
 		queryFn: fetchCategories,
 		staleTime: 5 * 60 * 1000, // 5 minutes
+		gcTime: 10 * 60 * 1000, // 10 minutes cache time (formerly cacheTime)
+		refetchOnMount: false, // Don't refetch when component mounts if data exists
+		refetchOnWindowFocus: false, // Don't refetch when window regains focus
 	});
 };
