@@ -76,6 +76,37 @@ export const getActiveAnnouncements = async (): Promise<AnnouncementRow[]> => {
 	return result.recordset;
 };
 
+export const getAnnouncementById = async (
+	announcement_id: string
+): Promise<AnnouncementRow | null> => {
+	const pool = await getDbConnection();
+	const request = pool.request();
+
+	request.input('announcement_id', sql.UniqueIdentifier, announcement_id);
+
+	const result = await request.query(`
+		SELECT 
+			a.id,
+			a.author_id,
+			a.title,
+			a.body_md,
+			a.create_at,
+			a.start_at,
+			a.end_at,
+			a.delete_at,
+			u.handle AS author_handle,
+			u.display_name AS author_display_name,
+			ur.role AS author_role,
+			DATEDIFF(MINUTE, a.start_at, GETDATE()) AS minutes_since_announced
+		FROM [dbo].[announcement] a
+		LEFT JOIN [dbo].[app_user] u ON a.author_id = u.id
+		LEFT JOIN [dbo].[user_role] ur ON u.id = ur.user_id
+		WHERE a.id = @announcement_id AND a.delete_at IS NULL
+	`);
+
+	return result.recordset.length > 0 ? result.recordset[0] : null;
+};
+
 export const deleteAnnouncement = async (
 	announcement_id: string
 ): Promise<boolean> => {

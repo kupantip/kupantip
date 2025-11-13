@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
 	createAnnouncement,
 	getActiveAnnouncements,
+	getAnnouncementById,
 	deleteAnnouncement,
 } from '../models/announcement.model';
 
@@ -75,6 +76,32 @@ export const getAnnouncementsController = async (
 		return res.status(200).json({
 			announcements,
 		});
+	} catch (err) {
+		next(err);
+	}
+};
+
+export const getAnnouncementByIdController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const { announcement_id } = req.params;
+
+		if (!announcement_id) {
+			return res
+				.status(400)
+				.json({ message: 'announcement_id is required' });
+		}
+
+		const announcement = await getAnnouncementById(announcement_id);
+
+		if (!announcement) {
+			return res.status(404).json({ message: 'Announcement not found' });
+		}
+
+		return res.status(200).json(announcement);
 	} catch (err) {
 		next(err);
 	}
