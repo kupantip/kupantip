@@ -82,21 +82,21 @@ export default function ProfileDropDown() {
 								<span>My Posts</span>
 							</Link>
 						</DropdownMenuItem>
-						<DropdownMenuItem asChild disabled={!isAuthenticated}>
+						{/* <DropdownMenuItem asChild disabled={!isAuthenticated}>
 							<Link href="/bookmarks" className="cursor-pointer">
 								<Bookmark className="mr-2 h-4 w-4" />
 								<span>Saved Posts</span>
 							</Link>
-						</DropdownMenuItem>
+						</DropdownMenuItem> */}
 					</DropdownMenuGroup>
 					<DropdownMenuSeparator />
 					<DropdownMenuGroup>
-						<DropdownMenuItem asChild disabled={!isAuthenticated}>
+						{/* <DropdownMenuItem asChild disabled={!isAuthenticated}>
 							<Link href="/settings" className="cursor-pointer">
 								<Settings className="mr-2 h-4 w-4" />
 								<span>Settings</span>
 							</Link>
-						</DropdownMenuItem>
+						</DropdownMenuItem> */}
 						<DropdownMenuItem asChild disabled={!isAuthenticated}>
 							<Link
 								href="/notifications"

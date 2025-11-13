@@ -10,6 +10,7 @@ import {
 	PersonStanding,
 	BriefcaseBusiness,
 	Megaphone,
+	Newspaper,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -107,10 +108,12 @@ export function AppSidebar() {
 								expanded ? 'justify-start' : 'justify-center'
 							}`}
 							aria-label={expanded ? undefined : 'Hot Posts'}
-							title={!expanded ? 'Hot Posts' : undefined}
+							title={!expanded ? 'News' : undefined}
 						>
-							<span className="text-base">🔥</span>
-							{expanded && <span>Hot Posts</span>}
+							<span className="text-base ">
+								<Newspaper className="h-5 w-5 shrink-0" />
+							</span>
+							{expanded && <span>News</span>}
 						</Link>
 					</li>
 					{!isLoadingCategories &&
@@ -137,7 +140,7 @@ export function AppSidebar() {
 												: undefined
 										}
 									>
-										<Icon className="h-4 w-4 shrink-0" />
+										<Icon className="h-5 w-5 shrink-0" />
 										{expanded && (
 											<span>{category.label}</span>
 										)}

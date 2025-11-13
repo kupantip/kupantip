@@ -17,6 +17,7 @@ import { PostItem } from '@/components/posts/PostItem';
 import { usePosts } from '@/services/post/post';
 import { useParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function PostCategoryPage() {
 	const params = useParams();
@@ -52,12 +53,12 @@ export default function PostCategoryPage() {
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
-						<BreadcrumbLink
+						<Link
 							href="/posts"
 							className="bg-green-3 text-black py-1 px-2 rounded-lg hover:scale-102 hover:bg-emerald-600 hover:text-white border-1"
 						>
 							Home
-						</BreadcrumbLink>
+						</Link>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
