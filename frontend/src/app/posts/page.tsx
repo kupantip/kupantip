@@ -144,20 +144,6 @@ export default function HomePage() {
 										)}
 									</p>
 								</div>
-								<div className="flex flex-wrap gap-x-2">
-									<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
-										<Heart
-											className="text-red-500"
-											fill="currentColor"
-										/>
-									</Button>
-									<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
-										💬{' '}
-										<span className="ml-1 text-sm">
-											{post.comment_count}
-										</span>
-									</Button>
-								</div>
 							</div>
 						))
 					)}
@@ -206,9 +192,20 @@ export default function HomePage() {
 								<div className="flex flex-wrap gap-x-2">
 									<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
 										<Heart
-											className="text-red-500"
-											fill="currentColor"
+											className={`${
+												post.liked_by_requesting_user
+													? 'text-red-500'
+													: 'text-gray-400'
+											}`}
+											fill={
+												post.liked_by_requesting_user
+													? 'currentColor'
+													: 'none'
+											}
 										/>
+										<span className="ml-1 text-sm text-black">
+											{post.vote_count}
+										</span>
 									</Button>
 									<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
 										💬{' '}
