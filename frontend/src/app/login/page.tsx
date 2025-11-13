@@ -118,7 +118,8 @@ export default function LoginPage() {
 					{loading ? 'Signing In...' : 'Sign In'}
 				</Button>
 
-				<hr className="border-t border-gray-300 mt-6 mb-6" />
+				<hr className="border-t border-gray-300 mt-4 mb-4" />
+
 				<Link
 					href="/posts"
 					className="text-center block text-blue-600 hover:underline"
@@ -127,7 +128,9 @@ export default function LoginPage() {
 						router.push('/posts');
 					}}
 				>
-					GO TO HOME
+					<Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg flex items-center justify-center cursor-pointer">
+						Continue to KU Pantip
+					</Button>
 				</Link>
 			</form>
 

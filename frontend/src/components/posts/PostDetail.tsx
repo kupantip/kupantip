@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
-import { getCommentByPostId } from '@/services/dashboard/getCommentByPostId';
+import { useCommentsByPostId } from '@/services/dashboard/getCommentByPostId';
 import CommentBox from './CommentBox';
 import { deletePost } from '@/services/user/delete_post';
 import { deleteComment } from '@/services/delete_comment';
@@ -410,11 +410,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		data: commentsData,
 		isLoading: loadingComments,
 		refetch: refreshComments,
-	} = useQuery({
-		queryKey: ['comments', post.id, currentUserId],
-		queryFn: () => getCommentByPostId(post.id),
-		enabled: !!post.id,
-	});
+	} = useCommentsByPostId(post.id);
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {

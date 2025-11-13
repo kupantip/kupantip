@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
-import { postComment } from '@/services/dashboard/postComment';
+import { usePostComment } from '@/services/dashboard/postComment';
 import { updateComment } from '@/services/user/updateComment';
 import { AlertTriangle, Image as ImageIcon } from 'lucide-react';
 import {
@@ -17,7 +17,7 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from '@/components/ui/alert-dialog';
 import { useSidebar } from '../ui/sidebar';
 
 interface CommentBoxProps {
@@ -26,10 +26,10 @@ interface CommentBoxProps {
 	parentId: string;
 	refresh: () => void;
 	onClose?: () => void;
-    editComment?: {
-        id: string;
-        body_md: string;
-    };
+	editComment?: {
+		id: string;
+		body_md: string;
+	};
 }
 
 export default function CommentBox({
@@ -38,16 +38,19 @@ export default function CommentBox({
 	parentId,
 	refresh,
 	onClose,
-	editComment
+	editComment,
 }: CommentBoxProps) {
 	const { status } = useSession();
 	const isLoggedIn = status === 'authenticated';
 
 	const isEditing = !!editComment;
 
-	const [comment, setComment] = useState(isEditing ? editComment.body_md : '');
+	const [comment, setComment] = useState(
+		isEditing ? editComment.body_md : ''
+	);
 	const [showActions, setShowActions] = useState(isEditing);
 
+	const postCommentMutation = usePostComment();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const [banInfo, setBanInfo] = useState<{
@@ -56,7 +59,7 @@ export default function CommentBox({
 		end_at: string;
 	} | null>(null);
 
-	const {open: isSidebarOpen} = useSidebar();
+	const { open: isSidebarOpen } = useSidebar();
 
 	if (!postId) {
 		postId = '';
@@ -68,79 +71,85 @@ export default function CommentBox({
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
-		if (!comment.trim()){
+		if (!comment.trim()) {
 			return;
 		}
 
 		setIsSubmitting(true);
 
 		try {
-			if (isEditing){
-				const success = await updateComment({body_md : comment, id: editComment.id});
+			if (isEditing) {
+				const success = await updateComment({
+					body_md: comment,
+					id: editComment.id,
+				});
 				if (success) {
 					toast.success('Comment updated successfully!');
-					if (onClose){
+					if (onClose) {
 						onClose();
 					}
 				}
 			} else {
-					const success = await postComment({
-						content: {
-							post_id: postId,
-							parent_id: parentId,
-							body_md: comment
-						}
-					});
+				await postCommentMutation.mutateAsync({
+					content: {
+						post_id: postId,
+						parent_id: parentId,
+						body_md: comment,
+					},
+				});
 
-					if (success && isLoggedIn) {
-						toast.message('Comment Succuss!');
-						setComment('');
-						setShowActions(false);
-						if (onClose) {
-							onClose();
-						}
+				if (isLoggedIn) {
+					toast.message('Comment Succuss!');
+					setComment('');
+					setShowActions(false);
+					if (onClose) {
+						onClose();
 					}
 				}
+			}
 
 			refresh();
-
-		} catch (err : unknown) {
-			console.error("Failed to submit comment: ", err);
+		} catch (err: unknown) {
+			console.error('Failed to submit comment: ', err);
 
 			if (
-				typeof err === "object" &&
+				typeof err === 'object' &&
 				err !== null &&
-				"status" in err &&
+				'status' in err &&
 				(err as { status?: number }).status === 403
 			) {
-				const e = err as { message?: string; reason?: string; end_at?: string };
+				const e = err as {
+					message?: string;
+					reason?: string;
+					end_at?: string;
+				};
 				setBanInfo({
-					message: e.message ?? "You are banned",
-					reason: e.reason ?? "-",
-					end_at: e.end_at ?? "-",
+					message: e.message ?? 'You are banned',
+					reason: e.reason ?? '-',
+					end_at: e.end_at ?? '-',
 				});
 				return;
 			}
 
 			if (isEditing) {
-				toast.error("Failed to update comment. Please try again.");
+				toast.error('Failed to update comment. Please try again.');
 			} else if (!isLoggedIn) {
-				toast.error("Please login first to comment.");
+				toast.error('Please login first to comment.');
 			} else {
-				toast.error("Failed to post comment. Please try again.");
+				toast.error('Failed to post comment. Please try again.');
 			}
 		} finally {
 			setIsSubmitting(false);
 		}
 	}
 
-    const handleCancel = () => {
-        setComment(isEditing ? editComment.body_md : '');
-        setShowActions(isEditing);
-        if (onClose) {
-            onClose();
-        }
-    };
+	const handleCancel = () => {
+		setComment(isEditing ? editComment.body_md : '');
+		setShowActions(isEditing);
+		if (onClose) {
+			onClose();
+		}
+	};
 
 	return (
 		<form
@@ -152,11 +161,13 @@ export default function CommentBox({
 			)}
 		>
 			<Textarea
-				placeholder={isEditing ? "Editing comment..." : "Write a comment..."}
+				placeholder={
+					isEditing ? 'Editing comment...' : 'Write a comment...'
+				}
 				value={comment}
 				onChange={(e) => setComment(e.target.value)}
 				onFocus={() => {
-					if(isEditing){
+					if (isEditing) {
 						return;
 					}
 					setShowActions(true);
@@ -180,8 +191,8 @@ export default function CommentBox({
 						<Button
 							variant="ghost"
 							onClick={handleCancel}
-                            className='cursor-pointer text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-                            size='sm'
+							className="cursor-pointer text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+							size="sm"
 							disabled={isSubmitting}
 						>
 							Cancel
@@ -189,42 +200,56 @@ export default function CommentBox({
 						<Button
 							type="submit"
 							disabled={!comment.trim() || isSubmitting}
-							className='cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50'
-							size='sm'
+							className="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+							size="sm"
 						>
-							{isSubmitting ? (isEditing ? 'Saving...' : 'Posting...') : (isEditing ? 'Save' : 'Comment')}
+							{isSubmitting
+								? isEditing
+									? 'Saving...'
+									: 'Posting...'
+								: isEditing
+								? 'Save'
+								: 'Comment'}
 						</Button>
 					</div>
 				)}
 			</div>
 
 			<AlertDialog open={!!banInfo} onOpenChange={() => setBanInfo}>
-				<AlertDialogContent className={isSidebarOpen ? "ml-32" : "ml-6"}>
+				<AlertDialogContent
+					className={isSidebarOpen ? 'ml-32' : 'ml-6'}
+				>
 					<AlertDialogHeader>
-						<div className='flex gap-2 text-red-500 items-center'>
-							<AlertTriangle className='w-5 h-5'/>
+						<div className="flex gap-2 text-red-500 items-center">
+							<AlertTriangle className="w-5 h-5" />
 							<AlertDialogTitle>
 								You&apos;ve been banned from commenting.
 							</AlertDialogTitle>
 						</div>
 						<AlertDialogDescription>
-                			<strong className='text-black/75'>Reason:</strong> {banInfo?.reason}
+							<strong className="text-black/75">Reason:</strong>{' '}
+							{banInfo?.reason}
 						</AlertDialogDescription>
 						<AlertDialogDescription>
-							<strong className='text-black/75'>Ban expires on:</strong>{" "}
+							<strong className="text-black/75">
+								Ban expires on:
+							</strong>{' '}
 							{banInfo?.end_at
-							? new Date(banInfo.end_at).toLocaleString("en-En", {
-								dateStyle: 'long',
-								timeStyle: 'short'
-							})
-							: "-"}
+								? new Date(banInfo.end_at).toLocaleString(
+										'en-En',
+										{
+											dateStyle: 'long',
+											timeStyle: 'short',
+										}
+								  )
+								: '-'}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel
 							type="button"
 							onClick={() => setBanInfo(null)}
-							className='cursor-pointer w-full'
+							className="cursor-pointer w-full"
 						>
 							Close
 						</AlertDialogCancel>
@@ -232,6 +257,5 @@ export default function CommentBox({
 				</AlertDialogContent>
 			</AlertDialog>
 		</form>
-
 	);
 }

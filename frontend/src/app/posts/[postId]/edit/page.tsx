@@ -6,7 +6,7 @@ import { useDropzone } from 'react-dropzone';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCategories } from '@/services/post/category';
 import { Post } from '@/types/dashboard/post';
-import { getPostById } from '@/services/dashboard/getPostById';
+import { usePostById } from '@/services/dashboard/getPostById';
 import { updatePost } from '@/services/user/updatePost';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -58,11 +58,13 @@ export default function EditPostPage() {
 
 	const queryClient = useQueryClient();
 
+	const { data: posts, isLoading: isLoadingPost } = usePostById(postId);
+	const post = posts?.[0] || null;
+
 	const [loading, setLoading] = useState(false);
 
 	const [tab, setTab] = useState<'text' | 'media'>('text');
 
-	const [post, setPost] = useState<Post | null>(null);
 	const [title, setTitle] = useState('');
 	const [body, setBody] = useState('');
 	const [category_id, setCategoryid] = useState('');
@@ -102,36 +104,18 @@ export default function EditPostPage() {
 	});
 
 	useEffect(() => {
-		async function fetchPost() {
-			try {
-				const fetchedPosts: Post[] = await getPostById(postId);
-				if (fetchedPosts.length === 0) {
-					console.error('Post not found');
-					return;
-				}
+		if (post) {
+			setTitle(post.title);
+			setBody(post.body_md || '');
+			setCategoryid(post.category_id || '');
 
-				const fetchedPost = fetchedPosts[0];
-				setPost(fetchedPost);
-				setTitle(fetchedPost.title);
-				setBody(fetchedPost.body_md || '');
-				setCategoryid(fetchedPost.category_id || '');
-
-				if (
-					fetchedPost.attachments &&
-					fetchedPost.attachments.length > 0
-				) {
-					setTab('media');
-				}
-
-				AOS.refresh();
-			} catch (err) {
-				console.error('Failed to fetch post', err);
-			} finally {
-				setLoading(false);
+			if (post.attachments && post.attachments.length > 0) {
+				setTab('media');
 			}
+
+			AOS.refresh();
 		}
-		fetchPost();
-	}, [postId]);
+	}, [post]);
 
 	const handleSelectCategory = (value: string) => {
 		setCategoryid(value);
@@ -186,8 +170,12 @@ export default function EditPostPage() {
 		setAttachmentsToDelete((prev) => [...prev, attachmentId]);
 	};
 
-	if (!post) {
-		return;
+	if (isLoadingPost || !post) {
+		return (
+			<div className="flex justify-center items-center h-full">
+				<div className="text-gray-500">Loading...</div>
+			</div>
+		);
 	}
 
 	const existingAttachments: ExistingAttachment[] = post.attachments

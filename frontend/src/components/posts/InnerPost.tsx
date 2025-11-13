@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
-import { getCommentByPostId } from '@/services/dashboard/getCommentByPostId';
+import { useCommentsByPostId } from '@/services/dashboard/getCommentByPostId';
 import CommentBox from './CommentBox';
 import { deletePost } from '@/services/user/delete_post';
 import {
@@ -103,6 +103,7 @@ function Comment({ comment }: CommentProps) {
 						className="w-full max-w-2xl mb-4"
 						postId={comment.post_id}
 						parentId={comment.id}
+						refresh={() => {}}
 					/>
 				</div>
 			)}
@@ -120,30 +121,13 @@ function Comment({ comment }: CommentProps) {
 }
 
 export default function InnerPost({ post }: PostProps) {
-	const [commentsData, setCommentsData] = useState<t.CommentsResponse | null>(
-		null
-	);
-
 	const router = useRouter();
 	const { userVote, updateUserVote } = useUserVote(post.id, post.author_id);
 	const [menuOpen, setMenuOpen] = useState(false);
 
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		const fetchComments = async () => {
-			try {
-				const data = await getCommentByPostId(post.id);
-				setCommentsData(data);
-			} catch (error) {
-				console.error(error);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchComments();
-	}, [post.id]);
+	const { data: commentsData, isLoading: loading } = useCommentsByPostId(
+		post.id
+	);
 
 	if (loading) return <p>Loading comments...</p>;
 
@@ -213,17 +197,17 @@ export default function InnerPost({ post }: PostProps) {
 		router.push(`/dashboard/${post.id}/edit`);
 	};
 
-    const handleDelete = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setMenuOpen(false);
-        try {
-            await deletePost(post.id);
-            console.log('Delete post', post.id, ' success');
-            router.push('/dashboard');
-        } catch {
-            console.log('Delete Failed');
-        }
-    };
+	const handleDelete = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setMenuOpen(false);
+		try {
+			await deletePost(post.id);
+			console.log('Delete post', post.id, ' success');
+			router.push('/dashboard');
+		} catch {
+			console.log('Delete Failed');
+		}
+	};
 
 	return (
 		<div className="flex flex-col items-center">
@@ -309,6 +293,7 @@ export default function InnerPost({ post }: PostProps) {
 				className="w-full max-w-2xl mb-4"
 				postId={post.id}
 				parentId=""
+				refresh={() => {}}
 			/>
 
 			{/* Comments section */}
