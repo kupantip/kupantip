@@ -32,14 +32,6 @@ export default function PostCategoryPage() {
 		typeof categoryId === 'string' ? categoryId : ''
 	);
 
-	if (!categoryId) {
-		return (
-			<div className="p-4 text-center text-gray-500">
-				Invalid category.
-			</div>
-		);
-	}
-
 	useEffect(() => {
 		AOS.init({
 			duration: 500,
@@ -47,6 +39,14 @@ export default function PostCategoryPage() {
 			offset: 80,
 		});
 	}, []);
+
+	if (!categoryId) {
+		return (
+			<div className="p-4 text-center text-gray-500">
+				Invalid category.
+			</div>
+		);
+	}
 
 	return (
 		<div
