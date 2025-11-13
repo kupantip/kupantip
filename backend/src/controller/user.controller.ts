@@ -6,6 +6,7 @@ import {
 	getResetToken,
 	getResetTokenById,
 	getUserByEmail,
+	getUserStats,
 	resetPassword,
 	signup,
 } from '../models/user.model';
@@ -276,6 +277,30 @@ export const resetPasswordController = async (
 		await resetPassword(validateData.rt_id, validateData.new_password);
 
 		return res.status(200).json({ message: 'Password reset successful' });
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const getUserStatsController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const { user_id } = req.params;
+
+		if (!user_id) {
+			return res.status(400).json({ message: 'user_id is required' });
+		}
+
+		const stats = await getUserStats(user_id);
+
+		if (!stats) {
+			return res.status(404).json({ message: 'User not found' });
+		}
+
+		return res.status(200).json(stats);
 	} catch (error) {
 		next(error);
 	}

@@ -5,6 +5,7 @@ import {
 	forgetPasswordController,
 	verifyTokenController,
 	resetPasswordController,
+	getUserStatsController,
 } from '../controller/user.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { checkSuspend } from '../middleware/banCheck.middleware';
@@ -18,6 +19,8 @@ router.get('/', (req, res) => {
 router.get('/profile', authMiddleware, checkSuspend, (req, res) => {
 	res.json({ user: req.user });
 });
+
+router.get('/stats/:user_id', getUserStatsController);
 
 // POST /login สำหรับ auth
 router.post('/login', loginController);

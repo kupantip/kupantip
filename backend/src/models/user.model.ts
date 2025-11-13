@@ -1,5 +1,5 @@
 import { getDbConnection } from '../database/mssql.database';
-import { ConnectionPool, VarChar, NVarChar } from 'mssql'; // เพิ่ม NVarChar
+import { ConnectionPool, VarChar, NVarChar, UniqueIdentifier } from 'mssql';
 import bcrypt from 'bcrypt';
 
 export const signup = async (
@@ -207,5 +207,119 @@ export const resetPassword = async (rt_id: string, newPassword: string) => {
 		return { message: 'Password reset successful' };
 	} catch (err) {
 		return { message: 'Password reset failed', error: err };
+	}
+};
+
+export type UserStats = {
+	user_id: string;
+	handle: string;
+	display_name: string;
+	email: string;
+	role: string;
+	created_at: Date;
+	posts_count: number;
+	comments_count: number;
+	upvotes_given: number;
+	downvotes_given: number;
+	upvotes_received: number;
+	downvotes_received: number;
+};
+
+export const getUserStats = async (
+	user_id: string
+): Promise<UserStats | null> => {
+	try {
+		const cnt: ConnectionPool = await getDbConnection();
+
+		const result = await cnt
+			.request()
+			.input('user_id', UniqueIdentifier, user_id).query(`
+				SELECT 
+					u.id AS user_id,
+					u.handle,
+					u.display_name,
+					u.email,
+					ur.role,
+					u.created_at,
+					
+					-- Posts count
+					(SELECT COUNT(*) 
+					 FROM [dbo].[post] p 
+					 WHERE p.author_id = u.id AND p.deleted_at IS NULL) AS posts_count,
+					
+					-- Comments count
+					(SELECT COUNT(*) 
+					 FROM [dbo].[comment] c 
+					 WHERE c.author_id = u.id AND c.deleted_at IS NULL) AS comments_count,
+					
+					-- Upvotes given (posts + comments)
+					(SELECT COUNT(*) 
+					 FROM [dbo].[post_vote] pv 
+					 WHERE pv.user_id = u.id AND pv.value = 1) +
+					(SELECT COUNT(*) 
+					 FROM [dbo].[comment_vote] cv 
+					 WHERE cv.user_id = u.id AND cv.value = 1) AS upvotes_given,
+					
+					-- Downvotes given (posts + comments)
+					(SELECT COUNT(*) 
+					 FROM [dbo].[post_vote] pv 
+					 WHERE pv.user_id = u.id AND pv.value = -1) +
+					(SELECT COUNT(*) 
+					 FROM [dbo].[comment_vote] cv 
+					 WHERE cv.user_id = u.id AND cv.value = -1) AS downvotes_given,
+					
+					-- Upvotes received on posts
+					(SELECT COUNT(*) 
+					 FROM [dbo].[post_vote] pv
+					 INNER JOIN [dbo].[post] p ON pv.post_id = p.id
+					 WHERE p.author_id = u.id AND pv.value = 1 AND p.deleted_at IS NULL) AS upvotes_received_posts,
+					
+					-- Upvotes received on comments
+					(SELECT COUNT(*) 
+					 FROM [dbo].[comment_vote] cv
+					 INNER JOIN [dbo].[comment] c ON cv.comment_id = c.id
+					 WHERE c.author_id = u.id AND cv.value = 1 AND c.deleted_at IS NULL) AS upvotes_received_comments,
+					
+					-- Downvotes received on posts
+					(SELECT COUNT(*) 
+					 FROM [dbo].[post_vote] pv
+					 INNER JOIN [dbo].[post] p ON pv.post_id = p.id
+					 WHERE p.author_id = u.id AND pv.value = -1 AND p.deleted_at IS NULL) AS downvotes_received_posts,
+					
+					-- Downvotes received on comments
+					(SELECT COUNT(*) 
+					 FROM [dbo].[comment_vote] cv
+					 INNER JOIN [dbo].[comment] c ON cv.comment_id = c.id
+					 WHERE c.author_id = u.id AND cv.value = -1 AND c.deleted_at IS NULL) AS downvotes_received_comments
+					
+				FROM [dbo].[app_user] u
+				LEFT JOIN [dbo].[user_role] ur ON u.id = ur.user_id
+				WHERE u.id = @user_id
+			`);
+
+		if (result.recordset.length === 0) {
+			return null;
+		}
+
+		const row = result.recordset[0];
+
+		return {
+			user_id: row.user_id,
+			handle: row.handle,
+			display_name: row.display_name,
+			email: row.email,
+			role: row.role,
+			created_at: row.created_at,
+			posts_count: row.posts_count,
+			comments_count: row.comments_count,
+			upvotes_given: row.upvotes_given,
+			downvotes_given: row.downvotes_given,
+			upvotes_received:
+				row.upvotes_received_posts + row.upvotes_received_comments,
+			downvotes_received:
+				row.downvotes_received_posts + row.downvotes_received_comments,
+		};
+	} catch (err) {
+		throw new Error('Failed to get user stats: ' + err);
 	}
 };
