@@ -42,6 +42,60 @@ export function useAnnouncements() {
 		queryKey: ['announcements'],
 		queryFn: fetchAnnouncements,
 		staleTime: 5 * 60 * 1000, // 5 minutes
+		refetchOnMount: 'always',
+	});
+}
+
+export type AnnouncementDetail = {
+	id: string;
+	author_id: string;
+	title: string;
+	body_md: string;
+	create_at: string;
+	start_at: string;
+	end_at: string;
+	delete_at: string | null;
+	author_handle: string;
+	author_display_name: string;
+	author_role: string;
+	minutes_since_announced: number;
+};
+
+export async function fetchAnnouncementById(
+	announcement_id: string
+): Promise<AnnouncementDetail> {
+	try {
+		const session = await getSession();
+
+		const header = {
+			Authorization: `Bearer ${session?.user?.accessToken}`,
+		};
+
+		const response = await instance.get<AnnouncementDetail>(
+			`/announcement/${announcement_id}`,
+			{
+				headers: header,
+			}
+		);
+		return response.data;
+	} catch (error: unknown) {
+		if (axios.isAxiosError(error)) {
+			throw new Error(
+				`Failed to fetch announcement: ${error.response?.status} ${error.response?.statusText}`
+			);
+		} else if (error instanceof Error) {
+			throw new Error(error.message);
+		} else {
+			throw new Error(String(error));
+		}
+	}
+}
+
+export function useAnnouncementById(announcement_id: string) {
+	return useQuery<AnnouncementDetail, Error>({
+		queryKey: ['announcement', announcement_id],
+		queryFn: () => fetchAnnouncementById(announcement_id),
+		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 }
 

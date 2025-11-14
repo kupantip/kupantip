@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-
+import { ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { sendPasswordResetEmail } from '@/services/user/user';
@@ -15,6 +16,7 @@ type FormProps = {
 };
 
 export default function ForgetPasswordPage() {
+	const router = useRouter();
 	const {
 		control,
 		handleSubmit,
@@ -37,49 +39,60 @@ export default function ForgetPasswordPage() {
 
 	return (
 		<div className="flex items-center justify-center min-h-screen bg-gray-100">
-			<Card className="w-full max-w-md">
-				<CardHeader>
-					<CardTitle className="text-center">
-						Forgot Password
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<form
-						onSubmit={handleSubmit(handleSubmitForm)}
-						className="space-y-4"
-					>
-						<Controller
-							name="email"
-							control={control}
-							defaultValue=""
-							render={({ field }) => (
-								<Input
-									type="email"
-									placeholder="Enter your email"
-									{...field}
-									required
-								/>
-							)}
-						/>
-
-						<Button
-							type="submit"
-							disabled={isTransition}
-							className="w-full"
+			<div className="relative w-full max-w-md">
+				<Card className="w-full">
+					<CardHeader>
+						<CardTitle className="text-center">
+							Forgot Password
+						</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<button
+							onClick={() => router.back()}
+							className="absolute left-2 top-2 flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
+							aria-label="Go back"
 						>
-							{isTransition ? 'Sending...' : 'Send Reset Link'}
-						</Button>
-					</form>
+							<ArrowLeft className="w-5 h-5" />
+						</button>
+						<form
+							onSubmit={handleSubmit(handleSubmitForm)}
+							className="space-y-4"
+						>
+							<Controller
+								name="email"
+								control={control}
+								defaultValue=""
+								render={({ field }) => (
+									<Input
+										type="email"
+										placeholder="Enter your email"
+										{...field}
+										required
+									/>
+								)}
+							/>
 
-					{errors.email && (
-						<Alert className="mt-4 bg-red-50 border-red-200">
-							<AlertDescription className="text-red-800">
-								{errors.email.message}
-							</AlertDescription>
-						</Alert>
-					)}
-				</CardContent>
-			</Card>
+							<Button
+								type="submit"
+								disabled={isTransition}
+								className="w-full bg-emerald-600 hover:bg-emerald-700"
+							>
+								{isTransition
+									? 'Sending...'
+									: 'Send Reset Link'}
+							</Button>
+						</form>
+
+						{errors.email && (
+							<Alert className="mt-4 bg-red-50 border-red-200">
+								<AlertDescription className="text-red-800">
+									{errors.email.message}
+								</AlertDescription>
+							</Alert>
+						)}
+					</CardContent>
+				</Card>
+			</div>
 		</div>
 	);
 }

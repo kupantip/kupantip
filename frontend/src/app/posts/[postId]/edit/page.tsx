@@ -6,19 +6,19 @@ import { useDropzone } from 'react-dropzone';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCategories } from '@/services/post/category';
 import { Post } from '@/types/dashboard/post';
-import { getPostById } from '@/services/dashboard/getPostById';
+import { usePostById } from '@/services/dashboard/getPostById';
 import { updatePost } from '@/services/user/updatePost';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -32,21 +32,21 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from '@/components/ui/alert-dialog';
 import { AlertTriangle } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 
 type ExistingAttachment = {
-    id: string;
-    url: string;
-    isNew: false;
+	id: string;
+	url: string;
+	isNew: false;
 };
 
 type NewUpload = {
-    id: string; 
-    url: string; 
-    isNew: true; 
-    file: File;
+	id: string;
+	url: string;
+	isNew: true;
+	file: File;
 };
 
 type CombinedImage = ExistingAttachment | NewUpload;
@@ -57,20 +57,23 @@ export default function EditPostPage() {
 	const postId = params.postId;
 
 	const queryClient = useQueryClient();
-
 	const [loading, setLoading] = useState(false);
-
 	const [tab, setTab] = useState<'text' | 'media'>('text');
 
-	const [post, setPost] = useState<Post | null>(null);
 	const [title, setTitle] = useState('');
 	const [body, setBody] = useState('');
 	const [category_id, setCategoryid] = useState('');
-	const [files, setFiles] = useState([] as File[])
+	const [files, setFiles] = useState([] as File[]);
 
-	const [attachmentsToDelete, setAttachmentsToDelete] = useState<string[]>([]);
+	const [attachmentsToDelete, setAttachmentsToDelete] = useState<string[]>(
+		[]
+	);
 
+	const { data: posts, isLoading: isLoadingPost } = usePostById(postId);
 	const { data: categories } = useCategories();
+	const { open: isSidebarOpen } = useSidebar();
+
+	const post = posts?.[0] || null;
 
 	const [banInfo, setBanInfo] = useState<{
 		message: string;
@@ -78,18 +81,8 @@ export default function EditPostPage() {
 		end_at: string;
 	} | null>(null);
 
-	const {open: isSidebarOpen} = useSidebar();
-
-	useEffect(() => {
-			AOS.init({
-				duration: 500,
-				once: true,
-				offset: 80,
-			});
-		}, []);
-
 	const onDrop = (acceptedFiles: File[]) => {
-		setFiles(prevFiles => [...prevFiles, ...acceptedFiles]);
+		setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
 	};
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -100,37 +93,30 @@ export default function EditPostPage() {
 	});
 
 	useEffect(() => {
-		async function fetchPost() {
-			try {
-				const fetchedPosts: Post[] = await getPostById(postId);
-				if (fetchedPosts.length === 0) {
-					console.error('Post not found');
-					return;
-				}
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
 
-				const fetchedPost = fetchedPosts[0];
-				setPost(fetchedPost);
-				setTitle(fetchedPost.title);
-				setBody(fetchedPost.body_md || '');
-				setCategoryid(fetchedPost.category_id || '');
+	useEffect(() => {
+		if (post) {
+			setTitle(post.title);
+			setBody(post.body_md || '');
+			setCategoryid(post.category_id || '');
 
-                if (fetchedPost.attachments && fetchedPost.attachments.length > 0) {
-                    setTab('media');
-                }
-
-				AOS.refresh();
-			} catch (err) {
-				console.error('Failed to fetch post', err);
-			} finally {
-				setLoading(false);
+			if (post.attachments && post.attachments.length > 0) {
+				setTab('media');
 			}
-		}
-		fetchPost();
-	}, [postId]);
 
-	const handleSelectCategory = (value : string) => {
-		setCategoryid(value)
-	}
+			AOS.refresh();
+		}
+	}, [post]);
+
+	const handleSelectCategory = (value: string) => {
+		setCategoryid(value);
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -138,70 +124,86 @@ export default function EditPostPage() {
 
 		if (!post) return;
 		try {
-			await updatePost({ title, body_md: body, category_id, files }, post.id);
-			await queryClient.invalidateQueries({ queryKey: ['postDetail', post.id] });
+			await updatePost(
+				{ title, body_md: body, category_id, files },
+				post.id
+			);
+			await queryClient.invalidateQueries({
+				queryKey: ['postDetail', post.id],
+			});
 			toast.success('Edit Post Successfully!');
 			router.push(`/posts/${post.id}`);
-		} catch (err : unknown) {
-			console.error("Failed to edit post: ", err);
+		} catch (err: unknown) {
+			console.error('Failed to edit post: ', err);
 
 			if (
-				typeof err === "object" &&
+				typeof err === 'object' &&
 				err !== null &&
-				"status" in err &&
+				'status' in err &&
 				(err as { status?: number }).status === 403
 			) {
-				const e = err as { message?: string; reason?: string; end_at?: string };
+				const e = err as {
+					message?: string;
+					reason?: string;
+					end_at?: string;
+				};
 				setBanInfo({
-					message: e.message ?? "You are banned",
-					reason: e.reason ?? "-",
-					end_at: e.end_at ?? "-",
+					message: e.message ?? 'You are banned',
+					reason: e.reason ?? '-',
+					end_at: e.end_at ?? '-',
 				});
 				return;
 			}
-
 		} finally {
 			setLoading(false);
 		}
 	};
 
-    const removeNewFile = (index: number) => {
-        setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
-    };
+	const removeNewFile = (index: number) => {
+		setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+	};
 
-    const removeExistingAttachment = (attachmentId: string) => {
-        setAttachmentsToDelete(prev => [...prev, attachmentId]);
-    };
+	const removeExistingAttachment = (attachmentId: string) => {
+		setAttachmentsToDelete((prev) => [...prev, attachmentId]);
+	};
 
-    if (!post) {
-		return;
-    }
+	if (isLoadingPost || !post) {
+		return (
+			<div className="flex justify-center items-center h-full">
+				<div className="text-gray-500">Loading...</div>
+			</div>
+		);
+	}
 
-    const existingAttachments: ExistingAttachment[] = post.attachments
-        .filter(att => !attachmentsToDelete.includes(att.id))
-        .map(att => ({
-            id: att.id,
-            url: att.url.includes('/backend/')
-                ? att.url
-                : att.url.replace('/uploads/', '/backend/post/attachments/'),
-            isNew: false,
-        }));
-        
-    const newUploads: NewUpload[] = files.map((file, i) => ({
-        id: `new-${i}`,
-        url: URL.createObjectURL(file),
-        isNew: true,
-        file: file 
-    }));
-    
-    const combinedImages: CombinedImage[] = [...existingAttachments, ...newUploads];
+	const existingAttachments: ExistingAttachment[] = post.attachments
+		.filter((att) => !attachmentsToDelete.includes(att.id))
+		.map((att) => ({
+			id: att.id,
+			url: att.url.includes('/backend/')
+				? att.url
+				: att.url.replace('/uploads/', '/backend/post/attachments/'),
+			isNew: false,
+		}));
+
+	const newUploads: NewUpload[] = files.map((file, i) => ({
+		id: `new-${i}`,
+		url: URL.createObjectURL(file),
+		isNew: true,
+		file: file,
+	}));
+
+	const combinedImages: CombinedImage[] = [
+		...existingAttachments,
+		...newUploads,
+	];
 
 	return (
 		<div
 			data-aos="fade-up"
-			className="flex justify-center items-start min-h-screen bg-white p-8 tr">
-			<div className="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-8">
-				<h1 className="text-3xl font-bold mb-4">Edit Post</h1>
+			className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
+		>
+			<div className="w-full max-w-2xl mx-auto bg-white shadow-xl rounded-2xl p-8">
+				<h1 className="text-2xl font-bold mb-4">Edit Post</h1>
 
 				<div className="flex gap-6 border-b mb-6">
 					{['text', 'media'].map((type) => (
@@ -238,14 +240,17 @@ export default function EditPostPage() {
 						value={category_id}
 					>
 						<SelectTrigger className="border border-gray-300 rounded-xl p-5 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer">
-						<SelectValue placeholder="Select Category" />
+							<SelectValue placeholder="Select Category" />
 						</SelectTrigger>
 						<SelectContent>
-						{categories?.map((category) => (
-							<SelectItem key={category.id} value={category.id}>
-							{category.label}
-							</SelectItem>
-						))}
+							{categories?.map((category) => (
+								<SelectItem
+									key={category.id}
+									value={category.id}
+								>
+									{category.label}
+								</SelectItem>
+							))}
 						</SelectContent>
 					</Select>
 
@@ -253,9 +258,7 @@ export default function EditPostPage() {
 						<textarea
 							placeholder="Write something interesting..."
 							value={body}
-							onChange={(e) =>
-								setBody(e.target.value)
-							}
+							onChange={(e) => setBody(e.target.value)}
 							className="border border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-700"
 							rows={10}
 							required
@@ -272,42 +275,66 @@ export default function EditPostPage() {
 							>
 								<input {...getInputProps()} />
 								{combinedImages.length === 0 ? (
-                                    <div className="text-gray-500 flex flex-col items-center">
-                                        <Upload className='mb-2 opacity-70' size={50}/>
-                                        <p className="font-semibold">Drag and Drop or upload media</p>
-                                        <p className="text-sm">Click here to browse</p>
-                                    </div>
+									<div className="text-gray-500 flex flex-col items-center">
+										<Upload
+											className="mb-2 opacity-70"
+											size={50}
+										/>
+										<p className="font-semibold">
+											Drag and Drop or upload media
+										</p>
+										<p className="text-sm">
+											Click here to browse
+										</p>
+									</div>
 								) : (
 									<div className="grid grid-cols-4 gap-3 w-full">
-										{combinedImages.map((image, combinedIndex) => (
-											<div
-												key={image.id}
-												className="relative group aspect-square"
-											>
-												<Image
-													src={image.url}
-													alt={`Gallery item ${combinedIndex + 1}`}
-													width={200}
-													height={200}
-													className="rounded-lg object-cover h-full w-full"
-												/>
-												<button
-													type="button"
-													onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        if (image.isNew) {
-                                                            const fileIndex = files.findIndex(f => f === image.file);
-                                                            if (fileIndex > -1) removeNewFile(fileIndex);
-                                                        } else {
-                                                            removeExistingAttachment(image.id);
-                                                        }
-                                                    }}
-													className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition cursor-pointer"
+										{combinedImages.map(
+											(image, combinedIndex) => (
+												<div
+													key={image.id}
+													className="relative group aspect-square"
 												>
-													<X size={18}/>
-												</button>
-											</div>
-										))}
+													<Image
+														src={image.url}
+														alt={`Gallery item ${
+															combinedIndex + 1
+														}`}
+														width={200}
+														height={200}
+														className="rounded-lg object-cover h-full w-full"
+													/>
+													<button
+														type="button"
+														onClick={(e) => {
+															e.stopPropagation();
+															if (image.isNew) {
+																const fileIndex =
+																	files.findIndex(
+																		(f) =>
+																			f ===
+																			image.file
+																	);
+																if (
+																	fileIndex >
+																	-1
+																)
+																	removeNewFile(
+																		fileIndex
+																	);
+															} else {
+																removeExistingAttachment(
+																	image.id
+																);
+															}
+														}}
+														className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition cursor-pointer"
+													>
+														<X size={18} />
+													</button>
+												</div>
+											)
+										)}
 									</div>
 								)}
 							</div>
@@ -315,9 +342,7 @@ export default function EditPostPage() {
 							<textarea
 								placeholder="Add a caption or description..."
 								value={body}
-								onChange={(e) =>
-									setBody(e.target.value)
-								}
+								onChange={(e) => setBody(e.target.value)}
 								className="border border-gray-300 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-700"
 								rows={10}
 								required
@@ -336,38 +361,46 @@ export default function EditPostPage() {
 							disabled={loading}
 							className="bg-emerald-700 hover:bg-emerald-800 hover:shadow-md hover:scale-105 rounded-full cursor-pointer"
 						>
-							{loading ? "Saving..." : "Save"}
+							{loading ? 'Saving...' : 'Save'}
 						</Button>
 					</div>
 				</form>
 			</div>
 			<AlertDialog open={!!banInfo} onOpenChange={() => setBanInfo}>
-				<AlertDialogContent className={isSidebarOpen ? "ml-32" : "ml-6"}>
+				<AlertDialogContent
+					className={isSidebarOpen ? 'ml-32' : 'ml-6'}
+				>
 					<AlertDialogHeader>
-						<div className='flex gap-2 text-red-500 items-center'>
-							<AlertTriangle className='w-5 h-5'/>
+						<div className="flex gap-2 text-red-500 items-center">
+							<AlertTriangle className="w-5 h-5" />
 							<AlertDialogTitle>
 								You&apos;ve been banned from posting.
 							</AlertDialogTitle>
 						</div>
 						<AlertDialogDescription>
-                			<strong className='text-black/75'>Reason:</strong> {banInfo?.reason}
+							<strong className="text-black/75">Reason:</strong>{' '}
+							{banInfo?.reason}
 						</AlertDialogDescription>
 						<AlertDialogDescription>
-							<strong className='text-black/75'>Ban expires on:</strong>{" "}
+							<strong className="text-black/75">
+								Ban expires on:
+							</strong>{' '}
 							{banInfo?.end_at
-							? new Date(banInfo.end_at).toLocaleString("en-En", {
-								dateStyle: 'long',
-								timeStyle: 'short'
-							})
-							: "-"}
+								? new Date(banInfo.end_at).toLocaleString(
+										'en-En',
+										{
+											dateStyle: 'long',
+											timeStyle: 'short',
+										}
+								  )
+								: '-'}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel
 							type="button"
 							onClick={() => setBanInfo(null)}
-							className='cursor-pointer w-full'
+							className="cursor-pointer w-full"
 						>
 							Close
 						</AlertDialogCancel>

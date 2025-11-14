@@ -1,32 +1,48 @@
-import * as t from '@/types/dashboard/post'
-import { getSession } from 'next-auth/react'
+import * as t from '@/types/dashboard/post';
+import { getSession } from 'next-auth/react';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 
-const BACKEND_HOST = process.env.NEXT_PUBLIC_BACKEND_HOST
+const instance = axios.create({
+	baseURL: '/backend',
+	timeout: 5000,
+});
 
 export async function getCommentByPostId(
-    post_id: string
+	post_id: string
 ): Promise<t.CommentsResponse> {
-    try {
-        const res = await fetch(`${BACKEND_HOST}/comment?post_id=${post_id}`,{
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-        })
+	try {
+		const session = await getSession();
 
-        if (!res.ok) {
-            throw new Error(
-                `Failed to fetch data: ${res.status} ${res.statusText}`
-            )
-        }
+		const header = {
+			Authorization: `Bearer ${session?.user?.accessToken}`,
+		};
 
-        const json: t.CommentsResponse = await res.json()
-        return json
-    } catch (err: unknown) {
-        if (err instanceof Error) {
-            throw new Error(err.message)
-        } else {
-            throw new Error(String(err))
-        }
-    }
+		const response = await instance.get<t.CommentsResponse>(
+			`/comment?post_id=${post_id}`,
+			{
+				headers: header,
+			}
+		);
+		return response.data;
+	} catch (error: unknown) {
+		if (axios.isAxiosError(error)) {
+			throw new Error(
+				`Failed to fetch comments: ${error.response?.status} ${error.response?.statusText}`
+			);
+		} else if (error instanceof Error) {
+			throw new Error(error.message);
+		} else {
+			throw new Error(String(error));
+		}
+	}
+}
+
+export function useCommentsByPostId(post_id: string) {
+	return useQuery<t.CommentsResponse, Error>({
+		queryKey: ['comments', post_id],
+		queryFn: () => getCommentByPostId(post_id),
+		staleTime: 5 * 60 * 1000, // 5 minutes
+		enabled: !!post_id,
+	});
 }

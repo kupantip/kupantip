@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -29,8 +29,11 @@ import {
 	TrendingUp,
 	Award,
 	Edit,
+	Loader2,
 } from 'lucide-react';
 import { usePostByUserId } from '@/services/post/post';
+import { useUserStats } from '@/services/user/user';
+import Link from 'next/link';
 
 type UserPayload = {
 	user_id: string;
@@ -53,6 +56,8 @@ const formatTime = (minutes: number) => {
 export default function MyProfilePage() {
 	const { data: session, status } = useSession();
 	const router = useRouter();
+	const params = useParams();
+	const userId = params.userId as string;
 
 	const tokenPayload = session?.accessToken
 		? jwtDecode<UserPayload>(session.accessToken)
@@ -72,24 +77,21 @@ export default function MyProfilePage() {
 		}
 	}, [status, router]);
 
-	const { data: post, isLoading: isLoadingPost } = usePostByUserId(
-		tokenPayload?.user_id || ''
-	);
+	const { data: userStats, isLoading: isLoadingStats } = useUserStats(userId);
+	const { data: post, isLoading: isLoadingPost } = usePostByUserId(userId);
 	const firstThreePost = post?.slice(0, 3) || [];
 
 	if (status === 'unauthenticated') {
 		return null; // Will redirect in useEffect
 	}
 
-	// Mock data - replace with actual API calls
-	const userStats = {
-		posts: 42,
-		comments: 128,
-		upvotes: 356,
-		followers: 89,
-		following: 65,
-		reputation: 1247,
-	};
+	// if (isLoadingStats) {
+	// 	return (
+	// 		<div className="flex items-center justify-center h-screen">
+	// 			<Loader2 className="animate-spin w-12 h-12 text-green-1" />
+	// 		</div>
+	// 	);
+	// }
 
 	const badges = [
 		{
@@ -113,7 +115,12 @@ export default function MyProfilePage() {
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
-						<BreadcrumbLink href="/">Home</BreadcrumbLink>
+						<Link
+							href="/posts"
+							className="bg-green-3 text-black py-1 px-2 rounded-lg hover:scale-102 hover:bg-emerald-600 hover:text-white border-1"
+						>
+							Home
+						</Link>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
@@ -124,15 +131,14 @@ export default function MyProfilePage() {
 
 			{/* Profile Header Card */}
 			<Card className="shadow-md">
-				<CardContent className="pt-6">
+				<CardContent className="pt-1">
 					<div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-						<Avatar className="w-24 h-24">
+						<Avatar className="w-24 h-24 border-emerald-600 border-3">
 							<AvatarImage
-								src="/chicken.png"
-								alt={tokenPayload?.username || 'User'}
+								src={`https://api.dicebear.com/7.x/initials/svg?seed=${userStats?.display_name}`}
 							/>
 							<AvatarFallback className="text-2xl">
-								{tokenPayload?.username
+								{userStats?.display_name
 									?.charAt(0)
 									.toUpperCase() || 'U'}
 							</AvatarFallback>
@@ -141,39 +147,45 @@ export default function MyProfilePage() {
 						<div className="flex-1 space-y-2">
 							<div className="flex items-center gap-3">
 								<h1 className="text-3xl font-bold">
-									{tokenPayload?.username || 'Anonymous User'}
+									{userStats?.display_name ||
+										'Anonymous User'}
 								</h1>
 								<Badge
 									variant="outline"
 									className="bg-green-100 text-green-800"
 								>
-									{tokenPayload?.role || 'User'}
+									{userStats?.role || 'User'}
 								</Badge>
 							</div>
-
 							<div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+								<div className="flex items-center gap-2">
+									<User className="w-4 h-4" />
+									<span>@{userStats?.handle || 'user'}</span>
+								</div>
 								<div className="flex items-center gap-2">
 									<Mail className="w-4 h-4" />
 									<span>
-										{tokenPayload?.email ||
+										{userStats?.email ||
 											'email@example.com'}
 									</span>
 								</div>
 								<div className="flex items-center gap-2">
 									<Calendar className="w-4 h-4" />
-									<span>Joined October 2024</span>
-								</div>
-								<div className="flex items-center gap-2">
-									<User className="w-4 h-4" />
 									<span>
-										ID: {tokenPayload?.user_id?.slice(0, 8)}
-										...
+										Joined{' '}
+										{userStats?.created_at
+											? new Date(
+													userStats.created_at
+											  ).toLocaleDateString('en-US', {
+													year: 'numeric',
+													month: 'long',
+											  })
+											: 'Recently'}
 									</span>
 								</div>
-							</div>
-
+							</div>{' '}
 							<div className="flex gap-2 pt-2">
-								<Button className="bg-green-1 hover:bg-green-600 cursor-pointer">
+								<Button className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer">
 									<Edit className="w-4 h-4 mr-2" />
 									Edit Profile
 								</Button>
@@ -190,12 +202,12 @@ export default function MyProfilePage() {
 			</Card>
 
 			{/* Stats Grid */}
-			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
 				<Card>
 					<CardContent className="pt-6 text-center">
 						<FileText className="w-8 h-8 mx-auto mb-2 text-green-1" />
 						<div className="text-2xl font-bold">
-							{userStats.posts}
+							{userStats?.posts_count || 0}
 						</div>
 						<div className="text-sm text-gray-600">Posts</div>
 					</CardContent>
@@ -204,18 +216,53 @@ export default function MyProfilePage() {
 					<CardContent className="pt-6 text-center">
 						<MessageSquare className="w-8 h-8 mx-auto mb-2 text-blue-600" />
 						<div className="text-2xl font-bold">
-							{userStats.comments}
+							{userStats?.comments_count || 0}
 						</div>
 						<div className="text-sm text-gray-600">Comments</div>
 					</CardContent>
 				</Card>
 				<Card>
 					<CardContent className="pt-6 text-center">
+						<TrendingUp className="w-8 h-8 mx-auto mb-2 text-green-600" />
+						<div className="text-2xl font-bold">
+							{userStats?.upvotes_given || 0}
+						</div>
+						<div className="text-sm text-gray-600">
+							Upvotes Given
+						</div>
+					</CardContent>
+				</Card>
+				<Card>
+					<CardContent className="pt-6 text-center">
 						<TrendingUp className="w-8 h-8 mx-auto mb-2 text-orange-600" />
 						<div className="text-2xl font-bold">
-							{userStats.upvotes}
+							{userStats?.downvotes_given || 0}
 						</div>
-						<div className="text-sm text-gray-600">Upvotes</div>
+						<div className="text-sm text-gray-600">
+							Downvotes Given
+						</div>
+					</CardContent>
+				</Card>
+				<Card>
+					<CardContent className="pt-6 text-center">
+						<Award className="w-8 h-8 mx-auto mb-2 text-purple-600" />
+						<div className="text-2xl font-bold">
+							{userStats?.upvotes_received || 0}
+						</div>
+						<div className="text-sm text-gray-600">
+							Upvotes Received
+						</div>
+					</CardContent>
+				</Card>
+				<Card>
+					<CardContent className="pt-6 text-center">
+						<Award className="w-8 h-8 mx-auto mb-2 text-red-600" />
+						<div className="text-2xl font-bold">
+							{userStats?.downvotes_received || 0}
+						</div>
+						<div className="text-sm text-gray-600">
+							Downvotes Received
+						</div>
 					</CardContent>
 				</Card>
 			</div>
@@ -248,24 +295,27 @@ export default function MyProfilePage() {
 							) : post && post.length > 0 ? (
 								// Show first 3 posts
 								firstThreePost.map((activity) => (
-									<div
+									<Link
 										key={activity.id}
-										className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition hover:scale-102"
+										href={`/posts/${activity.id}`}
+										className="block"
 									>
-										<div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
-											<FileText className="w-4 h-4 text-green-600" />
+										<div className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition hover:scale-102 cursor-pointer">
+											<div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
+												<FileText className="w-4 h-4 text-green-600" />
+											</div>
+											<div className="flex-1">
+												<p className="font-medium">
+													{activity.title}
+												</p>
+												<p className="text-sm text-gray-500">
+													{formatTime(
+														activity.minutes_since_posted
+													)}
+												</p>
+											</div>
 										</div>
-										<div className="flex-1">
-											<p className="font-medium">
-												{activity.title}
-											</p>
-											<p className="text-sm text-gray-500">
-												{formatTime(
-													activity.minutes_since_posted
-												)}
-											</p>
-										</div>
-									</div>
+									</Link>
 								))
 							) : (
 								// No posts found

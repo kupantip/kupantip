@@ -29,8 +29,9 @@ import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
 
 export default function ProfileDropDown() {
-	const { status } = useSession();
+	const { data: session, status } = useSession();
 	const isAuthenticated = status === 'authenticated';
+	const userId = session?.user?.user_id || '';
 
 	return (
 		<div className="mr-0">
@@ -71,7 +72,10 @@ export default function ProfileDropDown() {
 					<DropdownMenuSeparator />
 					<DropdownMenuGroup>
 						<DropdownMenuItem asChild disabled={!isAuthenticated}>
-							<Link href="/profile" className="cursor-pointer">
+							<Link
+								href={`/profile/${userId}`}
+								className="cursor-pointer"
+							>
 								<User className="mr-2 h-4 w-4" />
 								<span>My Profile</span>
 							</Link>
@@ -82,21 +86,21 @@ export default function ProfileDropDown() {
 								<span>My Posts</span>
 							</Link>
 						</DropdownMenuItem>
-						<DropdownMenuItem asChild disabled={!isAuthenticated}>
+						{/* <DropdownMenuItem asChild disabled={!isAuthenticated}>
 							<Link href="/bookmarks" className="cursor-pointer">
 								<Bookmark className="mr-2 h-4 w-4" />
 								<span>Saved Posts</span>
 							</Link>
-						</DropdownMenuItem>
+						</DropdownMenuItem> */}
 					</DropdownMenuGroup>
 					<DropdownMenuSeparator />
 					<DropdownMenuGroup>
-						<DropdownMenuItem asChild disabled={!isAuthenticated}>
+						{/* <DropdownMenuItem asChild disabled={!isAuthenticated}>
 							<Link href="/settings" className="cursor-pointer">
 								<Settings className="mr-2 h-4 w-4" />
 								<span>Settings</span>
 							</Link>
-						</DropdownMenuItem>
+						</DropdownMenuItem> */}
 						<DropdownMenuItem asChild disabled={!isAuthenticated}>
 							<Link
 								href="/notifications"

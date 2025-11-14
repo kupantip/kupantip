@@ -1,7 +1,7 @@
 'use client';
 
 import PostDetail from '@/components/posts/PostDetail';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
 	Empty,
@@ -16,20 +16,24 @@ import { usePostDetail } from '@/services/post/post';
 
 export default function PostPage() {
 	const params = useParams();
+
 	const postId = Array.isArray(params.postId)
 		? params.postId[0]
 		: params.postId;
 
-	const { data: post, isLoading: isLoadingPost, refetch: refetchPost } = usePostDetail(
-		postId || ''
-	);
+	const {
+		data: post,
+		isLoading: isLoadingPost,
+		refetch: refetchPost,
+	} = usePostDetail(postId || '');
 
-	const refreshPage = async() => {
+
+	const refreshPage = async () => {
 		refetchPost();
-	}
+	};
 
 	// Loading state
-	if (isLoadingPost) {
+	if ((isLoadingPost)) {
 		return (
 			<div className="flex justify-center items-center h-[60vh]">
 				<Empty>
@@ -46,6 +50,7 @@ export default function PostPage() {
 			</div>
 		);
 	}
+
 
 	// Post not found / invalid ID
 	if (!post) {
@@ -70,10 +75,10 @@ export default function PostPage() {
 							<Button
 								variant="outline"
 								onClick={() =>
-									(window.location.href = '/dashboard')
+									(window.location.href = '/posts')
 								}
 							>
-								Go to Dashboard
+								Go Back
 							</Button>
 						</div>
 					</EmptyContent>
@@ -83,5 +88,9 @@ export default function PostPage() {
 	}
 
 	// Display post
-	return <PostDetail post={post} refresh={refreshPage} />;
+	return (
+		<div>
+			<PostDetail post={post} refresh={refreshPage} />
+		</div>
+	);
 }

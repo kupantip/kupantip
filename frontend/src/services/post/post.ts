@@ -52,6 +52,8 @@ export type AdminPost = {
 	dislike_count: number;
 	liked_by_requesting_user: boolean;
 	disliked_by_requesting_user: boolean;
+	author_role: string;
+	author_display_name: string;
 };
 
 const instance = axios.create({
@@ -231,6 +233,7 @@ export function useHotPosts() {
 		queryKey: ['hotPosts'],
 		queryFn: fetchHotPosts,
 		staleTime: 5 * 60 * 1000, // 5 minutes
+		refetchOnMount: 'always',
 	});
 }
 

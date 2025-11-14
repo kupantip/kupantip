@@ -9,7 +9,7 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from '@/components/ui/empty';
-import { Loader2, Star, FileText, Heart, MessageSquare } from 'lucide-react';
+import { Loader2, Heart, MessageSquare } from 'lucide-react';
 import { usePriorityPosts } from '@/services/post/post';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,10 @@ import {
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+import Link from 'next/link';
 
 export default function PriorityPostsPage() {
 	const {
@@ -33,81 +37,35 @@ export default function PriorityPostsPage() {
 
 	const { data: session, status } = useSession();
 	const router = useRouter();
-
 	const refreshPage = async () => {
 		refetchPosts();
 	};
-
 	const handlePostClick = (postId: string) => {
 		router.push(`/posts/${postId}`);
 	};
 
-	// Loading state
-	if (isLoadingPosts) {
-		return (
-			<div className="flex justify-center items-center h-[60vh]">
-				<Empty>
-					<EmptyHeader>
-						<EmptyMedia>
-							<Loader2 className="animate-spin w-8 h-8" />
-						</EmptyMedia>
-						<EmptyTitle>Loading Priority Posts...</EmptyTitle>
-						<EmptyDescription>
-							Please wait while we fetch the priority posts for
-							you.
-						</EmptyDescription>
-					</EmptyHeader>
-				</Empty>
-			</div>
-		);
-	}
-
-	// No posts found
-	if (!posts || posts.length === 0) {
-		return (
-			<div className="flex justify-center items-center h-[60vh]">
-				<Empty>
-					<EmptyHeader>
-						<EmptyMedia>
-							<Star className="w-8 h-8" />
-						</EmptyMedia>
-						<EmptyTitle>No Priority Posts</EmptyTitle>
-						<EmptyDescription>
-							There are currently no priority posts available.
-						</EmptyDescription>
-					</EmptyHeader>
-					<EmptyContent>
-						<div className="flex gap-2">
-							<Button onClick={refreshPage}>Refresh</Button>
-							<Button
-								variant="outline"
-								onClick={() => router.push('/posts')}
-							>
-								View All Posts
-							</Button>
-						</div>
-					</EmptyContent>
-				</Empty>
-			</div>
-		);
-	}
+	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
 
 	return (
-		<div className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
-			{/* <div className="mb-6">
-				<div className="flex items-center gap-2 mb-2">
-					<Star className="w-6 h-6 text-yellow-500" />
-					<h1 className="text-3xl font-bold">📌 Priority Posts</h1>
-				</div>
-				<p className="text-gray-600 dark:text-gray-400">
-					Important announcements and featured content
-				</p>
-			</div> */}
-
+		<div
+			data-aos="fade-up"
+			className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
+		>
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
-						<BreadcrumbLink href="#">Home</BreadcrumbLink>
+						<Link
+							href="/posts"
+							className="bg-green-3 text-black py-1 px-2 rounded-lg hover:scale-102 hover:bg-emerald-600 hover:text-white border-1"
+						>
+							Home
+						</Link>{' '}
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
@@ -144,75 +102,84 @@ export default function PriorityPostsPage() {
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="divide-y divide-gray-200 dark:divide-gray-700 p-0 mt-[-20]">
-					{posts.map((post) => (
-						<div
-							key={post.id}
-							className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
+					{isLoadingPosts ? (
+						<div className="flex justify-center items-center h-40">
+							<Loader2 className="animate-spin w-8 h-8 text-green-1" />
+						</div>
+					) : (
+						posts &&
+						posts.map((post) => (
+							<div
+								key={post.id}
+								className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
                                     hover:bg-gray-100 dark:hover:bg-gray-800 
                                     rounded-lg 
                                     transition-all duration-300 ease-in-out 
                                     hover:shadow-md cursor-pointer"
-							onClick={() => handlePostClick(post.id)}
-						>
-							<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
-								<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline">
-									{post.title}
-								</h3>
-								<p className="text-sm text-gray-500">
-									<Badge
-										variant="secondary"
-										className="mr-2 bg-yellow-100 text-yellow-800"
-									>
-										{post.category_label || 'Priority'}
-									</Badge>
-									{post.author_name} •{' '}
-									{post.minutes_since_posted < 60
-										? `${post.minutes_since_posted}m ago`
-										: post.minutes_since_posted < 1440
-										? `${Math.floor(
-												post.minutes_since_posted / 60
-										  )}h ago`
-										: `${Math.floor(
-												post.minutes_since_posted / 1440
-										  )}d ago`}
-								</p>
+								onClick={() => handlePostClick(post.id)}
+							>
+								<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
+									<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline">
+										{post.title}
+									</h3>
+									<p className="text-sm text-gray-500">
+										<Badge
+											variant="secondary"
+											className="mr-2 bg-green-100 text-green-800"
+										>
+											{post.category_label || 'Priority'}
+										</Badge>
+										{post.author_name} •{' '}
+										{post.minutes_since_posted < 60
+											? `${post.minutes_since_posted}m ago`
+											: post.minutes_since_posted < 1440
+											? `${Math.floor(
+													post.minutes_since_posted /
+														60
+											  )}h ago`
+											: `${Math.floor(
+													post.minutes_since_posted /
+														1440
+											  )}d ago`}
+									</p>
+								</div>
+								<div className="flex flex-wrap gap-x-2">
+									<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+										<Heart
+											className={`${
+												post.liked_by_requesting_user
+													? 'text-red-500'
+													: 'text-gray-400'
+											}`}
+											fill={
+												post.liked_by_requesting_user
+													? 'currentColor'
+													: 'none'
+											}
+										/>
+										<span className="ml-1 text-sm text-black">
+											{post.like_count}
+										</span>
+									</Button>
+									<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+										<MessageSquare className="w-4 h-4" />
+										<span className="ml-1 text-sm">
+											{post.comment_count}
+										</span>
+									</Button>
+								</div>
 							</div>
-							<div className="flex flex-wrap gap-x-2">
-								<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
-									<Heart
-										className={`${
-											post.liked_by_requesting_user
-												? 'text-red-500'
-												: 'text-gray-400'
-										}`}
-										fill={
-											post.liked_by_requesting_user
-												? 'currentColor'
-												: 'none'
-										}
-									/>
-									<span className="ml-1 text-sm">
-										{post.like_count}
-									</span>
-								</Button>
-								<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
-									<MessageSquare className="w-4 h-4" />
-									<span className="ml-1 text-sm">
-										{post.comment_count}
-									</span>
-								</Button>
-							</div>
-						</div>
-					))}
+						))
+					)}
 				</CardContent>
 			</Card>
 
-			<div className="mt-8 flex justify-center">
+			{/* <div className="mt-8 flex justify-center">
 				<Button onClick={refreshPage} variant="outline">
 					<FileText className="w-4 h-4 mr-2" />
 					Refresh Posts
 				</Button>
-			</div>
+			</div> */}
 		</div>
 	);
 }

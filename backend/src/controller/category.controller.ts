@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { createCategory, getCategories } from '../models/category.model';
+import {
+	createCategory,
+	getCategories,
+	getCategoryById,
+} from '../models/category.model';
 import * as z from 'zod';
 
 const categorySchema = z.object({
@@ -7,6 +11,10 @@ const categorySchema = z.object({
 	color_hex: z
 		.string()
 		.regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format'),
+});
+
+const categoryIdSchema = z.object({
+	category_id: z.string().uuid('Invalid category_id format'),
 });
 
 export const createCategoryController = async (
@@ -47,6 +55,26 @@ export const getCategoriesController = async (
 	try {
 		const categories = await getCategories();
 		return res.status(200).json(categories);
+	} catch (err) {
+		next(err);
+	}
+};
+
+export const getCategoryByIdController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const { category_id } = categoryIdSchema.parse(req.params);
+
+		const category = await getCategoryById(category_id);
+
+		if (!category) {
+			return res.status(404).json({ message: 'Category not found' });
+		}
+
+		return res.status(200).json(category);
 	} catch (err) {
 		next(err);
 	}

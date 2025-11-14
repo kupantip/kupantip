@@ -28,3 +28,18 @@ export const getCategories = async () => {
 
 	return result.recordset;
 };
+
+export const getCategoryById = async (category_id: string) => {
+	const pool = await getDbConnection();
+
+	const result = await pool
+		.request()
+		.input('category_id', category_id)
+		.query(`
+			SELECT id, label, color_hex 
+			FROM [dbo].[category]
+			WHERE id = @category_id
+		`);
+
+	return result.recordset.length > 0 ? result.recordset[0] : null;
+};
