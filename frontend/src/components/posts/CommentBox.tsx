@@ -155,7 +155,7 @@ export default function CommentBox({
 		<form
 			onSubmit={handleSubmit}
 			className={cn(
-				'w-full rounded-3xl border px-4 py-2 shadow-sm',
+				'w-full rounded-3xl border px-4 py-2 shadow-sm bg-white',
 				isEditing && 'border-emerald-600',
 				className
 			)}
@@ -180,7 +180,7 @@ export default function CommentBox({
 			<div className="mt-3 flex items-center justify-between">
 				{/* Left action icons */}
 				<div className="flex gap-3 text-gray-500">
-					<ImageIcon size={16} className="cursor-pointer" />
+					{/* <ImageIcon size={16} className="cursor-pointer" /> */}
 					{/* <Film size={16} className="cursor-pointer" />
                     <Type size={16} className="cursor-pointer" /> */}
 				</div>

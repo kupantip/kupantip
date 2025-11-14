@@ -125,7 +125,7 @@ export default function PriorityPostsPage() {
 									<p className="text-sm text-gray-500">
 										<Badge
 											variant="secondary"
-											className="mr-2 bg-yellow-100 text-yellow-800"
+											className="mr-2 bg-green-100 text-green-800"
 										>
 											{post.category_label || 'Priority'}
 										</Badge>

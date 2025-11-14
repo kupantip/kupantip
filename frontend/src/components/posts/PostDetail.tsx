@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { useSidebar } from '../ui/sidebar';
+import { Button } from '../ui/button';
 
 type PostDetailProps = {
 	post: t.Post;
@@ -173,8 +174,10 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 	return (
 		<div className="mb-4">
 			<div className="flex items-start gap-3">
-				<Avatar className="w-8 h-8">
-					<AvatarImage src="/chicken.png" alt={comment.author_name} />
+				<Avatar className="w-6 h-6 border-1 border-emerald-600">
+					<AvatarImage
+						src={`https://api.dicebear.com/7.x/initials/svg?seed=${comment.author_name}`}
+					/>
 					<AvatarFallback>
 						{comment.author_name.charAt(0)}
 					</AvatarFallback>
@@ -495,27 +498,27 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		<div className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
 			<div className="relative w-full max-w-4xl mx-auto">
 				{/* Back Button */}
-				<button
+				<Button
+					variant="ghost"
 					onClick={() => router.back()}
-					className="absolute -left-16 top-0 flex items-center justify-center p-2 rounded-lg hover:bg-gray-200 transition cursor-pointer"
-					aria-label="Go back"
+					className="mb-8 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800"
 				>
-					<ArrowLeft className="w-5 h-5" />
-				</button>
-
+					<ArrowLeft className="w-4 h-4 mr-2" />
+					Back to Posts
+				</Button>
 				{/* Post Card */}
 				<div className="w-full bg-white dark:bg-gray-9 rounded-lg shadow-md p-6 space-y-4">
 					{/* Header */}
 					<div className="flex items-center gap-3">
-						<Avatar className="w-10 h-10">
+						<Avatar className="w-10 h-10 border-3 border-emerald-600 dark:border-emerald-700">
 							<AvatarImage
-								src="/chicken.png"
-								alt={post.author_name}
+								src={`https://api.dicebear.com/7.x/initials/svg?seed=${post.author_name}`}
 							/>
-							<AvatarFallback>
-								{post.author_name.charAt(0)}
+							<AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xl">
+								{post.author_name.charAt(0).toUpperCase()}
 							</AvatarFallback>
 						</Avatar>
+
 						<div className="flex-1 flex flex-col text-sm">
 							<span className="font-semibold">
 								{post.author_name}

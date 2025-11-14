@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Paperclip, Trash2 } from 'lucide-react';
+import { Heart, MessageSquare, Paperclip, Trash2 } from 'lucide-react';
 import { Attachment } from '@/services/post/post';
 import { useSession } from 'next-auth/react';
 import { useDeleteAnnouncement } from '@/services/post/annoucement';
@@ -101,12 +101,15 @@ export const PostItem: React.FC<PostItemProps> = ({
 							}`}
 							fill={likedByUser ? 'currentColor' : 'none'}
 						/>
-						<span className="ml-1 text-sm text-black">{likeCount}</span>
+						<span className="ml-1 text-sm text-black">
+							{likeCount}
+						</span>
 					</Button>
 					<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
-						💬 <span className="ml-1 text-sm">{comments}</span>
+						<MessageSquare className="w-4 h-4" />
+						<span className="ml-1 text-sm">{comments}</span>
 					</Button>
-					{canDelete && (
+					{/* {canDelete && (
 						<Button
 							className="group cursor-pointer bg-red-500 hover:bg-red-600 hover:scale-105 text-white"
 							onClick={handleDelete}
@@ -114,7 +117,7 @@ export const PostItem: React.FC<PostItemProps> = ({
 						>
 							<Trash2 className="w-4 h-4" />
 						</Button>
-					)}
+					)} */}
 				</div>
 			</div>
 		</Link>

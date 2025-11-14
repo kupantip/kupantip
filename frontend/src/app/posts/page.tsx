@@ -51,7 +51,7 @@ export default function HomePage() {
 
 	const handlePostClick = (postId: string, isAnnouncement?: boolean) => {
 		if (isAnnouncement) {
-			router.push(`/posts/${postId}?type=announcement`);
+			router.push(`/posts/annoucement/${postId}`);
 		} else {
 			router.push(`/posts/${postId}`);
 		}
@@ -132,9 +132,9 @@ export default function HomePage() {
 											variant="secondary"
 											className="mr-2 bg-green-100 text-green-800"
 										>
-											{post.category_label}
+											Announcement
 										</Badge>
-										{post.author_name} •{' '}
+										{post.author_display_name} •{' '}
 										{formatMinutes(
 											post.minutes_since_announced
 										)}
