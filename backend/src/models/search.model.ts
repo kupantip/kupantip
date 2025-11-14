@@ -150,12 +150,14 @@ export const search = async (
 				)
 				.then((res) => {
 					// Parse attachments JSON string to array
-					result.posts = res.recordset.map((row: any) => ({
-						...row,
-						attachments: row.attachments
-							? JSON.parse(row.attachments)
-							: [],
-					}));
+					result.posts = res.recordset.map(
+						(row: PostSearchResult) => ({
+							...row,
+							attachments: row.attachments
+								? JSON.parse(row.attachments)
+								: [],
+						})
+					);
 				})
 		);
 	} // Search Comments
