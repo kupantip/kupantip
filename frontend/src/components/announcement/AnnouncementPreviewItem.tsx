@@ -9,17 +9,16 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { Announcement } from '@/services/post/annoucement';
+import { Announcement } from '@/services/announcement/announcement';
 
 interface AnnouncementItemProps {
 	announcement: Announcement;
 }
 
-export default function AnnouncementItem({
+export default function AnnouncementPreviewItem({
 	announcement,
 }: AnnouncementItemProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
@@ -30,7 +29,7 @@ export default function AnnouncementItem({
 	};
 
 	return (
-		<Card className="hover:shadow-lg transition-shadow">
+		<Card className="">
 			<CardHeader className="pb-3">
 				<div className="flex items-start justify-between gap-4">
 					<div className="flex-1">
@@ -106,39 +105,23 @@ export default function AnnouncementItem({
 								</p>
 							</div>
 						</div>
-
-						{announcement.delete_at && (
-							<Alert variant="destructive">
-								<AlertCircle className="h-4 w-4" />
-								<AlertDescription>
-									This announcement was deleted on{' '}
-									{new Date(
-										announcement.delete_at
-									).toLocaleDateString('en-US')}
-								</AlertDescription>
-							</Alert>
-						)}
-
-						<div className="pt-2 border-t text-xs text-muted-foreground">
-							ID: {announcement.id}
-						</div>
 					</>
 				)}
 
 				<Button
-					variant="ghost"
+					variant="outline"
 					size="sm"
 					onClick={() => setIsExpanded(!isExpanded)}
-					className="w-full justify-center"
+					className="w-full justify-center text-xs font-semibold hover:bg-primary hover:text-primary-foreground transition-colors"
 				>
 					{isExpanded ? (
 						<>
-							<ChevronUp className="h-4 w-4 mr-1" />
+							<ChevronUp className="h-4 w-4 mr-2" />
 							Show Less
 						</>
 					) : (
 						<>
-							<ChevronDown className="h-4 w-4 mr-1" />
+							<ChevronDown className="h-4 w-4 mr-2" />
 							Show More
 						</>
 					)}

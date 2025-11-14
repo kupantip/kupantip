@@ -11,9 +11,13 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
-import { Announcement } from '@/services/post/annoucement';
+import { Announcement } from '@/services/announcement/announcement';
 
-export default function AnnouncementItem(announcement: Announcement) {
+type Props = {
+	announcement: Announcement;
+};
+
+export default function AnnouncementItem({ announcement }: Props) {
 	return (
 		<Card
 			key={announcement.id}
