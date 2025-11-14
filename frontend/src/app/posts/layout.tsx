@@ -12,6 +12,12 @@ import { CirclePlus } from 'lucide-react';
 
 import Link from 'next/link';
 import ProfileDropDown from '@/components/ProfileDropdown';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
+import { Search } from "lucide-react"
 
 export default function DashboardLayout({
 	children,
@@ -33,6 +39,15 @@ export default function DashboardLayout({
 					<h4 className="text-white text-base font-semibold">
 						KU Pantip
 					</h4>
+					
+					<div className="w-full max-w-sm gap-6 ml-26">
+						<InputGroup className='bg-white'>
+							<InputGroupInput placeholder="Search..."/>
+							<InputGroupAddon>
+								<Search />
+							</InputGroupAddon>
+						</InputGroup>
+					</div>
 
 					<div className="flex flex-wrap items-center gap-x-3">
 						{/* <div className="mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
