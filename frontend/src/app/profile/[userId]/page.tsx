@@ -131,12 +131,11 @@ export default function MyProfilePage() {
 
 			{/* Profile Header Card */}
 			<Card className="shadow-md">
-				<CardContent className="pt-6">
+				<CardContent className="pt-1">
 					<div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-						<Avatar className="w-24 h-24">
+						<Avatar className="w-24 h-24 border-emerald-600 border-3">
 							<AvatarImage
-								src="/chicken.png"
-								alt={userStats?.display_name || 'User'}
+								src={`https://api.dicebear.com/7.x/initials/svg?seed=${userStats?.display_name}`}
 							/>
 							<AvatarFallback className="text-2xl">
 								{userStats?.display_name
