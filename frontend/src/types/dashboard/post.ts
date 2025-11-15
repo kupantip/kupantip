@@ -7,7 +7,7 @@ export interface Attachment {
 export interface Post {
   id: string;
   title: string;
-  body_md: string | null;
+  body_md: string;
   url: string;
   created_at: string; // ISO date string
   updated_at: string; // ISO date string
@@ -27,6 +27,7 @@ export interface Post {
 export type Comment = {
   id: string
   post_id: string
+  post_title: string
   author_id: string
   parent_id: string | null
   body_md: string
