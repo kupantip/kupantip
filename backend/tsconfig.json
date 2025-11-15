@@ -9,5 +9,5 @@
 		"skipLibCheck": true,
 		"typeRoots": ["./node_modules/@types", "./src/types"]
 	},
-	"include": ["src"]
+	"include": ["src/**/*", "src/types/jest.d.ts"]
 }

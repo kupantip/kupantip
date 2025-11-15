@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -17,16 +17,6 @@ import statsRoutes from './routes/stats.route';
 import announcementRoute from './routes/announcement.route';
 import searchRoute from './routes/search.route';
 import * as z from 'zod';
-import { getDbConnection } from './database/mssql.database';
-
-(async () => {
-	const cnt = await getDbConnection();
-	if (!cnt.connected) {
-		process.exit(1);
-	}
-
-	console.log('Database Connected Success');
-})();
 
 const app = express();
 app.use(helmet());
@@ -63,8 +53,10 @@ app.use((req: Request, res: Response) => {
 	res.status(404).json({ message: 'Sorry, path that you find not exists!!' });
 });
 
-app.use((err: unknown, _req: Request, res: Response) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
 	if (err instanceof z.ZodError) {
+		console.log('Zodd Errorr');
 		const errors = err.issues.map((issue: z.ZodIssue) => {
 			const errorObj: {
 				path: string;
