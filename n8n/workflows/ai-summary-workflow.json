@@ -5,6 +5,7 @@
       "parameters": {
         "path": "5f80ac88-3e00-41eb-b6c2-76a0880754ca",
         "responseMode": "responseNode",
+        "httpMethod": "POST",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
@@ -17,7 +18,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Summarize the post in 1 short sentence in the same language style as the original.  \nKeep it short, natural, and do not add new information.  \nKeep the tone, level of formality, and writing style similar to the post.\n\nTitle: {{ $json.query.title }}\nBody: {{ $json.query.body }}\n\nOutput only the summary text.",
+        "text": "=Summarize the post in 1 short sentence in the same language style as the original.  \nKeep it short, natural, and do not add new information.  \nKeep the tone, level of formality, and writing style similar to the post.\n\nTitle: {{ $json.body.title }}\nBody: {{ $json.body.body }}\n\nOutput only the summary text.",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.agent",

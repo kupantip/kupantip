@@ -30,17 +30,27 @@ export const getAISummaryController = async (
 				.json({ message: 'N8N webhook URL not configured' });
 		}
 
-		// Build URL with query parameters
-		const url = new URL(n8nWebhookUrl);
-		url.searchParams.append('post_id', post.id);
-		url.searchParams.append('title', post.title);
-		url.searchParams.append('body', post.body_md);
+		// Set timeout for n8n request (30 seconds)
+		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), 30000);
 
-		const response = await fetch(url.toString(), {
-			method: 'GET',
+		const response = await fetch(n8nWebhookUrl, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				post_id: post.id,
+				title: post.title,
+				body: post.body_md,
+			}),
+			signal: controller.signal,
 		});
 
+		clearTimeout(timeout);
+
 		if (!response.ok) {
+			clearTimeout(timeout);
 			const errorText = await response.text();
 			console.error('N8N webhook error:', {
 				status: response.status,
@@ -48,7 +58,7 @@ export const getAISummaryController = async (
 				body: errorText,
 			});
 			return res.status(500).json({
-				message: 'Failed to send data to n8n',
+				message: 'Failed to generate AI summary',
 				error: errorText,
 				status: response.status,
 			});
@@ -77,6 +87,12 @@ export const getAISummaryController = async (
 			...(aiSummaryResponse && { ai_summary: aiSummaryResponse }),
 		});
 	} catch (err) {
+		if (err instanceof Error && err.name === 'AbortError') {
+			return res.status(504).json({
+				message: 'AI summary generation timed out',
+				error: 'Request took longer than 30 seconds',
+			});
+		}
 		console.error('Error in getAISummaryController:', err);
 		next(err);
 	}
