@@ -1,8 +1,8 @@
 // src/sum.test.ts
 import { sum } from './sum';
 
-describe('sum', () => {
-	test('adds 1 + 2 to equal 3', () => {
+describe('Test user', () => {
+	test('SHould be able to login with admin account', () => {
 		console.log(process.env);
 		expect(sum(1, 2)).toBe(3);
 	});
