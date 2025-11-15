@@ -7,6 +7,12 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  checks: write         # Required for Check Run creation
+  pull-requests: write  # Required for PR comments
+
+
 jobs:
   unittest-backend:
     runs-on: ubuntu-latest
@@ -27,14 +33,16 @@ jobs:
       - name: Run tests with Testcontainers
         working-directory: backend
         run: npm test
+        continue-on-error: true 
 
-      - name: Publish Test Report
+      - name: Publish Unit Test Results (Check Run)
         uses: dorny/test-reporter@v1
-        if: always()
+        if: success() || failure() # Runs unless the workflow was cancelled/skipped
         with:
-          name: Jest Test Results
+          name: Jest Tests
           path: backend/reports/junit.xml
           reporter: jest-junit
+          fail-on-error: true # This fails the specific check run if tests failed
 
       - name: Upload coverage report
         if: always()
@@ -42,7 +50,7 @@ jobs:
         with:
           name: code-coverage-report
           path: backend/coverage/lcov-report
-          
+
       - name: Read Jest JSON results
         id: read_results
         run: |

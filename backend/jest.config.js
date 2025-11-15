@@ -13,7 +13,6 @@ module.exports = {
 	reporters: [
 		'default', // Keep the default console reporter
 		['jest-junit', { outputDirectory: 'reports', outputName: 'junit.xml' }],
+		['jest-json', { outputFile: 'reports/test-results.json' }],
 	],
-	json: true,
-	outputFile: 'reports/results.json',
 };
