@@ -17,16 +17,6 @@ import statsRoutes from './routes/stats.route';
 import announcementRoute from './routes/announcement.route';
 import searchRoute from './routes/search.route';
 import * as z from 'zod';
-import { getDbConnection } from './database/mssql.database';
-
-(async () => {
-	const cnt = await getDbConnection();
-	if (!cnt.connected) {
-		process.exit(1);
-	}
-
-	console.log('Database Connected Success');
-})();
 
 const app = express();
 app.use(helmet());

@@ -7,7 +7,7 @@
 		"build": "tsc",
 		"start": "node dist/index.js",
 		"lint": "eslint . --ext .ts",
-		"test": "jest",
+		"test": "jest --runInBand",
 		"db:push": "prisma db push"
 	},
 	"prisma": {

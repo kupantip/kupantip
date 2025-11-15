@@ -3,7 +3,7 @@ import {
 	StartedMSSQLServerContainer,
 } from '@testcontainers/mssqlserver';
 import { execSync } from 'child_process';
-
+import { beforeAll, afterAll, jest } from '@jest/globals';
 // Give container startup 2 minutes
 jest.setTimeout(120000);
 
@@ -30,22 +30,15 @@ beforeAll(async () => {
 	process.env.SQL_PORT = SQL_PORT;
 	process.env.SQL_NAME = SQL_NAME;
 
-	// -----------------------------------------------------
-	// FIX 1: Removed curly braces {} around user/password
-	// -----------------------------------------------------
 	process.env.DATABASE_URL = `sqlserver://${SQL_SERVER}:${SQL_PORT};database=${SQL_NAME};user=${SQL_USER};password=${SQL_PASSWORD};encrypt=true;trustServerCertificate=true`;
 	process.env.JWT_SECRET = 'jesusloveme';
 	process.env.JWT_EXPIRES_IN = '7d';
 	process.env.PORT = '8000';
 	console.log('Env set up complete');
 
-	console.log(process.env);
-	// -----------------------------------------------------
-	// FIX 2: Use "migrate reset --force" to get a clean DB
-	// -----------------------------------------------------
 	console.log('Resetting and migrating database...');
 	// --force is required to run non-interactively in CI
-	execSync('npx prisma migrate reset --force', { stdio: 'inherit' });
+	await execSync('npx prisma migrate reset --force', { stdio: 'inherit' });
 	console.log('Database migration complete.');
 });
 
