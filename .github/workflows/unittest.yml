@@ -32,7 +32,7 @@ jobs:
       - name: Run tests with Testcontainers
         working-directory: backend
         # Added explicit --coverageReporters=json-summary to ensure the file exists for the next step
-        run: npm test -- --ci --coverage --coverageReporters=text --coverageReporters=json-summary --reporters=default --reporters=jest-junit
+        run: npm test
         continue-on-error: true 
 
       - name: Publish Unit Test Results (Check Run)
@@ -40,7 +40,7 @@ jobs:
         if: success() || failure()
         with:
           name: Jest Tests
-          path: backend/reports/junit.xml
+          path: ../backend/reports/junit.xml
           reporter: jest-junit
           fail-on-error: true
 
