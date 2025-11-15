@@ -22,13 +22,7 @@ export const getAISummaryController = async (
 		}
 
 		// Send data to n8n webhook
-		const n8nWebhookUrl = env.n8nWebhookUrl;
-
-		if (!n8nWebhookUrl) {
-			return res
-				.status(500)
-				.json({ message: 'N8N webhook URL not configured' });
-		}
+		const n8nWebhookUrl = `${env.n8nHost}/webhook/ai-summary`;
 
 		// Set timeout for n8n request (30 seconds)
 		const controller = new AbortController();

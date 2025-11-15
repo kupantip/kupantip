@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "path": "5f80ac88-3e00-41eb-b6c2-76a0880754ca",
+        "path": "ai-summary",
         "responseMode": "responseNode",
         "httpMethod": "POST",
         "options": {}
@@ -12,8 +12,7 @@
       "typeVersion": 2.1,
       "position": [352, 0],
       "id": "0b3a06ff-497f-47c6-9984-653127e87b06",
-      "name": "Webhook",
-      "webhookId": "5f80ac88-3e00-41eb-b6c2-76a0880754ca"
+      "name": "Webhook"
     },
     {
       "parameters": {
