@@ -7,7 +7,7 @@
 		"build": "tsc",
 		"start": "node dist/index.js",
 		"lint": "eslint . --ext .ts",
-		"test": "jest --runInBand",
+		"test": "jest --runInBand --detectOpenHandles",
 		"db:push": "prisma db push"
 	},
 	"prisma": {
