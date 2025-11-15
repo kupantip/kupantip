@@ -50,7 +50,7 @@ jobs:
         if: github.event_name == 'pull_request' && (success() || failure())
         with:
           # Fixed: Added space after colon
-          coverage-summary-path: ../backend/coverage/coverage-summary.json
+          coverage-summary-path: backend/coverage/coverage-final.json
           title: Backend Code Coverage
           
       - name: Upload coverage report
