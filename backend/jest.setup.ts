@@ -45,7 +45,7 @@ beforeAll(async () => {
 	// -----------------------------------------------------
 	console.log('Resetting and migrating database...');
 	// --force is required to run non-interactively in CI
-	execSync('npx prisma db push', { stdio: 'inherit' });
+	execSync('npx prisma migrate reset --force', { stdio: 'inherit' });
 	console.log('Database migration complete.');
 });
 
