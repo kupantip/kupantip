@@ -40,7 +40,6 @@ jobs:
           name: Jest Tests
           path: backend/reports/junit.xml
           reporter: jest-junit
-          report-as: 'comment'
           fail-on-error: true 
 
       - name: Jest Coverage Comment
