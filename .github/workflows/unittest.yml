@@ -1,5 +1,4 @@
-#.github/workflows/ci.yml
-name: Express.js CI
+name: Backend Unit-Test CI
 
 on:
   push:
@@ -31,25 +30,23 @@ jobs:
 
       - name: Run tests with Testcontainers
         working-directory: backend
-        # Added explicit --coverageReporters=json-summary to ensure the file exists for the next step
         run: npm test
         continue-on-error: true 
 
       - name: Publish Unit Test Results (Check Run)
         uses: dorny/test-reporter@v1
-        if: success() || failure() # Runs unless the workflow was cancelled/skipped
+        if: success() || failure()
         with:
           name: Jest Tests
           path: backend/reports/junit.xml
           reporter: jest-junit
-          fail-on-error: true # This fails the specific check run if tests failed
+          fail-on-error: true
 
       - name: Jest Coverage Comment
         id: coverageComment
         uses: MishaKav/jest-coverage-comment@main
         if: github.event_name == 'pull_request' && (success() || failure())
         with:
-          # Fixed: Added space after colon
           coverage-summary-path: backend/coverage/coverage-final.json
           title: Backend Code Coverage
           
