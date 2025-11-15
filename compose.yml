@@ -83,7 +83,8 @@ services:
       - GENERIC_TIMEZONE=Asia/Bangkok
       - N8N_BASIC_AUTH_ACTIVE=false
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+      - N8N_IMPORT_CONFIG_DIR=/home/node/workflows
     volumes:
       - ./n8n/data:/home/node/.n8n
-      - ./n8n/workflows/ai-summary-workflow.json:/home/node/.n8n/.import/ai-summary-workflow.json
+      - ./n8n/workflows:/home/node/workflows
     restart: unless-stopped
