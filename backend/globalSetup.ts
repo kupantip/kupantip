@@ -1,10 +1,6 @@
 // globalSetup.ts
-import {
-	MSSQLServerContainer,
-	StartedMSSQLServerContainer,
-} from '@testcontainers/mssqlserver';
+import { MSSQLServerContainer } from '@testcontainers/mssqlserver';
 import { execSync } from 'child_process';
-import path from 'path';
 
 // This is an async function that Jest will run once
 export default async () => {
@@ -44,5 +40,5 @@ export default async () => {
 	console.log('Database migration complete.');
 
 	// Save the container reference so we can stop it later
-	(global as any).testContainer = container;
+	global.__TEST_CONTAINER__ = container;
 };

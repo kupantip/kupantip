@@ -42,3 +42,15 @@ jobs:
         with:
           name: code-coverage-report
           path: backend/coverage/lcov-report
+          
+      - name: Read Jest JSON results
+        id: read_results
+        run: |
+          echo "json=$(cat jest-report/results.json | jq -r tostring)" >> $GITHUB_OUTPUT
+
+      - name: Create PR comment
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: jest-report/results.json

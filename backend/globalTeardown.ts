@@ -1,9 +1,7 @@
 // globalTeardown.ts
-import { StartedMSSQLServerContainer } from '@testcontainers/mssqlserver';
 
 export default async () => {
-	const container: StartedMSSQLServerContainer = (global as any)
-		.testContainer;
+	const container = global.__TEST_CONTAINER__;
 
 	if (container) {
 		console.log('Stopping MSSQL container...');
