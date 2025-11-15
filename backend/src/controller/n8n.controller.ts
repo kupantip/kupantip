@@ -64,7 +64,7 @@ export const getAISummaryController = async (
 				aiSummaryResponse = await response.text();
 			}
 		} catch (err) {
-			console.log('No response body from AI summary service');
+			console.log('No response body from AI summary service', err);
 		}
 
 		return res.status(200).json({
