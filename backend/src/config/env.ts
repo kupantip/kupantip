@@ -12,4 +12,5 @@ export const env = {
 
 	smtpUser: process.env.SMTP_USER || '',
 	smtpPass: process.env.SMTP_PASS || '',
+	n8nWebhookUrl: process.env.N8N_WEBHOOK_URL || '',
 };
