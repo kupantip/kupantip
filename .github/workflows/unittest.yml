@@ -27,3 +27,18 @@ jobs:
       - name: Run tests with Testcontainers
         working-directory: backend
         run: npm test
+
+      - name: Publish Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Jest Test Results
+          path: backend/reports/junit.xml
+          reporter: jest-junit
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: backend/coverage/lcov-report

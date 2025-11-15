@@ -10,4 +10,8 @@ module.exports = {
 	},
 	globalSetup: './globalSetup.ts',
 	globalTeardown: './globalTeardown.ts',
+	reporters: [
+		'default', // Keep the default console reporter
+		['jest-junit', { outputDirectory: 'reports', outputName: 'junit.xml' }],
+	],
 };

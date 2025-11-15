@@ -23,7 +23,6 @@ describe('test login', () => {
 		const response = await request(app)
 			.post(`${baseURL}/login`)
 			.send(payload);
-		console.log(response);
 		expect(response.status).toBe(400);
 	});
 });
