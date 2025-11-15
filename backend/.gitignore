@@ -150,3 +150,5 @@ uploads/
 /src/generated/prisma
 
 /src/generated/prisma
+
+reports/junit.xml

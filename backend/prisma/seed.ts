@@ -34,6 +34,22 @@ async function main() {
 	});
 
 	console.log('Admin user created:', admin);
+
+	const categories = ['Community', 'Recruit', 'General', 'Events'];
+
+	for (const categoryName of categories) {
+		const category = await prisma.category.findFirst({
+			where: { label: categoryName },
+		});
+		if (!category) {
+			const newCategory = await prisma.category.create({
+				data: { label: categoryName },
+			});
+			console.log('Category ensured:', newCategory);
+		} else {
+			console.log('Category ensured:', category);
+		}
+	}
 }
 main()
 	.then(async () => {
