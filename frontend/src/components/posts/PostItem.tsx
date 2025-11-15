@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, MessageSquare, Paperclip, Trash2 } from 'lucide-react';
 import { Attachment } from '@/services/post/post';
 import { useSession } from 'next-auth/react';
-import { useDeleteAnnouncement } from '@/services/post/annoucement';
+import { useDeleteAnnouncement } from '@/services/announcement/announcement';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface PostItemProps {
