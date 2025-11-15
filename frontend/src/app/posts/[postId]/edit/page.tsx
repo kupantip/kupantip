@@ -167,13 +167,10 @@ export default function EditPostPage() {
 		setAttachmentsToDelete((prev) => [...prev, attachmentId]);
 	};
 
-	if (isLoadingPost || !post) {
-		return (
-			<div className="flex justify-center items-center h-full">
-				<div className="text-gray-500">Loading...</div>
-			</div>
-		);
-	}
+    if (!post) {
+		return;
+    }
+	
 
 	const existingAttachments: ExistingAttachment[] = post.attachments
 		.filter((att) => !attachmentsToDelete.includes(att.id))

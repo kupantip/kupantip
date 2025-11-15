@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useSession } from 'next-auth/react';
@@ -8,12 +9,6 @@ import { useSession } from 'next-auth/react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/posts/AppSideBar';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { CirclePlus } from 'lucide-react';
 import { UserPen } from 'lucide-react';
 import { Bell } from 'lucide-react';
@@ -21,6 +16,12 @@ import { Bell } from 'lucide-react';
 import Link from 'next/link';
 import NavButtons from '@/components/NavButton';
 import ProfileDropDown from '@/components/ProfileDropdown';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
+import { Search } from "lucide-react"
 
 export default function DashboardLayout({
 	children,
@@ -29,11 +30,23 @@ export default function DashboardLayout({
 }) {
 	const { data: session, status } = useSession();
 
+	const [ SearchItem, setSearchItem ] = useState('');
+	const router = useRouter();
+
 	useEffect(() => {
 		window.history.scrollRestoration = 'manual';
 		window.scrollTo({ top: 0 });
 		AOS.init({ duration: 800, once: true, offset: 100 });
 	}, []);
+
+	const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!SearchItem.trim()) {
+            return;
+        }
+
+		router.push(`/search?q=${encodeURIComponent(SearchItem.trim())}`);
+	}
 
 	return (
 		<SidebarProvider>
@@ -43,11 +56,27 @@ export default function DashboardLayout({
 						KU Pantip
 					</h4>
 
+					<form 
+                        onSubmit={handleSearch} 
+                        className="w-full max-w-xl gap-6 ml-26"
+                    >
+						<InputGroup className='bg-white'>
+							<InputGroupInput 
+								placeholder="Search..."
+								value={SearchItem}
+								onChange={(e) => setSearchItem(e.target.value)}
+							/>
+							<InputGroupAddon>
+								<Search />
+							</InputGroupAddon>
+						</InputGroup>
+					</form>
+
 					<div className="flex flex-wrap items-center gap-x-3">
 						<div className="w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
 							<Bell className="w-5 h-5 text-white cursor-pointer" />
 						</div>
-						<Link href="/dashboard/create-post">
+						<Link href="/posts/create">
 							<Button className="group w-20 bg-transparent text-white rounded-lg hover:bg-transparent flex items-center gap-2 cursor-pointer hover:scale-105">
 								<CirclePlus className="mt-[0.2em]" />
 								<div className="group-hover:underline">

@@ -1,14 +1,51 @@
-const BACKEND_HOST = process.env.NEXT_PUBLIC_BACKEND_HOST;
+import { useQuery } from '@tanstack/react-query';
+import { getSession } from 'next-auth/react';
+import axios from 'axios';
+import { Post, Comment } from '@/types/dashboard/post';
+import { User } from '@/types/dashboard/user';
 
-export async function Search(){
-    const res = await fetch(`${BACKEND_HOST}/search`, {
-        method: "GET"
-    })
+const instance = axios.create({
+    baseURL: '/backend',
+    timeout: 10000,
+});
 
-    if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error("Search failed: " + JSON.stringify(errorData));
+export interface SearchResponse {
+    posts: Post[];
+    comments: Comment[];
+    users: User[];
+}
+
+export const searchAll = async (query: string): Promise<SearchResponse> => {
+    if (!query) {
+        return { posts: [], comments: [], users: []};
     }
 
-    return res.json();
+    try {
+        const session = await getSession();
+        const header = {
+            Authorization: `Bearer ${session?.user?.accessToken}`,
+        };
+
+        const response = await instance.get<SearchResponse>('/search', {
+            headers: header,
+            params: { query: query },
+        });
+        
+        return response.data;
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            throw new Error(`Failed to fetch search results: ${error.response?.status}`);
+        }
+        throw new Error("An unknown error occurred during search.");
+    }
+};
+
+export function useSearch(query: string | null) {
+    return useQuery<SearchResponse, Error>({
+        queryKey: ['search', query], 
+        
+        queryFn: () => searchAll(query || ''),
+
+        enabled: !!query, 
+    });
 }
