@@ -2,7 +2,7 @@ import { describe, test, expect } from '@jest/globals';
 import request from 'supertest';
 import app from '../src/app';
 
-describe('Test user', () => {
+describe('Server Test', () => {
 	test('Check health of application', async () => {
 		const response = await request(app).get('/health');
 
