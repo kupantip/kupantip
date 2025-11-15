@@ -40,14 +40,14 @@ jobs:
           name: Jest Tests
           path: backend/reports/junit.xml
           reporter: jest-junit
-          fail-on-error: true
+          fail-on-error: true 
 
       - name: Jest Coverage Comment
         id: coverageComment
         uses: MishaKav/jest-coverage-comment@main
         if: github.event_name == 'pull_request' && (success() || failure())
         with:
-          coverage-summary-path: backend/coverage/coverage-final.json
+          coverage-summary-path: backend/coverage/coverage-summary.json
           title: Backend Code Coverage
           
       - name: Upload coverage report

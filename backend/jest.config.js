@@ -14,4 +14,9 @@ module.exports = {
 		'default',
 		['jest-junit', { outputDirectory: 'reports', outputName: 'junit.xml' }],
 	],
+	coverageReporters: [
+		'json-summary', // For the GitHub Action
+		'text', // For your console
+		'lcov', // For the HTML report
+	],
 };
