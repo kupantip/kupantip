@@ -1,4 +1,4 @@
-# .github/workflows/ci.yml
+#.github/workflows/ci.yml
 name: Express.js CI
 
 on:
@@ -9,9 +9,8 @@ on:
 
 permissions:
   contents: read
-  checks: write         # Required for Check Run creation
-  pull-requests: write  # Required for PR comments
-
+  checks: write
+  pull-requests: write
 
 jobs:
   unittest-backend:
@@ -32,33 +31,31 @@ jobs:
 
       - name: Run tests with Testcontainers
         working-directory: backend
-        run: npm test
+        # Added explicit --coverageReporters=json-summary to ensure the file exists for the next step
+        run: npm test -- --ci --coverage --coverageReporters=text --coverageReporters=json-summary --reporters=default --reporters=jest-junit
         continue-on-error: true 
 
       - name: Publish Unit Test Results (Check Run)
         uses: dorny/test-reporter@v1
-        if: success() || failure() # Runs unless the workflow was cancelled/skipped
+        if: success() || failure()
         with:
           name: Jest Tests
           path: backend/reports/junit.xml
           reporter: jest-junit
-          fail-on-error: true # This fails the specific check run if tests failed
+          fail-on-error: true
 
+      - name: Jest Coverage Comment
+        id: coverageComment
+        uses: MishaKav/jest-coverage-comment@main
+        if: github.event_name == 'pull_request' && (success() || failure())
+        with:
+          # Fixed: Added space after colon
+          coverage-summary-path: ./backend/coverage/coverage-summary.json
+          title: Backend Code Coverage
+          
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
           path: backend/coverage/lcov-report
-
-      - name: Read Jest JSON results
-        id: read_results
-        run: |
-          echo "json=$(cat jest-report/results.json | jq -r tostring)" >> $GITHUB_OUTPUT
-
-      - name: Create PR comment
-        if: github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          recreate: true
-          path: jest-report/results.json
