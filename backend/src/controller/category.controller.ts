@@ -24,6 +24,18 @@ export const createCategoryController = async (
 	next: NextFunction
 ) => {
 	try {
+		// Check authentication
+		if (!req.user) {
+			return res.status(401).json({ message: 'Unauthorized' });
+		}
+
+		// Check role (only admin can create categories)
+		if (req.user.role !== 'admin') {
+			return res.status(403).json({
+				message: 'Forbidden: Only admin can create categories',
+			});
+		}
+
 		categorySchema.parse(req.body);
 
 		const { label, color_hex, detail } = req.body;

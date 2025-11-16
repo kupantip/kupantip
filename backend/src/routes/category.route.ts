@@ -4,11 +4,12 @@ import {
 	getCategoriesController,
 	getCategoryByIdController,
 } from '../controller/category.controller';
+import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = Router();
 
-// POST /api/v1/categories
-router.post('/', createCategoryController);
+// POST /api/v1/categories - Only admin can create
+router.post('/', authMiddleware, createCategoryController);
 
 // GET /api/v1/categories
 router.get('/', getCategoriesController);
