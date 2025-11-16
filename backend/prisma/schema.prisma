@@ -42,6 +42,8 @@ model category {
   id        String  @id(map: "PK__category__3213E83F88272325") @default(dbgenerated("newsequentialid()"), map: "DF__category__id__5165187F") @db.UniqueIdentifier
   label     String  @db.NVarChar(64)
   color_hex String? @db.VarChar(7)
+  detail    String? @db.NVarChar(Max)
+  
   post      post[]
 }
 

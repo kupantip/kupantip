@@ -2,7 +2,8 @@ import { getDbConnection } from '../database/mssql.database';
 
 export const createCategory = async (
 	label: string,
-	color_hex: string | null
+	color_hex: string | null,
+	detail: string | null
 ) => {
 	const pool = await getDbConnection();
 
@@ -10,10 +11,11 @@ export const createCategory = async (
 		.request()
 		.input('label', label)
 		.input('color_hex', color_hex)
+		.input('detail', detail)
 		.query(
-			`INSERT INTO [dbo].[category] (label, color_hex)
-       OUTPUT inserted.id, inserted.label, inserted.color_hex
-       VALUES (@label, @color_hex)`
+			`INSERT INTO [dbo].[category] (label, color_hex, detail)
+       OUTPUT inserted.id, inserted.label, inserted.color_hex, inserted.detail
+       VALUES (@label, @color_hex, @detail)`
 		);
 
 	return result.recordset[0];
@@ -23,7 +25,7 @@ export const getCategories = async () => {
 	const pool = await getDbConnection();
 
 	const result = await pool.request().query(`
-    SELECT id, label, color_hex FROM [dbo].[category]
+    SELECT id, label, color_hex, detail FROM [dbo].[category]
   `);
 
 	return result.recordset;
@@ -36,7 +38,7 @@ export const getCategoryById = async (category_id: string) => {
 		.request()
 		.input('category_id', category_id)
 		.query(`
-			SELECT id, label, color_hex 
+			SELECT id, label, color_hex, detail 
 			FROM [dbo].[category]
 			WHERE id = @category_id
 		`);

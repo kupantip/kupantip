@@ -1,0 +1,93 @@
+import { Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
+import { getPostForN8n } from '../models/n8n.model';
+import { env } from '../config/env';
+
+const postIdSchema = z.object({
+	post_id: z.string().uuid('Invalid post ID format'),
+});
+
+export const getAISummaryController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const { post_id } = postIdSchema.parse(req.params);
+
+		const post = await getPostForN8n(post_id);
+
+		if (!post) {
+			return res.status(404).json({ message: 'Post not found' });
+		}
+
+		// Send data to n8n webhook
+		const n8nWebhookUrl = `${env.n8nHost}/webhook/ai-summary`;
+
+		// Set timeout for n8n request (30 seconds)
+		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), 30000);
+
+		const response = await fetch(n8nWebhookUrl, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				post_id: post.id,
+				title: post.title,
+				body: post.body_md,
+			}),
+			signal: controller.signal,
+		});
+
+		clearTimeout(timeout);
+
+		if (!response.ok) {
+			clearTimeout(timeout);
+			const errorText = await response.text();
+			console.error('N8N webhook error:', {
+				status: response.status,
+				statusText: response.statusText,
+				body: errorText,
+			});
+			return res.status(500).json({
+				message: 'Failed to generate AI summary',
+				error: errorText,
+				status: response.status,
+			});
+		}
+
+		// Get response data from n8n (if available)
+		let aiSummaryResponse = null;
+		try {
+			const contentType = response.headers.get('content-type');
+			if (contentType && contentType.includes('application/json')) {
+				aiSummaryResponse = await response.json();
+			} else {
+				aiSummaryResponse = await response.text();
+			}
+		} catch (err) {
+			console.log('No response body from AI summary service', err);
+		}
+
+		return res.status(200).json({
+			message: 'AI summary generated successfully',
+			data: {
+				post_id: post.id,
+				title: post.title,
+				body: post.body_md,
+			},
+			...(aiSummaryResponse && { ai_summary: aiSummaryResponse }),
+		});
+	} catch (err) {
+		if (err instanceof Error && err.name === 'AbortError') {
+			return res.status(504).json({
+				message: 'AI summary generation timed out',
+				error: 'Request took longer than 30 seconds',
+			});
+		}
+		console.error('Error in getAISummaryController:', err);
+		next(err);
+	}
+};
