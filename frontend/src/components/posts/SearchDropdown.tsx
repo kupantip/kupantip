@@ -1,31 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-import { useSession } from 'next-auth/react';
-
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/posts/AppSideBar';
-import { Button } from '@/components/ui/button';
-import { CirclePlus } from 'lucide-react';
-import { UserPen } from 'lucide-react';
-import { Bell } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
 import Link from 'next/link';
-import NavButtons from '@/components/NavButton';
-import ProfileDropDown from '@/components/ProfileDropdown';
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search } from "lucide-react"
 import { SearchResponse } from '@/types/dashboard/user';
-import { useSearch } from '@/services/user/search';
 
 export default function InstantSearchDropdown ({
     isLoading,
