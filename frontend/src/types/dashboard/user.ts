@@ -1,3 +1,5 @@
+import { Post, Comment } from '@/types/dashboard/post';
+
 export interface User {
   id: string;
   user_id: string;
@@ -12,4 +14,10 @@ export interface BanResponse {
   reason: string;
   end_at: string;
   status: number;
+}
+
+export interface SearchResponse { 
+  posts: Post[];
+  comments: Comment[];
+  users: User[] 
 }

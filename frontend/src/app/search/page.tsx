@@ -186,9 +186,7 @@ function SearchContent({
     return (
         <div className="flex flex-col gap-2">
             {data.map(item => {
-                // TypeScript safe
                 const key = type === 'user' ? (item as User).user_id : (item as Post | Comment).id;
-
                 return <SearchResultCard key={key} item={item} type={type} />;
             })}
         </div>
