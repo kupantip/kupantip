@@ -111,8 +111,8 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
                                     {description}
                                 </CardDescription>
                                 <div className='flex gap-2'>
-                                    <p className="text-xs text-gray-500 mt-2">{vote_score} votes</p>
-                                    <p className="text-xs text-gray-500 mt-2">{comment_count} comments</p>
+                                    <p className="text-xs text-gray-500 mt-2">{vote_score} {vote_score > 1 ? "votes" : "vote"}</p>
+                                    <p className="text-xs text-gray-500 mt-2">{comment_count} {comment_count > 1 ? "comments" : "comment"}</p>
                                 </div>
                             </div>
 
@@ -145,7 +145,7 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
                                         <CardDescription className="mt-1 line-clamp-2 text-black">
                                             {description}
                                         </CardDescription>
-                                        <p className="text-xs text-gray-500 mt-2">{vote_score} votes</p>                                       
+                                        <p className="text-xs text-gray-500 mt-2">{vote_score} {vote_score > 1 ? "votes" : "vote"}</p>                                       
                                     </div>
                                 </Card>
                             </div>
@@ -205,64 +205,33 @@ function SearchContent({
 }
 
 function AllResults({ data }: { 
-    data?: { posts: Post[]; comments: Comment[]; users: User[] }
+  data?: { posts: Post[]; comments: Comment[]; users: User[] }
 }) {
-    if (!data) return null;
+  if (!data) return null;
 
-    return (
-        <div className="flex flex-col gap-8">
+  const sections: { label: string; items: (Post | Comment | User)[]; type: 'post' | 'comment' | 'user' }[] = [
+    { label: 'Posts', items: data.posts || [], type: 'post' },
+    { label: 'Comments', items: data.comments || [], type: 'comment' },
+    { label: 'Users', items: data.users || [], type: 'user' },
+  ];
 
-            {/* POSTS */}
-            {data.posts?.length > 0 && (
-                <div className="flex flex-col gap-2">
-                    <h2 className="text-2xl font-bold">Posts</h2>
-                    <div className="flex flex-col gap-2">
-                        {data.posts.map(post => (
-                            <SearchResultCard 
-                                key={post.id} 
-                                item={post} 
-                                type="post" 
-                            />
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* COMMENTS */}
-            {data.comments?.length > 0 && (
-                <div className="flex flex-col gap-2">
-                    <h2 className="text-2xl font-bold">Comments</h2>
-                    <div className="flex flex-col gap-2">
-                        {data.comments.map(comment => (
-                            <SearchResultCard 
-                                key={comment.id} 
-                                item={comment} 
-                                type="comment" 
-                            />
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* USERS */}
-            {data.users?.length > 0 && (
-                <div className="flex flex-col gap-2">
-                    <h2 className="text-2xl font-bold">Users</h2>
-                    <div className="flex flex-col gap-2">
-                        {data.users.map(user => (
-                            <SearchResultCard 
-                                key={user.user_id} 
-                                item={user} 
-                                type="user" 
-                            />
-                        ))}
-                    </div>
-                </div>
-            )}
-
+  return (
+    <div className="flex flex-col gap-8">
+      {sections.map(section => section.items.length > 0 && (
+        <div key={section.label} className="flex flex-col gap-2">
+          <h2 className="text-2xl font-bold">{section.label}</h2>
+          <div className="flex flex-col gap-2">
+            {section.items.map(item => {
+              const key = section.type === 'user' ? (item as User).user_id : (item as Post | Comment).id;
+              return <SearchResultCard key={key} item={item} type={section.type} />;
+            })}
+          </div>
         </div>
-    );
+      ))}
+    </div>
+  );
 }
+
 
 function SearchPageComponent() {
     const searchParams = useSearchParams();
