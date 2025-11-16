@@ -39,7 +39,7 @@ export default function InstantSearchDropdown ({
                                 {data.posts.slice(0, 3).map(post => (
                                     <li key={post.id}>
                                         <Link 
-                                            href={`/search?q=${encodeURIComponent(SearchItem.trim())}`} 
+                                            href={`/posts/${post.id}`} 
                                             onClick={onResultClick}
                                             className="flex items-start gap-3 w-full text-left p-3 rounded-md hover:bg-gray-100"
                                         >
@@ -60,7 +60,7 @@ export default function InstantSearchDropdown ({
                                 {data.comments.slice(0, 3).map(comment => (
                                     <li key={comment.id}>
                                         <Link 
-                                            href={`/search?q=${encodeURIComponent(SearchItem.trim())}`} 
+                                            href={`/posts/${comment.post_id}`} 
                                             onClick={onResultClick}
                                             className="flex items-start gap-3 w-full text-left p-3 rounded-md hover:bg-gray-100"
                                         >	
@@ -82,7 +82,7 @@ export default function InstantSearchDropdown ({
                                 {data.users.slice(0, 3).map(user => (
                                     <li key={user.id}>
                                         <Link 
-                                            href={`/search?q=${encodeURIComponent(SearchItem.trim())}`} 
+                                            href={`/profile/${user.id}`} 
                                             onClick={onResultClick}
                                             className="flex items-start gap-3 w-full text-left p-3 rounded-md hover:bg-gray-100"
                                         >	
