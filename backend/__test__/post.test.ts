@@ -80,12 +80,10 @@ describe('Create Post test', () => {
 			.post(`${baseURL}`)
 			.set('Authorization', `Bearer ${token}`)
 			.send(payload);
-		console.log(response.body);
 
 		expect(response.status).toBe(201);
 
 		// TODO: Verify category_id in the response
-		console.log(response.body);
 		expect(response.body.post).toHaveProperty(
 			'category_id',
 			categories[0].id

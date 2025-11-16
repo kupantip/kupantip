@@ -11,6 +11,7 @@ const categorySchema = z.object({
 	color_hex: z
 		.string()
 		.regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format'),
+	detail: z.string().optional().nullable(),
 });
 
 const categoryIdSchema = z.object({
@@ -23,9 +24,21 @@ export const createCategoryController = async (
 	next: NextFunction
 ) => {
 	try {
+		// Check authentication
+		if (!req.user) {
+			return res.status(401).json({ message: 'Unauthorized' });
+		}
+
+		// Check role (only admin can create categories)
+		if (req.user.role !== 'admin') {
+			return res.status(403).json({
+				message: 'Forbidden: Only admin can create categories',
+			});
+		}
+
 		categorySchema.parse(req.body);
 
-		const { label, color_hex } = req.body;
+		const { label, color_hex, detail } = req.body;
 
 		const existingCategories = await getCategories();
 		const exists = existingCategories.find(
@@ -38,7 +51,7 @@ export const createCategoryController = async (
 				.json({ message: `Category "${label}" already exists` });
 		}
 
-		const category = await createCategory(label, color_hex);
+		const category = await createCategory(label, color_hex, detail || null);
 
 		return res.status(201).json({ message: 'Category created', category });
 	} catch (err) {
