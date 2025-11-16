@@ -8,4 +8,15 @@ module.exports = {
 	transform: {
 		...tsJestTransformCfg,
 	},
+	globalSetup: './globalSetup.ts',
+	globalTeardown: './globalTeardown.ts',
+	reporters: [
+		'default',
+		['jest-junit', { outputDirectory: 'reports', outputName: 'junit.xml' }],
+	],
+	coverageReporters: [
+		'json-summary', // For the GitHub Action
+		'text', // For your console
+		'lcov', // For the HTML report
+	],
 };

@@ -170,7 +170,7 @@ export default function DashboardLayout({
 					<AppSidebar />
 				</div>
 
-				<main className="flex-1 p-10 min-h-[calc(100vh-4rem)]">
+				<main className="flex-1 min-h-[calc(100vh-4rem)]">
 					{children}
 				</main>
 			</div>
