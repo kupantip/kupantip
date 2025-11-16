@@ -41,7 +41,8 @@ export const getRequestedCategories = async (
       rc.reviewed_at, 
       rc.reviewed_by,
       u.display_name as requester_name,
-      reviewer.display_name as reviewer_name
+      reviewer.display_name as reviewer_name,
+      DATEDIFF(MINUTE, rc.created_at, GETDATE()) as minutes_since_requested
     FROM [dbo].[requested_category] rc
     INNER JOIN [dbo].[app_user] u ON rc.requester_id = u.id
     LEFT JOIN [dbo].[app_user] reviewer ON rc.reviewed_by = reviewer.id
@@ -81,7 +82,8 @@ export const getRequestedCategoryById = async (id: string) => {
 				rc.reviewed_at, 
 				rc.reviewed_by,
 				u.display_name as requester_name,
-				reviewer.display_name as reviewer_name
+				reviewer.display_name as reviewer_name,
+				DATEDIFF(MINUTE, rc.created_at, GETDATE()) as minutes_since_requested
 			FROM [dbo].[requested_category] rc
 			INNER JOIN [dbo].[app_user] u ON rc.requester_id = u.id
 			LEFT JOIN [dbo].[app_user] reviewer ON rc.reviewed_by = reviewer.id
