@@ -11,7 +11,7 @@ const categorySchema = z.object({
 	color_hex: z
 		.string()
 		.regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format'),
-	detail: z.string().max(500).optional().nullable(),
+	detail: z.string().optional().nullable(),
 });
 
 const categoryIdSchema = z.object({
