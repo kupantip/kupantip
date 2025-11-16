@@ -28,6 +28,10 @@ export type CommentSearchResult = {
 	body_md: string;
 	post_id: string;
 	post_title: string;
+	post_author_name: string;
+	post_vote_score: number;
+	post_comment_count: number;
+	post_minutes_since_posted: number;
 	author_name: string;
 	author_id: string;
 	minutes_since_commented: number;
@@ -181,6 +185,14 @@ export const search = async (
 						c.post_id,
 						c.author_id,
 						p.title AS post_title,
+						post_author.display_name AS post_author_name,
+						DATEDIFF(MINUTE, p.created_at, GETDATE()) AS post_minutes_since_posted,
+						(SELECT COUNT(*) FROM [dbo].[comment] WITH (NOLOCK) WHERE post_id = p.id AND deleted_at IS NULL) AS post_comment_count,
+						(SELECT 
+							COUNT(CASE WHEN value = 1 THEN 1 END) - COUNT(CASE WHEN value = -1 THEN 1 END)
+							FROM [dbo].[post_vote] WITH (NOLOCK) 
+							WHERE post_id = p.id
+						) AS post_vote_score,
 						u.display_name AS author_name,
 						DATEDIFF(MINUTE, c.created_at, GETDATE()) AS minutes_since_commented,
 						(SELECT COUNT(*) FROM [dbo].[comment] r WITH (NOLOCK) WHERE r.parent_id = c.id AND r.deleted_at IS NULL) AS reply_count,
@@ -210,6 +222,7 @@ export const search = async (
 					FROM [dbo].[comment] c WITH (NOLOCK)
 					LEFT JOIN [dbo].[app_user] u WITH (NOLOCK) ON c.author_id = u.id
 					LEFT JOIN [dbo].[post] p WITH (NOLOCK) ON c.post_id = p.id
+					LEFT JOIN [dbo].[app_user] post_author WITH (NOLOCK) ON p.author_id = post_author.id
 					WHERE c.deleted_at IS NULL
 						AND c.body_md LIKE @query
 					ORDER BY 
