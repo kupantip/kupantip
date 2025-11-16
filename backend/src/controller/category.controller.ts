@@ -11,6 +11,7 @@ const categorySchema = z.object({
 	color_hex: z
 		.string()
 		.regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color format'),
+	detail: z.string().max(500).optional().nullable(),
 });
 
 const categoryIdSchema = z.object({
@@ -25,7 +26,7 @@ export const createCategoryController = async (
 	try {
 		categorySchema.parse(req.body);
 
-		const { label, color_hex } = req.body;
+		const { label, color_hex, detail } = req.body;
 
 		const existingCategories = await getCategories();
 		const exists = existingCategories.find(
@@ -38,7 +39,7 @@ export const createCategoryController = async (
 				.json({ message: `Category "${label}" already exists` });
 		}
 
-		const category = await createCategory(label, color_hex);
+		const category = await createCategory(label, color_hex, detail || null);
 
 		return res.status(201).json({ message: 'Category created', category });
 	} catch (err) {
