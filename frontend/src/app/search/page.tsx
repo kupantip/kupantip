@@ -32,6 +32,10 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
     let comment_count = 0;
     let start_post = 0;
     let relevance_score = 0;
+    let post_author = '';
+    let post_comment_count = 0;
+    let post_vote_score = 0;
+    let post_when = 0;
 
     if (type === 'post') {
         const post = item as Post;
@@ -44,6 +48,10 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
         start_post = post.minutes_since_posted;
     } else if (type === 'comment') {
         const comment = item as Comment;
+        post_author = comment.post_author_name;
+        post_comment_count = comment.post_comment_count;
+        post_vote_score = comment.post_vote_score;
+        post_when = comment.post_minutes_since_posted;
         href = `/posts/${comment.post_id}`;
         title = comment.post_title;
         description = comment.body_md;
@@ -123,20 +131,20 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
                                 <div className="flex items-center gap-3">
                                     <Avatar className="w-8 h-8 border-3 border-emerald-600 dark:border-emerald-700">
                                         <AvatarImage
-                                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${author}`}
+                                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${post_author}`}
                                         />
                                         <AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xl">
-                                            {author.charAt(0).toUpperCase()}
+                                            {post_author.charAt(0).toUpperCase()}
                                         </AvatarFallback>
                                     </Avatar>
 
                                     <div className="flex-1 flex flex-col text-xs">
                                         <span className="font-semibold">
-                                            {author}
+                                            {post_author}
                                         </span>
-                                        {/* <span className="text-gray-400">
-                                            {formatTime(start_post)}
-                                        </span> */}
+                                        <span className="text-gray-400">
+                                            {formatTime(post_when)}
+                                        </span>
                                     </div>
                                 </div>
                                 <CardTitle className="text-lg mb-2 mt-1">{title}</CardTitle>
@@ -168,6 +176,10 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
                                         <p className="text-xs text-gray-500 mt-2">{vote_score} {vote_score > 1 ? "votes" : "vote"}</p>                                       
                                     </div>
                                 </Card>
+                                <div className='flex gap-2 mt-1'>
+                                    <p className="text-xs text-gray-500 mt-2">{post_vote_score} {post_vote_score > 1 ? "votes" : "vote"}</p>
+                                    <p className="text-xs text-gray-500 mt-2">{post_comment_count} {post_comment_count > 1 ? "comments" : "comment"}</p>
+                                </div>
                             </div>
                         )}
                 </CardHeader>
