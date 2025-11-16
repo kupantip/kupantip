@@ -10,9 +10,9 @@ CREATE TABLE [dbo].[app_user] (
     [display_name] NVARCHAR(100) NOT NULL,
     [created_at] DATETIME NOT NULL CONSTRAINT [DF__app_user__create__3A81B327] DEFAULT CURRENT_TIMESTAMP,
     [updated_at] DATETIME NOT NULL CONSTRAINT [DF__app_user__update__3B75D760] DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT [PK__app_user__3213E83F9E358759] PRIMARY KEY CLUSTERED ([id]),
-    CONSTRAINT [UQ__app_user__AB6E61647AF27769] UNIQUE NONCLUSTERED ([email]),
-    CONSTRAINT [UQ__app_user__7ED567C0DFA7E905] UNIQUE NONCLUSTERED ([handle])
+    CONSTRAINT [PK__app_user__3213E83F9FE66E99] PRIMARY KEY CLUSTERED ([id]),
+    CONSTRAINT [UQ__app_user__AB6E61647535C41D] UNIQUE NONCLUSTERED ([email]),
+    CONSTRAINT [UQ__app_user__7ED567C0A5DC2FD7] UNIQUE NONCLUSTERED ([handle])
 );
 
 -- CreateTable
@@ -22,7 +22,7 @@ CREATE TABLE [dbo].[attachment] (
     [url] NVARCHAR(2048) NOT NULL,
     [mime_type] NVARCHAR(255),
     [created_at] DATETIME NOT NULL CONSTRAINT [DF__attachmen__creat__5535A963] DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT [PK__attachme__3213E83F3BF0C5A5] PRIMARY KEY CLUSTERED ([id])
+    CONSTRAINT [PK__attachme__3213E83FD8441BBC] PRIMARY KEY CLUSTERED ([id])
 );
 
 -- CreateTable
@@ -30,7 +30,7 @@ CREATE TABLE [dbo].[category] (
     [id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT [DF__category__id__5165187F] DEFAULT newsequentialid(),
     [label] NVARCHAR(64) NOT NULL,
     [color_hex] VARCHAR(7),
-    CONSTRAINT [PK__category__3213E83FC08C8E88] PRIMARY KEY CLUSTERED ([id])
+    CONSTRAINT [PK__category__3213E83F88272325] PRIMARY KEY CLUSTERED ([id])
 );
 
 -- CreateTable
@@ -43,7 +43,7 @@ CREATE TABLE [dbo].[comment] (
     [created_at] DATETIME NOT NULL CONSTRAINT [DF__comment__created__47DBAE45] DEFAULT CURRENT_TIMESTAMP,
     [updated_at] DATETIME NOT NULL CONSTRAINT [DF__comment__updated__48CFD27E] DEFAULT CURRENT_TIMESTAMP,
     [deleted_at] DATETIME,
-    CONSTRAINT [PK__comment__3213E83F41C7424C] PRIMARY KEY CLUSTERED ([id])
+    CONSTRAINT [PK__comment__3213E83FBB03BA90] PRIMARY KEY CLUSTERED ([id])
 );
 
 -- CreateTable
@@ -52,7 +52,7 @@ CREATE TABLE [dbo].[comment_vote] (
     [user_id] UNIQUEIDENTIFIER NOT NULL,
     [value] SMALLINT NOT NULL,
     [created_at] DATETIME NOT NULL CONSTRAINT [DF__comment_v__creat__4E88ABD4] DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT [PK__comment___0C0E95F76A782CFB] PRIMARY KEY CLUSTERED ([comment_id],[user_id])
+    CONSTRAINT [PK__comment___0C0E95F794FDB49B] PRIMARY KEY CLUSTERED ([comment_id],[user_id])
 );
 
 -- CreateTable
@@ -66,7 +66,7 @@ CREATE TABLE [dbo].[post] (
     [updated_at] DATETIME NOT NULL CONSTRAINT [DF__post__updated_at__440B1D61] DEFAULT CURRENT_TIMESTAMP,
     [deleted_at] DATETIME,
     [category_id] UNIQUEIDENTIFIER,
-    CONSTRAINT [PK__post__3213E83FF3088149] PRIMARY KEY CLUSTERED ([id])
+    CONSTRAINT [PK__post__3213E83F66784A2C] PRIMARY KEY CLUSTERED ([id])
 );
 
 -- CreateTable
@@ -75,7 +75,7 @@ CREATE TABLE [dbo].[post_vote] (
     [user_id] UNIQUEIDENTIFIER NOT NULL,
     [value] SMALLINT NOT NULL,
     [created_at] DATETIME NOT NULL CONSTRAINT [DF__post_vote__creat__4BAC3F29] DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT [PK__post_vot__D54C6416CE365A44] PRIMARY KEY CLUSTERED ([post_id],[user_id])
+    CONSTRAINT [PK__post_vot__D54C641638BAFC0E] PRIMARY KEY CLUSTERED ([post_id],[user_id])
 );
 
 -- CreateTable
@@ -87,21 +87,21 @@ CREATE TABLE [dbo].[report] (
     [reason] NVARCHAR(max) NOT NULL,
     [created_at] DATETIME NOT NULL CONSTRAINT [DF__report__created___59063A47] DEFAULT CURRENT_TIMESTAMP,
     [status] NVARCHAR(16) NOT NULL CONSTRAINT [DF__report__status__59FA5E80] DEFAULT 'open',
-    CONSTRAINT [PK__report__3213E83FD7909D9C] PRIMARY KEY CLUSTERED ([id])
+    CONSTRAINT [PK__report__3213E83F4A77CD7D] PRIMARY KEY CLUSTERED ([id])
 );
 
 -- CreateTable
 CREATE TABLE [dbo].[user_role] (
     [user_id] UNIQUEIDENTIFIER NOT NULL,
     [role] NVARCHAR(32) NOT NULL,
-    CONSTRAINT [PK__user_rol__31DDE51B2723B6BB] PRIMARY KEY CLUSTERED ([user_id],[role])
+    CONSTRAINT [PK__user_rol__31DDE51B1CEFBACD] PRIMARY KEY CLUSTERED ([user_id],[role])
 );
 
 -- CreateTable
 CREATE TABLE [dbo].[user_secret] (
     [user_id] UNIQUEIDENTIFIER NOT NULL,
     [password_hash] NVARCHAR(255) NOT NULL,
-    CONSTRAINT [PK__user_sec__B9BE370F2A983CFD] PRIMARY KEY CLUSTERED ([user_id])
+    CONSTRAINT [PK__user_sec__B9BE370F85E12DA3] PRIMARY KEY CLUSTERED ([user_id])
 );
 
 -- CreateTable
@@ -113,7 +113,7 @@ CREATE TABLE [dbo].[moderation_action] (
     [action_type] NVARCHAR(32) NOT NULL,
     [details] NVARCHAR(max),
     [created_at] DATETIME NOT NULL CONSTRAINT [DF__moderatio__creat__628FA481] DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT [PK__moderati__3213E83FCAE178E8] PRIMARY KEY CLUSTERED ([id])
+    CONSTRAINT [PK__moderati__3213E83F1536CC02] PRIMARY KEY CLUSTERED ([id])
 );
 
 -- CreateTable
@@ -130,20 +130,30 @@ CREATE TABLE [dbo].[user_ban] (
     [revoked_at] DATETIME,
     [revoked_by] UNIQUEIDENTIFIER,
     [related_report_id] UNIQUEIDENTIFIER,
-    CONSTRAINT [PK__user_ban__3213E83F0C6946AC] PRIMARY KEY CLUSTERED ([id])
+    CONSTRAINT [PK__user_ban__3213E83FDABA7A89] PRIMARY KEY CLUSTERED ([id])
 );
 
 -- CreateTable
-CREATE TABLE [dbo].[annoucement] (
-    [id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT [DF__annoucement__id__656C112C] DEFAULT newsequentialid(),
+CREATE TABLE [dbo].[announcement] (
+    [id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT [DF__announcement__id__656C112C] DEFAULT newsequentialid(),
     [author_id] UNIQUEIDENTIFIER NOT NULL,
     [title] NVARCHAR(300) NOT NULL,
     [body_md] NVARCHAR(max) NOT NULL,
-    [create_at] DATETIME NOT NULL CONSTRAINT [DF__annouceme__creat__66603565] DEFAULT CURRENT_TIMESTAMP,
+    [create_at] DATETIME NOT NULL CONSTRAINT [DF__announcem__creat__66603565] DEFAULT CURRENT_TIMESTAMP,
     [start_at] DATETIME NOT NULL,
     [end_at] DATETIME NOT NULL,
     [delete_at] DATETIME,
-    CONSTRAINT [PK__annoucem__3213E83FC1741333] PRIMARY KEY CLUSTERED ([id])
+    CONSTRAINT [PK__announce__3213E83F24BAF726] PRIMARY KEY CLUSTERED ([id])
+);
+
+-- CreateTable
+CREATE TABLE [dbo].[reset_token] (
+    [id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT [DF__reset_token__id__693CA210] DEFAULT newsequentialid(),
+    [user_id] UNIQUEIDENTIFIER NOT NULL,
+    [token] NVARCHAR(max) NOT NULL,
+    [create_at] DATETIME NOT NULL CONSTRAINT [DF__reset_tok__creat__6A30C649] DEFAULT CURRENT_TIMESTAMP,
+    [isValid] BIT NOT NULL CONSTRAINT [DF__reset_tok__isVal__6B24EA82] DEFAULT 1,
+    CONSTRAINT [PK__reset_to__3213E83F348BCA43] PRIMARY KEY CLUSTERED ([id])
 );
 
 -- CreateIndex
@@ -222,7 +232,10 @@ ALTER TABLE [dbo].[user_ban] ADD CONSTRAINT [FK__user_ban__revoke__71D1E811] FOR
 ALTER TABLE [dbo].[user_ban] ADD CONSTRAINT [FK__user_ban__user_i__6FE99F9F] FOREIGN KEY ([user_id]) REFERENCES [dbo].[app_user]([id]) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE [dbo].[annoucement] ADD CONSTRAINT [FK__annouceme__autho__778AC167] FOREIGN KEY ([author_id]) REFERENCES [dbo].[app_user]([id]) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE [dbo].[announcement] ADD CONSTRAINT [FK__announcem__autho__7C4F7684] FOREIGN KEY ([author_id]) REFERENCES [dbo].[app_user]([id]) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE [dbo].[reset_token] ADD CONSTRAINT [FK__reset_tok__user___7D439ABD] FOREIGN KEY ([user_id]) REFERENCES [dbo].[app_user]([id]) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 COMMIT TRAN;
 

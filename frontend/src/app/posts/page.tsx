@@ -5,7 +5,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 
 import { useHotPosts, useSummaryStats } from '@/services/post/post';
-import { useAnnouncements } from '@/services/announcement/announcement';
+import { useAnnouncement } from '@/services/announcement/announcement';
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -30,6 +30,8 @@ import {
 } from 'lucide-react';
 import { formatMinutes } from '@/lib/time';
 import { useRouter } from 'next/navigation';
+import AnnouncementPreviewItem from '@/components/announcement/AnnouncementPreviewItem';
+import StackAnnoncement from '@/components/announcement/StackAnnouncement';
 
 export default function HomePage() {
 	const {
@@ -41,7 +43,7 @@ export default function HomePage() {
 		data: announcements,
 		isLoading: isLoadingAnnouncements,
 		isError: isErrorAnnouncements,
-	} = useAnnouncements();
+	} = useAnnouncement();
 	// const {
 	// 	data: summaryStats,
 	// 	isLoading: isLoadingSummary,
@@ -113,35 +115,7 @@ export default function HomePage() {
 							<Loader2 className="animate-spin w-8 h-8 text-green-1" />
 						</div>
 					) : (
-						announcements?.map((post, i) => (
-							<div
-								key={i}
-								onClick={() => handlePostClick(post.id, true)}
-								className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900
-									hover:bg-gray-100 dark:hover:bg-gray-800 
-									rounded-lg 
-									transition-all duration-300 ease-in-out 
-									hover:shadow-md cursor-pointer"
-							>
-								<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
-									<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline">
-										{post.title}
-									</h3>
-									<p className="text-sm text-gray-500">
-										<Badge
-											variant="secondary"
-											className="mr-2 bg-green-100 text-green-800"
-										>
-											Announcement
-										</Badge>
-										{post.author_display_name} •{' '}
-										{formatMinutes(
-											post.minutes_since_announced
-										)}
-									</p>
-								</div>
-							</div>
-						))
+						<StackAnnoncement announcements={announcements} />
 					)}
 				</CardContent>
 			</Card>
