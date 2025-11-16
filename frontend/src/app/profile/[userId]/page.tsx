@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
@@ -59,9 +59,17 @@ export default function MyProfilePage() {
 	const params = useParams();
 	const userId = params.userId as string;
 
-	const tokenPayload = session?.accessToken
-		? jwtDecode<UserPayload>(session.accessToken)
-		: null;
+	const [copied, setCopied] = useState(false);
+
+	const copyCurrentUrl = async () => {
+		try {
+			await navigator.clipboard.writeText(window.location.href);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000); // Reset 'copied' state after 2 seconds
+		} catch (err) {
+			console.error('Failed to copy URL: ', err);
+		}
+	};
 
 	useEffect(() => {
 		AOS.init({
@@ -192,8 +200,10 @@ export default function MyProfilePage() {
 								<Button
 									variant="outline"
 									className="cursor-pointer"
+									onClick={copyCurrentUrl}
+									disabled={copied}
 								>
-									Share Profile
+									{copied ? 'Copied!' : 'Share Profile'}
 								</Button>
 							</div>
 						</div>
@@ -269,9 +279,9 @@ export default function MyProfilePage() {
 
 			{/* Tabs Section */}
 			<Tabs defaultValue="activity" className="w-full">
-				<TabsList className="grid w-full grid-cols-3">
+				<TabsList className="grid w-full grid-cols-2">
 					<TabsTrigger value="activity">Recent Activity</TabsTrigger>
-					<TabsTrigger value="badges">Badges</TabsTrigger>
+					{/* <TabsTrigger value="badges">Badges</TabsTrigger> */}
 					<TabsTrigger value="about">About</TabsTrigger>
 				</TabsList>
 
