@@ -41,9 +41,10 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
         author = post.author_name;
         vote_score = post.vote_score;
         comment_count = post.comment_count;
+        start_post = post.minutes_since_posted;
     } else if (type === 'comment') {
         const comment = item as Comment;
-        href = `/posts/${comment.post_id}?highlight_comment=${comment.id}`; // (ส่งไปหน้า post และ highlight)
+        href = `/posts/${comment.post_id}`;
         title = comment.post_title;
         description = comment.body_md;
         author = comment.author_name;
@@ -119,7 +120,26 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
                         )}
                         {type === 'comment' && (
                             <div className='flex flex-col'>
-                                <CardTitle className="text-lg mb-2">{title}</CardTitle>
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="w-8 h-8 border-3 border-emerald-600 dark:border-emerald-700">
+                                        <AvatarImage
+                                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${author}`}
+                                        />
+                                        <AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xl">
+                                            {author.charAt(0).toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+
+                                    <div className="flex-1 flex flex-col text-xs">
+                                        <span className="font-semibold">
+                                            {author}
+                                        </span>
+                                        {/* <span className="text-gray-400">
+                                            {formatTime(start_post)}
+                                        </span> */}
+                                    </div>
+                                </div>
+                                <CardTitle className="text-lg mb-2 mt-1">{title}</CardTitle>
                                 <Card className="border-none shadow-none bg-gray-100 w-full p-4">
                                     <div className='flex flex-col gap-2'>
                                         <div className="flex items-center gap-3">
