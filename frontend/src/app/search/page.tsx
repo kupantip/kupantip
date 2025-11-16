@@ -160,12 +160,14 @@ function SearchContent({
     query,
     isLoading,
     data,
-    type 
+    type,
+    showTypeLabel
 }: { 
     query: string | null,
     isLoading: boolean, 
     data?: (Post | Comment | User)[],
     type: 'post' | 'comment' | 'user'
+    showTypeLabel?: boolean
 }) {
     if (isLoading) {
         return (
@@ -187,8 +189,77 @@ function SearchContent({
         <div className="flex flex-col gap-2">
             {data.map(item => {
                 const key = type === 'user' ? (item as User).user_id : (item as Post | Comment).id;
-                return <SearchResultCard key={key} item={item} type={type} />;
+                return (
+                    <div key={key} className="flex flex-col gap-1">
+                        {showTypeLabel && (
+                            <span className="text-xs font-semibold text-gray-500 uppercase">
+                                {type}
+                            </span>
+                        )}
+                        <SearchResultCard item={item} type={type} />
+                    </div>
+                )
             })}
+        </div>
+    );
+}
+
+function AllResults({ data }: { 
+    data?: { posts: Post[]; comments: Comment[]; users: User[] }
+}) {
+    if (!data) return null;
+
+    return (
+        <div className="flex flex-col gap-8">
+
+            {/* POSTS */}
+            {data.posts?.length > 0 && (
+                <div className="flex flex-col gap-2">
+                    <h2 className="text-2xl font-bold">Posts</h2>
+                    <div className="flex flex-col gap-2">
+                        {data.posts.map(post => (
+                            <SearchResultCard 
+                                key={post.id} 
+                                item={post} 
+                                type="post" 
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* COMMENTS */}
+            {data.comments?.length > 0 && (
+                <div className="flex flex-col gap-2">
+                    <h2 className="text-2xl font-bold">Comments</h2>
+                    <div className="flex flex-col gap-2">
+                        {data.comments.map(comment => (
+                            <SearchResultCard 
+                                key={comment.id} 
+                                item={comment} 
+                                type="comment" 
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* USERS */}
+            {data.users?.length > 0 && (
+                <div className="flex flex-col gap-2">
+                    <h2 className="text-2xl font-bold">Users</h2>
+                    <div className="flex flex-col gap-2">
+                        {data.users.map(user => (
+                            <SearchResultCard 
+                                key={user.user_id} 
+                                item={user} 
+                                type="user" 
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }
@@ -199,18 +270,28 @@ function SearchPageComponent() {
 
     const { data, isLoading } = useSearch(query);
 
+    const total =
+        (data?.posts?.length || 0) +
+        (data?.comments?.length || 0) +
+        (data?.users?.length || 0);
+
     return (
         <div className="w-full max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold mb-6">
                 Search results for &quot;{query}&quot;
             </h1>
 
-            <Tabs defaultValue="posts" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+            <Tabs defaultValue="all" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="all">All ({(total || 0)})</TabsTrigger>
                     <TabsTrigger value="posts">Posts ({data?.posts?.length || 0})</TabsTrigger>
                     <TabsTrigger value="comments">Comments ({data?.comments?.length || 0})</TabsTrigger>
                     <TabsTrigger value="users">Users ({data?.users?.length || 0})</TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="all" className="mt-4">
+                    <AllResults data={data} />
+                </TabsContent>
                 
                 <TabsContent value="posts" className="mt-4">
                     <SearchContent 
@@ -238,6 +319,7 @@ function SearchPageComponent() {
                         type="user" 
                     />
                 </TabsContent>
+
             </Tabs>
         </div>
     );
