@@ -277,10 +277,6 @@ function SearchPageComponent() {
 
     return (
         <div className="w-full max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6">
-                Search results for &quot;{query}&quot;
-            </h1>
-
             <Tabs defaultValue="all" className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="all">All ({(total || 0)})</TabsTrigger>

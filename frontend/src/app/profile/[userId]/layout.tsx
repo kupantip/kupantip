@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useSession } from 'next-auth/react';
@@ -12,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import { CirclePlus } from 'lucide-react';
 import { UserPen } from 'lucide-react';
 import { Bell } from 'lucide-react';
-import { Loader2 } from 'lucide-react';
 
 import Link from 'next/link';
 import NavButtons from '@/components/NavButton';
@@ -39,8 +40,17 @@ export default function DashboardLayout({
     const [debouncedTerm, setDebouncedTerm] = useState('');
     const [showDropdown, setShowDropdown] = useState(false);
     const searchRef = useRef<HTMLFormElement>(null);
+	const searchParams = useSearchParams();
 
 	const { data: searchData, isLoading: isSearchLoading } = useSearch(debouncedTerm);
+
+    useEffect(() => {
+        const q = searchParams.get("q");
+        if (q) {
+            setSearchItem(q);
+            setDebouncedTerm(q);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -91,7 +101,6 @@ export default function DashboardLayout({
     };
 
     const handleResultClick = () => {
-        setSearchItem('');
         setShowDropdown(false);
     };
 
