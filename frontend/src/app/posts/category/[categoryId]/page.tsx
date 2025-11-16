@@ -76,6 +76,7 @@ export default function PostCategoryPage() {
 				</BreadcrumbList>
 			</Breadcrumb>
 			{/* Header Card */}
+			{/* TODO change color according the category hex? */}
 			<Card className="bg-green-1 text-white shadow-md border-none">
 				<CardHeader>
 					<CardTitle className="text-2xl font-bold">
@@ -92,8 +93,9 @@ export default function PostCategoryPage() {
 				</CardHeader>
 				<CardContent className="flex items-center justify-between text-sm">
 					<div>
-						A space for students to share ideas, experiences, and
-						discussions within the university community.
+						{/* A space for students to share ideas, experiences, and
+						discussions within the university community. */}
+						{category?.detail}
 					</div>
 				</CardContent>
 			</Card>

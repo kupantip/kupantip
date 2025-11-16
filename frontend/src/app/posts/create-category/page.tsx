@@ -77,6 +77,17 @@ export default function CreateCategoryPage() {
 						className="border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-700"
 						required
 					/>
+					<input
+						type="text"
+						placeholder="Detail"
+						value={formData.detail}
+						onChange={(e) =>
+							setFormData({ ...formData, detail: e.target.value })
+						}
+						className="border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-700"
+						required
+						maxLength={100}
+					/>
 					<div className="flex items-center gap-3">
 						<input
 							type="color"
