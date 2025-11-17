@@ -115,7 +115,7 @@ export default function DashboardLayout({
 					<form 
                         onSubmit={handleSearch}
 						ref={searchRef} 
-                        className="relative w-full max-w-xl ml-26"
+                        className="relative w-full max-w-xl ml-54"
                     >
 						<InputGroup className='bg-white'>
 							<InputGroupInput 
