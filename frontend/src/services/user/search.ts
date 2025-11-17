@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { getSession } from 'next-auth/react';
 import axios from 'axios';
-import { Post, Comment } from '@/types/dashboard/post';
+import { Post, Comment, Category } from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
 
 const instance = axios.create({
-    baseURL: '/backend',
+    baseURL: '/api/proxy',
     timeout: 10000,
 });
 
@@ -13,11 +13,12 @@ export interface SearchResponse {
     posts: Post[];
     comments: Comment[];
     users: User[];
+    categories: Category[];
 }
 
 export const searchAll = async (query: string): Promise<SearchResponse> => {
     if (!query) {
-        return { posts: [], comments: [], users: []};
+        return { posts: [], comments: [], users: [], categories: []};
     }
 
     try {

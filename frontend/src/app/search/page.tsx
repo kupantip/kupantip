@@ -3,8 +3,13 @@
 import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSearch } from '@/services/user/search';
-import { Post, Comment } from '@/types/dashboard/post';
+import { Post, Comment, Category } from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
+import { 
+    PersonStanding, 
+    BriefcaseBusiness,
+    House,
+} from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -23,7 +28,12 @@ const formatTime = (minutes: number) => {
 	} ago`;
 };
 
-function SearchResultCard({ item, type }: { item: Post | Comment | User, type: 'post' | 'comment' | 'user' }) {
+const categoryIcons: Record<string, React.ReactNode> = {
+    "Community": <PersonStanding/>,
+    "Recruitment": <BriefcaseBusiness/>,
+};
+
+function SearchResultCard({ item, type }: { item: Post | Comment | User | Category, type: 'post' | 'comment' | 'user' | 'category'}) {
     let href = '#';
     let title = '';
     let description = '';
@@ -31,19 +41,27 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
     let vote_score = 0;
     let comment_count = 0;
     let start_post = 0;
-    let relevance_score = 0;
+    let post_author = '';
+    let post_comment_count = 0;
+    let post_vote_score = 0;
+    let post_when = 0;
 
     if (type === 'post') {
         const post = item as Post;
-        href = `/posts/${post.id}`;
+        href = `/posts/${post.id}?r=Search`;
         title = post.title;
         description = post.body_md;
         author = post.author_name;
         vote_score = post.vote_score;
         comment_count = post.comment_count;
+        start_post = post.minutes_since_posted;
     } else if (type === 'comment') {
         const comment = item as Comment;
-        href = `/posts/${comment.post_id}?highlight_comment=${comment.id}`; // (ส่งไปหน้า post และ highlight)
+        post_author = comment.post_author_name;
+        post_comment_count = comment.post_comment_count;
+        post_vote_score = comment.post_vote_score;
+        post_when = comment.post_minutes_since_posted;
+        href = `/posts/${comment.post_id}?r=Search`;
         title = comment.post_title;
         description = comment.body_md;
         author = comment.author_name;
@@ -55,7 +73,10 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
         title = user.display_name;
         description = `View profile for ${user.display_name}`;
         author = user.display_name;
-        relevance_score = user.relevance_score;
+    } else if (type === 'category'){
+        const category = item as Category;
+        href = `/posts/category/${category.id}`;
+        title = category.label;
     }
 
     return (
@@ -74,12 +95,9 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
                                         </AvatarFallback>
                                     </Avatar>
 
-                                    <div className="flex-1 flex flex-col text-xs gap-1">
+                                    <div className="flex-1 flex flex-col text-sm gap-1">
                                         <span className="font-semibold">
                                             {author}
-                                        </span>
-                                        <span className="text-gray-400">
-                                            Relevance Score : {relevance_score}
                                         </span>
                                     </div>
                                 </div>
@@ -111,15 +129,34 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
                                     {description}
                                 </CardDescription>
                                 <div className='flex gap-2'>
-                                    <p className="text-xs text-gray-500 mt-2">{vote_score} votes</p>
-                                    <p className="text-xs text-gray-500 mt-2">{comment_count} comments</p>
+                                    <p className="text-xs text-gray-500 mt-2">{vote_score} {vote_score > 1 ? "votes" : "vote"}</p>
+                                    <p className="text-xs text-gray-500 mt-2">{comment_count} {comment_count > 1 ? "comments" : "comment"}</p>
                                 </div>
                             </div>
 
                         )}
                         {type === 'comment' && (
                             <div className='flex flex-col'>
-                                <CardTitle className="text-lg mb-2">{title}</CardTitle>
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="w-8 h-8 border-3 border-emerald-600 dark:border-emerald-700">
+                                        <AvatarImage
+                                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${post_author}`}
+                                        />
+                                        <AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xl">
+                                            {post_author.charAt(0).toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+
+                                    <div className="flex-1 flex flex-col text-xs">
+                                        <span className="font-semibold">
+                                            {post_author}
+                                        </span>
+                                        <span className="text-gray-400">
+                                            {formatTime(post_when)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <CardTitle className="text-lg mb-2 mt-1">{title}</CardTitle>
                                 <Card className="border-none shadow-none bg-gray-100 w-full p-4">
                                     <div className='flex flex-col gap-2'>
                                         <div className="flex items-center gap-3">
@@ -145,9 +182,23 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
                                         <CardDescription className="mt-1 line-clamp-2 text-black">
                                             {description}
                                         </CardDescription>
-                                        <p className="text-xs text-gray-500 mt-2">{vote_score} votes</p>                                       
+                                        <p className="text-xs text-gray-500 mt-2">{vote_score} {vote_score > 1 ? "votes" : "vote"}</p>                                       
                                     </div>
                                 </Card>
+                                <div className='flex gap-2 mt-1'>
+                                    <p className="text-xs text-gray-500 mt-2">{post_vote_score} {post_vote_score > 1 ? "votes" : "vote"}</p>
+                                    <p className="text-xs text-gray-500 mt-2">{post_comment_count} {post_comment_count > 1 ? "comments" : "comment"}</p>
+                                </div>
+                            </div>
+                        )}
+                        {type === 'category' && (
+                            <div className="flex mt-1 gap-3">
+                                {categoryIcons[(item as Category).label] ?? (
+                                    <House/>
+                                )}
+                                <span className="font-semibold">
+                                    {title}
+                                </span>
                             </div>
                         )}
                 </CardHeader>
@@ -160,12 +211,14 @@ function SearchContent({
     query,
     isLoading,
     data,
-    type 
+    type,
+    showTypeLabel
 }: { 
     query: string | null,
     isLoading: boolean, 
-    data?: (Post | Comment | User)[],
-    type: 'post' | 'comment' | 'user'
+    data?: (Post | Comment | User | Category)[],
+    type: 'post' | 'comment' | 'user' | 'category'
+    showTypeLabel?: boolean
 }) {
     if (isLoading) {
         return (
@@ -186,13 +239,47 @@ function SearchContent({
     return (
         <div className="flex flex-col gap-2">
             {data.map(item => {
-                // TypeScript safe
-                const key = type === 'user' ? (item as User).user_id : (item as Post | Comment).id;
-
-                return <SearchResultCard key={key} item={item} type={type} />;
+                return (
+                    <div key={item.id} className="flex flex-col gap-1">
+                        {showTypeLabel && (
+                            <span className="text-xs font-semibold text-gray-500 uppercase">
+                                {type}
+                            </span>
+                        )}
+                        <SearchResultCard item={item} type={type} />
+                    </div>
+                )
             })}
         </div>
     );
+}
+
+function AllResults({ data }: { 
+  data?: { posts: Post[]; comments: Comment[]; users: User[]; categories: Category[]; }
+}) {
+  if (!data) return null;
+
+  const sections: { label: string; items: (Post | Comment | User | Category)[]; type: 'post' | 'comment' | 'user' | 'category' }[] = [
+    { label: 'Posts', items: data.posts || [], type: 'post' },
+    { label: 'Comments', items: data.comments || [], type: 'comment' },
+    { label: 'Users', items: data.users || [], type: 'user' },
+    { label: 'Categories', items: data.categories || [], type: 'category' },
+  ];
+
+  return (
+    <div className="flex flex-col gap-8">
+      {sections.map(section => section.items.length > 0 && (
+        <div key={section.label} className="flex flex-col gap-2">
+          <h2 className="text-2xl font-bold">{section.label}</h2>
+          <div className="flex flex-col gap-2">
+            {section.items.map(item => {
+              return <SearchResultCard key={item.id} item={item} type={section.type} />;
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function SearchPageComponent() {
@@ -201,18 +288,26 @@ function SearchPageComponent() {
 
     const { data, isLoading } = useSearch(query);
 
-    return (
-        <div className="w-full max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6">
-                Search results for &quot;{query}&quot;
-            </h1>
+    const total =
+        (data?.posts?.length || 0) +
+        (data?.comments?.length || 0) +
+        (data?.users?.length || 0) +
+        (data?.categories?.length || 0);
 
-            <Tabs defaultValue="posts" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+    return (
+        <div className="w-full max-w-5xl mx-auto">
+            <Tabs defaultValue="all" className="w-full">
+                <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="all">All ({(total || 0)})</TabsTrigger>
+                    <TabsTrigger value="categories">Categories ({data?.categories?.length || 0})</TabsTrigger>
                     <TabsTrigger value="posts">Posts ({data?.posts?.length || 0})</TabsTrigger>
                     <TabsTrigger value="comments">Comments ({data?.comments?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="users">Users ({data?.users?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="users">Users ({data?.users?.length || 0})</TabsTrigger>                 
                 </TabsList>
+
+                <TabsContent value="all" className="mt-4">
+                    <AllResults data={data} />
+                </TabsContent>
                 
                 <TabsContent value="posts" className="mt-4">
                     <SearchContent 
@@ -240,6 +335,16 @@ function SearchPageComponent() {
                         type="user" 
                     />
                 </TabsContent>
+
+                <TabsContent value="categories" className="mt-4">
+                     <SearchContent 
+                        query={query} 
+                        isLoading={isLoading} 
+                        data={data?.categories} 
+                        type="category" 
+                    />
+                </TabsContent>
+
             </Tabs>
         </div>
     );
