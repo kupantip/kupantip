@@ -51,9 +51,9 @@ export default function InstantSearchDropdown ({
                                             onClick={onResultClick}
                                             className="flex items-start gap-3 w-full text-left p-3 rounded-md hover:bg-gray-100"
                                         >
-											<Search className="text-gray-600 w-5"/>
 											<div>
 												<p className="font-medium text-black line-clamp-1">{post.title}</p>
+                                                <p className="text-sm text-gray-600 line-clamp-1">{post.body_md}</p>
 											</div>
                                         </Link>
                                     </li>
