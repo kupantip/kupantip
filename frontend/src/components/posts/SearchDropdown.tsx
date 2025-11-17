@@ -6,6 +6,16 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search } from "lucide-react"
 import { SearchResponse } from '@/types/dashboard/user';
+import { 
+    PersonStanding, 
+    BriefcaseBusiness,
+    House,
+} from 'lucide-react';
+
+const categoryIcons: Record<string, React.ReactNode> = {
+    "Community": <PersonStanding/>,
+    "Recruitment": <BriefcaseBusiness/>,
+};
 
 export default function InstantSearchDropdown ({
     isLoading,
@@ -17,7 +27,7 @@ export default function InstantSearchDropdown ({
     onResultClick: () => void;
 }) {
     const hasResults = (data?.posts?.length || 0) > 0 || (data?.comments?.length || 0) > 0 || (data?.users?.length || 0) > 0 || (data?.categories?.length || 0) > 0;
-    
+
     return (
         <div className="absolute top-full mt-2 w-full max-w-xl bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50">
             {isLoading ? (
@@ -117,7 +127,9 @@ export default function InstantSearchDropdown ({
                                             onClick={onResultClick}
                                             className="flex items-start gap-3 w-full text-left p-3 rounded-md hover:bg-gray-100"
                                         >	
-                                            <Search className="text-gray-600 w-5"/>
+                                            {categoryIcons[category.label] ?? (
+                                                <House/>
+                                            )}
 											<div>
 												<p className="font-medium text-black">{category.label}</p>
 											</div>

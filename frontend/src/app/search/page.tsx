@@ -5,6 +5,11 @@ import { useSearchParams } from 'next/navigation';
 import { useSearch } from '@/services/user/search';
 import { Post, Comment, Category } from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
+import { 
+    PersonStanding, 
+    BriefcaseBusiness,
+    House,
+} from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -23,6 +28,11 @@ const formatTime = (minutes: number) => {
 	} ago`;
 };
 
+const categoryIcons: Record<string, React.ReactNode> = {
+    "Community": <PersonStanding/>,
+    "Recruitment": <BriefcaseBusiness/>,
+};
+
 function SearchResultCard({ item, type }: { item: Post | Comment | User | Category, type: 'post' | 'comment' | 'user' | 'category'}) {
     let href = '#';
     let title = '';
@@ -31,7 +41,6 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User | Catego
     let vote_score = 0;
     let comment_count = 0;
     let start_post = 0;
-    let relevance_score = 0;
     let post_author = '';
     let post_comment_count = 0;
     let post_vote_score = 0;
@@ -64,7 +73,6 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User | Catego
         title = user.display_name;
         description = `View profile for ${user.display_name}`;
         author = user.display_name;
-        relevance_score = user.relevance_score;
     } else if (type === 'category'){
         const category = item as Category;
         href = `/posts/category/${category.id}`;
@@ -184,8 +192,13 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User | Catego
                             </div>
                         )}
                         {type === 'category' && (
-                            <div className='mt-1'>
-                                <h1>{title}</h1>
+                            <div className="flex mt-1 gap-3">
+                                {categoryIcons[(item as Category).label] ?? (
+                                    <House/>
+                                )}
+                                <span className="font-semibold">
+                                    {title}
+                                </span>
                             </div>
                         )}
                 </CardHeader>
@@ -269,7 +282,6 @@ function AllResults({ data }: {
   );
 }
 
-
 function SearchPageComponent() {
     const searchParams = useSearchParams();
     const query = searchParams.get('q');
@@ -283,14 +295,14 @@ function SearchPageComponent() {
         (data?.categories?.length || 0);
 
     return (
-        <div className="w-full max-w-6xl mx-auto">
+        <div className="w-full max-w-5xl mx-auto">
             <Tabs defaultValue="all" className="w-full">
                 <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="all">All ({(total || 0)})</TabsTrigger>
+                    <TabsTrigger value="categories">Categories ({data?.categories?.length || 0})</TabsTrigger>
                     <TabsTrigger value="posts">Posts ({data?.posts?.length || 0})</TabsTrigger>
                     <TabsTrigger value="comments">Comments ({data?.comments?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="users">Users ({data?.users?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="categories">Categories ({data?.categories?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="users">Users ({data?.users?.length || 0})</TabsTrigger>                 
                 </TabsList>
 
                 <TabsContent value="all" className="mt-4">
