@@ -18,7 +18,6 @@ import statsRoutes from './routes/stats.route';
 import announcementRoute from './routes/announcement.route';
 import searchRoute from './routes/search.route';
 import n8nRoute from './routes/n8n.route';
-import userProfileRoutes from './routes/userProfile.routes';
 import * as z from 'zod';
 
 const app = express();
@@ -51,7 +50,6 @@ apiV1.use('/stats', statsRoutes);
 apiV1.use('/announcement', announcementRoute);
 apiV1.use('/search', searchRoute);
 apiV1.use('/n8n', n8nRoute);
-apiV1.use('/profile', userProfileRoutes);
 
 app.use('/api/v1', apiV1);
 

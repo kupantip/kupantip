@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { getSession } from 'next-auth/react';
 
 const instance = axios.create({
-	baseURL: '/api/proxy/user',
+	baseURL: '/backend/user',
+	withCredentials: true,
 });
 
 export type UserStats = {

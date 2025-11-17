@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 const instance = axios.create({
-	baseURL: '/api/proxy/stats',
+	baseURL: '/backend/stats',
 });
 
 type Stat = {

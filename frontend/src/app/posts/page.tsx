@@ -148,17 +148,19 @@ export default function HomePage() {
 										{post.title}
 									</h3>
 									<p className="text-sm text-gray-500">
-										{' '}
-										<Badge
-											variant="secondary"
-											className="mr-2 bg-green-100 text-green-800"
-										>
-											{post.category_label}
-										</Badge>
-										{post.author_name} •{' '}
-										{formatMinutes(
-											post.minutes_since_posted
-										)}
+										<Link href={`/profle/${post.author_id}`}>
+											{' '}
+											<Badge
+												variant="secondary"
+												className="mr-2 bg-green-100 text-green-800"
+											>
+												{post.category_label}
+											</Badge>
+											{post.author_name} •{' '}
+											{formatMinutes(
+												post.minutes_since_posted
+											)}
+										</Link>
 									</p>
 								</div>
 								<div className="flex flex-wrap gap-x-2">

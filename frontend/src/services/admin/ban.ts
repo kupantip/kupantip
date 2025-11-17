@@ -2,7 +2,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
 const instance = axios.create({
-	baseURL: '/api/proxy/ban',
+	baseURL: '/backend/ban',
 });
 
 // Types

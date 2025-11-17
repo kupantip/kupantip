@@ -5,8 +5,9 @@ import { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCategories } from '@/services/post/category';
-import { usePostById } from '@/services/post/post';
-import { fetchUpdatePost } from '@/services/post/post';
+import { Post } from '@/types/dashboard/post';
+import { usePostById } from '@/services/dashboard/getPostById';
+import { updatePost } from '@/services/user/updatePost';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import AOS from 'aos';
@@ -123,7 +124,7 @@ export default function EditPostPage() {
 
 		if (!post) return;
 		try {
-			await fetchUpdatePost(
+			await updatePost(
 				{ title, body_md: body, category_id, files },
 				post.id
 			);
@@ -175,9 +176,9 @@ export default function EditPostPage() {
 		.filter((att) => !attachmentsToDelete.includes(att.id))
 		.map((att) => ({
 			id: att.id,
-			url: att.url.includes('/api/proxy/')
+			url: att.url.includes('/backend/')
 				? att.url
-				: att.url.replace('/uploads/', '/api/proxy/post/attachments/'),
+				: att.url.replace('/uploads/', '/backend/post/attachments/'),
 			isNew: false,
 		}));
 

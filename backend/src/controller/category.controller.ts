@@ -61,13 +61,12 @@ export const createCategoryController = async (
 };
 
 export const getCategoriesController = async (
-	req: Request,
+	_req: Request,
 	res: Response,
 	next: NextFunction
 ) => {
 	try {
-		const recent = req.query.recent === 'false' ? false : true;
-		const categories = await getCategories(recent);
+		const categories = await getCategories();
 		return res.status(200).json(categories);
 	} catch (err) {
 		next(err);

@@ -193,13 +193,10 @@ export default function MyProfilePage() {
 								</div>
 							</div>{' '}
 							<div className="flex gap-2 pt-2">
-								{session?.user.id === userId && (
-									<Button className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer">
-										<Edit className="w-4 h-4 mr-2" />
-										Edit Profile
-									</Button>
-								)}
-
+								<Button className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer">
+									<Edit className="w-4 h-4 mr-2" />
+									Edit Profile
+								</Button>
 								<Button
 									variant="outline"
 									className="cursor-pointer"
@@ -289,7 +286,7 @@ export default function MyProfilePage() {
 				</TabsList>
 
 				{/* Recent Activity Tab */}
-				<TabsContent value="activity" id="post">
+				<TabsContent value="activity">
 					<Card>
 						<CardHeader>
 							<CardTitle>Recent Activity</CardTitle>
@@ -313,7 +310,7 @@ export default function MyProfilePage() {
 										href={`/posts/${activity.id}`}
 										className="block"
 									>
-										<div className="flex items-start gap-4 px-3 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition hover:scale-102 cursor-pointer">
+										<div className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition hover:scale-102 cursor-pointer">
 											<div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
 												<FileText className="w-4 h-4 text-green-600" />
 											</div>

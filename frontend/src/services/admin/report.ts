@@ -3,7 +3,7 @@ import axios from 'axios';
 import { getSession } from 'next-auth/react';
 
 const instance = axios.create({
-	baseURL: '/api/proxy/report',
+	baseURL: '/backend/report',
 });
 
 export type Report = {

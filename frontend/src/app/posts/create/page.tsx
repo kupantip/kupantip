@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
-import { fetchCreatePost } from '@/services/post/post';
+import { createPost } from '@/services/user/create-post_page';
 import { useCategories } from '@/services/post/category';
 import { motion } from 'framer-motion';
 import AOS from 'aos';
@@ -81,7 +81,7 @@ export default function CreatePostPage() {
 		const postUrl = `http://post/${postId}`;
 
 		try {
-			await fetchCreatePost({ ...formData, url: postUrl });
+			await createPost({ ...formData, url: postUrl });
 			router.push(`/posts/category/${formData.category_id}`);
 		} catch (err: unknown) {
 			console.error('Failed to create post: ', err);

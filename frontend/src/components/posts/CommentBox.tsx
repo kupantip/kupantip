@@ -6,9 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
-import { usePostComment } from '@/services/comment/comment';
-import { fetchUpdateComment } from '@/services/comment/comment';
-import { AlertTriangle } from 'lucide-react';
+import { usePostComment } from '@/services/dashboard/postComment';
+import { updateComment } from '@/services/user/updateComment';
+import { AlertTriangle, Image as ImageIcon } from 'lucide-react';
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -79,7 +79,7 @@ export default function CommentBox({
 
 		try {
 			if (isEditing) {
-				const success = await fetchUpdateComment({
+				const success = await updateComment({
 					body_md: comment,
 					id: editComment.id,
 				});
