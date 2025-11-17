@@ -404,7 +404,6 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 };
 
 export default function PostDetail({ post, refresh }: PostDetailProps) {
-
 	const [reportingPost, setReportingPost] = useState<t.Post | null>(null);
 	const [showReportPostDialog, setShowReportPostDialog] = useState(false);
 
@@ -517,7 +516,9 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			router.push('/posts');
 		} else {
 			router.back();
-      
+		}
+	};
+
 	const handleAISummary = async () => {
 		setIsLoadingAI(true);
 		try {
