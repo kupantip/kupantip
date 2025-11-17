@@ -288,14 +288,14 @@ export default function CreatePostPage() {
 
 					<div className="flex justify-end gap-2">
 						<Link href={`/posts`}>
-							<Button className="bg-gray-200 text-black rounded-full hover:bg-gray-300 hover:shadow-md hover:scale-105 cursor-pointer">
+							<Button className="bg-gray-200 text-black rounded-lg hover:bg-gray-300 hover:shadow-md hover:scale-105 cursor-pointer">
 								Cancel
 							</Button>
 						</Link>
 						<Button
 							type="submit"
 							disabled={loading}
-							className="bg-emerald-700 hover:bg-emerald-800 hover:shadow-md hover:scale-105 rounded-full cursor-pointer"
+							className="bg-emerald-700 hover:bg-emerald-800 hover:shadow-md hover:scale-105 rounded-lg cursor-pointer"
 						>
 							{loading ? 'Posting...' : 'Post'}
 						</Button>

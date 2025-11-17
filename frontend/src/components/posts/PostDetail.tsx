@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -396,6 +396,9 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const [reportingPost, setReportingPost] = useState<t.Post | null>(null);
 	const [showReportPostDialog, setShowReportPostDialog] = useState(false);
 
+	const searchParams = useSearchParams();
+	const result = searchParams.get('r');
+
 	const { data: session } = useSession();
 	const tokenPayload = session?.accessToken
 		? jwtDecode<User>(session.accessToken)
@@ -494,17 +497,25 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		setShowReportPostDialog(true);
 	};
 
+	const handleBackButton = async () => {
+		if (!result) {
+			router.push('/posts');
+		} else {
+			router.back();
+		}
+	};
+
 	return (
 		<div className="min-h-screen px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
 			<div className="relative w-full max-w-4xl mx-auto">
 				{/* Back Button */}
 				<Button
 					variant="ghost"
-					onClick={() => router.back()}
+					onClick={handleBackButton}
 					className="mb-5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800"
 				>
 					<ArrowLeft className="w-4 h-4 mr-2" />
-					Back to Posts
+					{result ? `Back to ${result}` : 'Back to Posts'}
 				</Button>
 				{/* Post Card */}
 				<div className="w-full bg-white dark:bg-gray-9 rounded-lg shadow-md p-6 space-y-4">
