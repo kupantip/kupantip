@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-	baseURL: '/backend',
+	baseURL: '/api/proxy/n8n',
 	timeout: 35000, // 35 seconds (n8n has 30s timeout + buffer)
 });
 
@@ -18,7 +18,7 @@ export type AISummaryResponse = {
 export async function getAISummary(postId: string): Promise<AISummaryResponse> {
 	try {
 		const response = await instance.get<AISummaryResponse>(
-			`/n8n/post/${postId}`
+			`/post/${postId}`
 		);
 		return response.data;
 	} catch (error) {

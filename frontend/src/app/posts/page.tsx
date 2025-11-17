@@ -32,6 +32,7 @@ import { formatMinutes } from '@/lib/time';
 import { useRouter } from 'next/navigation';
 import AnnouncementPreviewItem from '@/components/announcement/AnnouncementPreviewItem';
 import StackAnnoncement from '@/components/announcement/StackAnnouncement';
+import Link from 'next/link';
 
 export default function HomePage() {
 	const {
@@ -147,6 +148,7 @@ export default function HomePage() {
 										{post.title}
 									</h3>
 									<p className="text-sm text-gray-500">
+										{' '}
 										<Badge
 											variant="secondary"
 											className="mr-2 bg-green-100 text-green-800"

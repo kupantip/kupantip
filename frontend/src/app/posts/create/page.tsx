@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
-import { createPost } from '@/services/user/create-post_page';
+import { fetchCreatePost } from '@/services/post/post';
 import { useCategories } from '@/services/post/category';
 import { motion } from 'framer-motion';
 import AOS from 'aos';
@@ -81,7 +81,7 @@ export default function CreatePostPage() {
 		const postUrl = `http://post/${postId}`;
 
 		try {
-			await createPost({ ...formData, url: postUrl });
+			await fetchCreatePost({ ...formData, url: postUrl });
 			router.push(`/posts/category/${formData.category_id}`);
 		} catch (err: unknown) {
 			console.error('Failed to create post: ', err);
@@ -288,14 +288,14 @@ export default function CreatePostPage() {
 
 					<div className="flex justify-end gap-2">
 						<Link href={`/posts`}>
-							<Button className="bg-gray-200 text-black rounded-full hover:bg-gray-300 hover:shadow-md hover:scale-105 cursor-pointer">
+							<Button className="bg-gray-200 text-black rounded-lg hover:bg-gray-300 hover:shadow-md hover:scale-105 cursor-pointer">
 								Cancel
 							</Button>
 						</Link>
 						<Button
 							type="submit"
 							disabled={loading}
-							className="bg-emerald-700 hover:bg-emerald-800 hover:shadow-md hover:scale-105 rounded-full cursor-pointer"
+							className="bg-emerald-700 hover:bg-emerald-800 hover:shadow-md hover:scale-105 rounded-lg cursor-pointer"
 						>
 							{loading ? 'Posting...' : 'Post'}
 						</Button>

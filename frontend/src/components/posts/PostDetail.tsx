@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -17,23 +17,26 @@ import {
 } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
-import { useCommentsByPostId } from '@/services/dashboard/getCommentByPostId';
+import { useCommentsByPostId } from '@/services/comment/comment';
 import CommentBox from './CommentBox';
-import { deletePost } from '@/services/user/delete_post';
-import { deleteComment } from '@/services/delete_comment';
+import { fetchDeletePost } from '@/services/post/post';
+import { fetchDeleteComment } from '@/services/comment/comment';
 import {
-	votePost,
-	deletevotePost,
-	voteComment,
-	deletevoteComment,
-} from '@/services/user/vote';
+	fetchVoteComment,
+	fetchDeletevoteComment,
+} from '@/services/comment/vote';
+import {
+	fetchDeletevotePost,
+	fetchUpvotePost,
+	fetchDownvotePost,
+} from '@/services/post/vote';
 import { jwtDecode } from 'jwt-decode';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { Trash2 } from 'lucide-react';
 import { Pen } from 'lucide-react';
 import { Flag } from 'lucide-react';
-import ReportModal from '@/app/posts/report/page';
+import ReportModal from './ReportModal';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -47,6 +50,7 @@ import {
 import { toast } from 'sonner';
 import { useSidebar } from '../ui/sidebar';
 import { Button } from '../ui/button';
+import Link from 'next/link';
 import { getAISummary } from '@/services/n8n/aiSummary';
 
 type PostDetailProps = {
@@ -99,10 +103,10 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		console.log('Upvote on', comment.id);
 		try {
 			if (!comment.liked_by_requesting_user) {
-				await voteComment({ commentId: comment.id, value: 1 });
+				await fetchVoteComment({ commentId: comment.id, value: 1 });
 				console.log('Upvote Comment Success');
 			} else {
-				await deletevoteComment(comment.id);
+				await fetchDeletevoteComment(comment.id);
 				console.log('Delete Upvote Success');
 			}
 		} catch (err: unknown) {
@@ -117,10 +121,10 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		console.log('Downvote on', comment.id);
 		try {
 			if (!comment.disliked_by_requesting_user) {
-				await voteComment({ commentId: comment.id, value: -1 });
+				await fetchVoteComment({ commentId: comment.id, value: -1 });
 				console.log('Downvote Comment Success');
 			} else {
-				await deletevoteComment(comment.id);
+				await fetchDeletevoteComment(comment.id);
 				console.log('Delete Downvote Success');
 			}
 		} catch (err: unknown) {
@@ -141,7 +145,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		e.stopPropagation();
 		console.log('Delete Comment on', comment.id);
 		try {
-			await deleteComment(comment.id);
+			await fetchDeleteComment(comment.id);
 			console.log('Delete comment', comment.id, ' success');
 			toast.warning('Comment deleted successfully!');
 			refreshComments();
@@ -178,14 +182,17 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 	return (
 		<div className="mb-4">
 			<div className="flex items-start gap-3">
-				<Avatar className="w-6 h-6 border-1 border-emerald-600">
-					<AvatarImage
-						src={`https://api.dicebear.com/7.x/initials/svg?seed=${comment.author_name}`}
-					/>
-					<AvatarFallback>
-						{comment.author_name.charAt(0)}
-					</AvatarFallback>
-				</Avatar>
+				<Link href={`/profile/${comment.author_id}`}>
+					<Avatar className="w-6 h-6 border-1 border-emerald-600">
+						<AvatarImage
+							src={`https://api.dicebear.com/7.x/initials/svg?seed=${comment.author_name}`}
+							className="hover:brightness-75"
+						/>
+						<AvatarFallback>
+							{comment.author_name.charAt(0)}
+						</AvatarFallback>
+					</Avatar>
+				</Link>
 				<div className="flex-1">
 					<div className="flex items-center gap-2 text-sm">
 						<span className="font-semibold">
@@ -400,6 +407,9 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const [reportingPost, setReportingPost] = useState<t.Post | null>(null);
 	const [showReportPostDialog, setShowReportPostDialog] = useState(false);
 
+	const searchParams = useSearchParams();
+	const result = searchParams.get('r');
+
 	const { data: session } = useSession();
 	const tokenPayload = session?.accessToken
 		? jwtDecode<User>(session.accessToken)
@@ -443,10 +453,10 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		console.log('Upvote on');
 		try {
 			if (!post.liked_by_requesting_user) {
-				await votePost({ postId: post.id, value: 1 });
+				await fetchUpvotePost(post.id);
 				console.log('Upvote Post Success');
 			} else {
-				await deletevotePost(post.id);
+				await fetchDeletevotePost(post.id);
 				console.log('Delete Upvote Success');
 			}
 		} catch {
@@ -460,10 +470,10 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		console.log('Downvote on');
 		try {
 			if (!post.disliked_by_requesting_user) {
-				await votePost({ postId: post.id, value: -1 });
+				await fetchDownvotePost(post.id);
 				console.log('Downvote Post Success');
 			} else {
-				await deletevotePost(post.id);
+				await fetchDeletevotePost(post.id);
 				console.log('Delete Downvote Success');
 			}
 		} catch {
@@ -483,7 +493,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		e.stopPropagation();
 		setMenuOpen(false);
 		try {
-			await deletePost(post.id);
+			await fetchDeletePost(post.id);
 			console.log('Delete post', post.id, ' success');
 			router.push(`/posts/category/${post.category_id}`);
 			toast.warning('Post deleted successfully!');
@@ -501,6 +511,13 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		setShowReportPostDialog(true);
 	};
 
+	const handleBackButton = async () => {
+		if (!result) {
+			router.push('/posts');
+		} else {
+			router.back();
+		}
+	};
 	const handleAISummary = async () => {
 		setIsLoadingAI(true);
 		try {
@@ -530,24 +547,27 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 				{/* Back Button */}
 				<Button
 					variant="ghost"
-					onClick={() => router.back()}
+					onClick={handleBackButton}
 					className="mb-5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800"
 				>
 					<ArrowLeft className="w-4 h-4 mr-2" />
-					Back to Posts
+					{result ? `Back to ${result}` : 'Back to Posts'}
 				</Button>
 				{/* Post Card */}
 				<div className="w-full bg-white dark:bg-gray-9 rounded-lg shadow-md p-6 space-y-4">
 					{/* Header */}
 					<div className="flex items-center gap-3">
-						<Avatar className="w-10 h-10 border-3 border-emerald-600 dark:border-emerald-700">
-							<AvatarImage
-								src={`https://api.dicebear.com/7.x/initials/svg?seed=${post.author_name}`}
-							/>
-							<AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xl">
-								{post.author_name.charAt(0).toUpperCase()}
-							</AvatarFallback>
-						</Avatar>
+						<Link href={`/profile/${post.author_id}`}>
+							<Avatar className="w-10 h-10 border-3 border-emerald-600 dark:border-emerald-700">
+								<AvatarImage
+									src={`https://api.dicebear.com/7.x/initials/svg?seed=${post.author_name}`}
+									className="transition duration-200 hover:brightness-75"
+								/>
+								<AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xl">
+									{post.author_name.charAt(0).toUpperCase()}
+								</AvatarFallback>
+							</Avatar>
+						</Link>
 
 						<div className="flex-1 flex flex-col text-sm">
 							<span className="font-semibold">
@@ -636,7 +656,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 								key={attachment.id}
 								src={attachment.url.replace(
 									'/uploads/',
-									'/backend/post/attachments/'
+									'/api/proxy/post/attachments/'
 								)}
 								alt="Post attachment"
 								width={300}
