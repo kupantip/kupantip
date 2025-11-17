@@ -57,7 +57,6 @@ export type AdminPost = {
 	author_display_name: string;
 };
 
-
 export type CreatePostData = {
 	title: string;
 	body_md: string;
@@ -76,9 +75,17 @@ export type SummaryStat = {
 	total_engagement: number;
 };
 
+type updatePostData = {
+	title: string;
+	body_md: string;
+	category_id?: string;
+	files: File[];
+};
+
 const instance = axios.create({
 	baseURL: '/api/proxy/post',
-
+	timeout: 5000,
+});
 
 export async function fetchPosts(category_id: string | null): Promise<Post[]> {
 	try {
@@ -357,13 +364,6 @@ export async function fetchDeletePost(postId: string) {
 		throw error;
 	}
 }
-
-type updatePostData = {
-	title: string;
-	body_md: string;
-	category_id?: string;
-	files: File[];
-};
 
 export async function fetchUpdatePost(data: updatePostData, postID: string) {
 	const formData = new FormData();

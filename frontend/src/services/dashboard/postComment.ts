@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
 const instance = axios.create({
-	baseURL: '/api/proxy',
+	baseURL: '/api/proxy/comment',
 	timeout: 5000,
 });
 
@@ -21,7 +21,7 @@ export async function postComment(body: {
 		const session = await getSession();
 
 		const response = await instance.post(
-			`/comment?post_id=${body.content.post_id}`,
+			`/?post_id=${body.content.post_id}`,
 			body.content,
 			{
 				headers: {

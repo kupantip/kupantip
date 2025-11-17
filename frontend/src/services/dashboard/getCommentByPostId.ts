@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 const instance = axios.create({
-	baseURL: '/api/proxy',
+	baseURL: '/api/proxy/comment',
 	timeout: 5000,
 });
 

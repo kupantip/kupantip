@@ -4,7 +4,7 @@ import { getSession } from 'next-auth/react';
 import axios from 'axios';
 
 const instance = axios.create({
-	baseURL: '/api/proxy',
+	baseURL: '/api/proxy/post',
 	timeout: 5000,
 });
 export async function getPostById(post_id: string): Promise<t.Post[]> {
@@ -13,7 +13,7 @@ export async function getPostById(post_id: string): Promise<t.Post[]> {
 		const token = session?.user?.accessToken;
 
 		const response = await instance.get<t.Post[]>(
-			`/post?post_id=${post_id}`,
+			`/?post_id=${post_id}`,
 			{
 				headers: {
 					Authorization: token ? `Bearer ${token}` : '',
