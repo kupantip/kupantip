@@ -12,7 +12,7 @@ const adminPayload = {
 
 const b1UserPayload = {
 	email: 'b1@user.com',
-	password: 'B1@1234',
+	password: 'B1user@1234',
 	token: '',
 };
 
@@ -32,7 +32,8 @@ describe('Reqest Categories Test', () => {
 			.send({
 				email: b1UserPayload.email,
 				password: b1UserPayload.password,
-				name: 'B1 User',
+				handle: 'b1user',
+				display_name: 'B1 User',
 			});
 		expect(b1signupResponse.status).toBe(201);
 
@@ -56,9 +57,7 @@ describe('Reqest Categories Test', () => {
 			label: 'New Category Request',
 			reason: 'Need this category for testing',
 		};
-		const response = await request(app)
-			.post(`${baseURL}/request`)
-			.send(payload);
+		const response = await request(app).post(`${baseURL}`).send(payload);
 		expect(response.status).toBe(401);
 	});
 
@@ -71,13 +70,13 @@ describe('Reqest Categories Test', () => {
 
 	test('B1 user should be able to request a new category', async () => {
 		const response = await request(app)
-			.post(`${baseURL}/request`)
+			.post(`${baseURL}`)
 			.send(newCategory)
 			.set('Authorization', `Bearer ${b1UserPayload.token}`);
 		expect(response.status).toBe(201);
 		expect(response.body).toHaveProperty(
 			'message',
-			'Category request submitted successfully'
+			'Category request created'
 		);
 
 		newCategory['id'] = response.body.data.id;
@@ -85,13 +84,13 @@ describe('Reqest Categories Test', () => {
 
 	test('B1 user should not be able to request an existing category', async () => {
 		const response = await request(app)
-			.post(`${baseURL}/request`)
+			.post(`${baseURL}`)
 			.send(newCategory)
 			.set('Authorization', `Bearer ${b1UserPayload.token}`);
 		expect(response.status).toBe(400);
 		expect(response.body).toHaveProperty(
-			'error',
-			'Category with this label already exists'
+			'message',
+			`Category "${newCategory.label}" already exists`
 		);
 	});
 

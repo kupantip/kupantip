@@ -60,7 +60,6 @@ app.use((req: Request, res: Response) => {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
 	if (err instanceof z.ZodError) {
-		console.log('Zodd Errorr');
 		const errors = err.issues.map((issue: z.ZodIssue) => {
 			const errorObj: {
 				path: string;
