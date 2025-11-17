@@ -64,7 +64,7 @@ export async function fetchUpdateProfile(
 	data: UpdateProfileInput
 ): Promise<UpdateProfileResponse> {
 	const session = await getSession();
-	const token = session?.user?.accessToken;
+	const token = session?.accessToken;
 
 	if (!token) {
 		return { message: 'No token provided' };
