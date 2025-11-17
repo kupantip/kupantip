@@ -48,7 +48,7 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User | Catego
 
     if (type === 'post') {
         const post = item as Post;
-        href = `/posts/${post.id}`;
+        href = `/posts/${post.id}?r=Search`;
         title = post.title;
         description = post.body_md;
         author = post.author_name;
@@ -61,7 +61,7 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User | Catego
         post_comment_count = comment.post_comment_count;
         post_vote_score = comment.post_vote_score;
         post_when = comment.post_minutes_since_posted;
-        href = `/posts/${comment.post_id}`;
+        href = `/posts/${comment.post_id}?r=Search`;
         title = comment.post_title;
         description = comment.body_md;
         author = comment.author_name;
