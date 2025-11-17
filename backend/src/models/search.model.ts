@@ -54,10 +54,19 @@ export type UserSearchResult = {
 	relevance_score: number;
 };
 
+export type CategorySearchResult = {
+	id: string;
+	label: string;
+	color_hex: string | null;
+	detail: string | null;
+	relevance_score: number;
+};
+
 export type SearchResult = {
 	posts?: PostSearchResult[];
 	comments?: CommentSearchResult[];
 	users?: UserSearchResult[];
+	categories?: CategorySearchResult[];
 };
 
 export const search = async (
@@ -281,6 +290,48 @@ export const search = async (
 				)
 				.then((res) => {
 					result.users = res.recordset;
+				})
+		);
+	}
+
+	// Search Categories
+	if (type === 'category' || type === 'all') {
+		queries.push(
+			pool
+				.request()
+				.input('query', sql.NVarChar, `%${query}%`)
+				.input('exact_query', sql.NVarChar, query)
+				.input('limit', sql.Int, limit)
+				.query(
+					`
+					SELECT TOP (@limit)
+						id,
+						label,
+						color_hex,
+						detail,
+						(CASE 
+							WHEN label = @exact_query THEN 1000
+							WHEN label LIKE @exact_query + '%' THEN 500
+							WHEN label LIKE @query THEN 100
+							WHEN detail LIKE '%' + @exact_query + '%' THEN 50
+							WHEN detail LIKE @query THEN 10
+							ELSE 0
+						END) AS relevance_score
+					FROM [dbo].[category] WITH (NOLOCK)
+					WHERE label LIKE @query OR detail LIKE @query
+					ORDER BY 
+						CASE 
+							WHEN label = @exact_query THEN 1000
+							WHEN label LIKE @exact_query + '%' THEN 500
+							WHEN label LIKE @query THEN 100
+							WHEN detail LIKE '%' + @exact_query + '%' THEN 50
+							WHEN detail LIKE @query THEN 10
+							ELSE 0
+						END DESC
+				`
+				)
+				.then((res) => {
+					result.categories = res.recordset;
 				})
 		);
 	}
