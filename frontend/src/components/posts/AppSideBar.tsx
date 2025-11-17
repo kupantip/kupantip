@@ -23,14 +23,14 @@ const topicItems = [
 
 const adminLinks = [
 	{
-		href: '/posts/admin',
+		href: '/posts/admin/report',
 		icon: Calendar,
-		label: 'Admin Panel',
-		aria: 'Admin Panel',
-		title: 'Admin Panel',
+		label: 'Report Panel',
+		aria: 'Report Panel',
+		title: 'Report Panel',
 	},
 	{
-		href: '/posts/admin/catergory',
+		href: '/posts/admin/category',
 		icon: BriefcaseBusiness,
 		label: 'Category Confirm',
 		aria: 'Category Confirm',

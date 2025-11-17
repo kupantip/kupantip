@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { useCreateCategory } from '@/services/post/category';
+import { useCreateRequestedCategory } from '@/services/admin/category';
 import { motion } from 'framer-motion';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -29,7 +29,7 @@ export default function CreateCategoryPage() {
 	const [success, setSuccess] = useState(false);
 	const router = useRouter();
 
-	const createCategoryMutation = useCreateCategory();
+	const createCategoryMutation = useCreateRequestedCategory();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -37,13 +37,21 @@ export default function CreateCategoryPage() {
 		setError(null);
 		setSuccess(false);
 		try {
-			await createCategoryMutation.mutateAsync(formData);
-			setSuccess(true);
-			setTimeout(() => {
-				router.push('/posts');
-			}, 1200);
+			const res = await createCategoryMutation.mutateAsync(formData);
+			if ('data' in res) {
+				setSuccess(true);
+				setTimeout(() => {
+					router.push('/posts');
+				}, 1200);
+			} else {
+				setError(res.message || 'Failed to create category request');
+			}
 		} catch (err: any) {
-			setError(err.message || 'Failed to create category');
+			// Try to show backend error message if available
+			const backendMsg = err?.response?.data?.message;
+			setError(
+				backendMsg || err.message || 'Failed to create category request'
+			);
 		} finally {
 			setLoading(false);
 		}
@@ -63,9 +71,13 @@ export default function CreateCategoryPage() {
 			className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
 		>
 			<div className="w-full max-w-2xl mx-auto bg-white shadow-xl rounded-2xl p-8">
-				<h1 className="text-2xl font-bold mb-6 text-gray-800">
-					Create Category
+				<h1 className="text-2xl font-bold mb-2 text-gray-800">
+					Request Category
 				</h1>
+				<p className="mb-4 text-gray-600">
+					Your category request will be reviewed by an administrator
+					before approval.
+				</p>
 				<form onSubmit={handleSubmit} className="flex flex-col gap-5">
 					<input
 						type="text"
@@ -133,7 +145,7 @@ export default function CreateCategoryPage() {
 						animate={{ opacity: 1, y: 0 }}
 						className="mt-4 text-green-600 font-semibold text-center"
 					>
-						Category created successfully!
+						Request created successfully!
 					</motion.div>
 				)}
 			</div>
