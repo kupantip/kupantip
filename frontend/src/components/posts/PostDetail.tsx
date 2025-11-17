@@ -183,8 +183,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 					<Avatar className="w-6 h-6 border-1 border-emerald-600">
 						<AvatarImage
 							src={`https://api.dicebear.com/7.x/initials/svg?seed=${comment.author_name}`}
-							className='hover:brightness-75'
-
+							className="hover:brightness-75"
 						/>
 						<AvatarFallback>
 							{comment.author_name.charAt(0)}
@@ -514,7 +513,9 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			router.push('/posts');
 		} else {
 			router.back();
-      
+		}
+	};
+
 	const handleAISummary = async () => {
 		setIsLoadingAI(true);
 		try {
@@ -865,4 +866,4 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			</AlertDialog>
 		</div>
 	);
-}}}
+}
