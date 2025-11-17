@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { getSession } from 'next-auth/react';
 import { BanResponse } from '@/types/dashboard/user';
+import * as t from '@/types/dashboard/post';
 
 export type Attachment = {
 	id: string;
@@ -84,7 +85,6 @@ type updatePostData = {
 
 const instance = axios.create({
 	baseURL: '/api/proxy/post',
-	timeout: 5000,
 });
 
 export async function fetchPosts(category_id: string | null): Promise<Post[]> {
@@ -400,4 +400,35 @@ export async function fetchUpdatePost(data: updatePostData, postID: string) {
 	}
 
 	return res.data;
+}
+
+export async function fetchPostById(post_id: string): Promise<t.Post[]> {
+	try {
+		const session = await getSession();
+		const token = session?.user?.accessToken;
+
+		const response = await instance.get<t.Post[]>('/', {
+			headers: {
+				Authorization: token ? `Bearer ${token}` : '',
+			},
+			params: { post_id },
+		});
+
+		return response.data;
+	} catch (err: unknown) {
+		if (err instanceof Error) {
+			throw new Error(err.message);
+		} else {
+			throw new Error(String(err));
+		}
+	}
+}
+
+export function usePostById(post_id: string) {
+	return useQuery<t.Post[], Error>({
+		queryKey: ['post', post_id],
+		queryFn: () => fetchPostById(post_id),
+		staleTime: 5 * 60 * 1000,
+		enabled: !!post_id,
+	});
 }
