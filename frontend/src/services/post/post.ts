@@ -57,7 +57,6 @@ export type AdminPost = {
 	author_display_name: string;
 };
 
-
 export type CreatePostData = {
 	title: string;
 	body_md: string;
@@ -78,7 +77,7 @@ export type SummaryStat = {
 
 const instance = axios.create({
 	baseURL: '/api/proxy/post',
-
+});
 
 export async function fetchPosts(category_id: string | null): Promise<Post[]> {
 	try {
