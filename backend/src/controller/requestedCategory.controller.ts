@@ -58,17 +58,17 @@ export const createRequestedCategoryController = async (
 			});
 		}
 
-		// Check for duplicate label in requested_category (actioned)
+		// Check for duplicate label in requested_category (open or actioned)
 		const allRequests = await getRequestedCategories();
 		const existingRequest = allRequests.find(
 			(r) =>
 				r.label.toLowerCase() === label.toLowerCase() &&
-				r.status === 'actioned'
+				(r.status === 'actioned')
 		);
 
 		if (existingRequest) {
 			return res.status(400).json({
-				message: `A request for category "${label}" already exists with status: ${existingRequest.status}`,
+				message: `Category "${label}" already exists`,
 			});
 		}
 
