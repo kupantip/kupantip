@@ -63,12 +63,9 @@ export async function fetchAnnouncement(): Promise<Announcement[]> {
 			Authorization: `Bearer ${session?.user?.accessToken}`,
 		};
 
-		const response = await instance.get<AnnouncementResponse>(
-			'/',
-			{
-				headers: header,
-			}
-		);
+		const response = await instance.get<AnnouncementResponse>('/', {
+			headers: header,
+		});
 
 		return response.data.announcements;
 	} catch (error: unknown) {

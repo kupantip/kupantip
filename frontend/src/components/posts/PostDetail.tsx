@@ -17,11 +17,14 @@ import {
 } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
-import { useCommentsByPostId } from '@/services/dashboard/getCommentByPostId';
+import { useCommentsByPostId } from '@/services/comment/comment';
 import CommentBox from './CommentBox';
 import { fetchDeletePost } from '@/services/post/post';
-import { deleteComment } from '@/services/delete_comment';
-import { voteComment, deletevoteComment } from '@/services/user/vote';
+import { fetchDeleteComment } from '@/services/comment/comment';
+import {
+	fetchVoteComment,
+	fetchDeletevoteComment,
+} from '@/services/comment/vote';
 import {
 	fetchDeletevotePost,
 	fetchUpvotePost,
@@ -100,10 +103,10 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		console.log('Upvote on', comment.id);
 		try {
 			if (!comment.liked_by_requesting_user) {
-				await voteComment({ commentId: comment.id, value: 1 });
+				await fetchVoteComment({ commentId: comment.id, value: 1 });
 				console.log('Upvote Comment Success');
 			} else {
-				await deletevoteComment(comment.id);
+				await fetchDeletevoteComment(comment.id);
 				console.log('Delete Upvote Success');
 			}
 		} catch (err: unknown) {
@@ -118,10 +121,10 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		console.log('Downvote on', comment.id);
 		try {
 			if (!comment.disliked_by_requesting_user) {
-				await voteComment({ commentId: comment.id, value: -1 });
+				await fetchVoteComment({ commentId: comment.id, value: -1 });
 				console.log('Downvote Comment Success');
 			} else {
-				await deletevoteComment(comment.id);
+				await fetchDeletevoteComment(comment.id);
 				console.log('Delete Downvote Success');
 			}
 		} catch (err: unknown) {
@@ -142,7 +145,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		e.stopPropagation();
 		console.log('Delete Comment on', comment.id);
 		try {
-			await deleteComment(comment.id);
+			await fetchDeleteComment(comment.id);
 			console.log('Delete comment', comment.id, ' success');
 			toast.warning('Comment deleted successfully!');
 			refreshComments();
@@ -401,6 +404,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 };
 
 export default function PostDetail({ post, refresh }: PostDetailProps) {
+
 	const [reportingPost, setReportingPost] = useState<t.Post | null>(null);
 	const [showReportPostDialog, setShowReportPostDialog] = useState(false);
 
@@ -513,9 +517,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			router.push('/posts');
 		} else {
 			router.back();
-		}
-	};
-
+      
 	const handleAISummary = async () => {
 		setIsLoadingAI(true);
 		try {
@@ -654,7 +656,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 								key={attachment.id}
 								src={attachment.url.replace(
 									'/uploads/',
-									'/backend/post/attachments/'
+									'/api/proxy/post/attachments/'
 								)}
 								alt="Post attachment"
 								width={300}

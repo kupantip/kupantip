@@ -4,7 +4,6 @@ import { getSession } from 'next-auth/react';
 
 const instance = axios.create({
 	baseURL: '/api/proxy/user',
-	withCredentials: true,
 });
 
 export type UserStats = {
