@@ -16,8 +16,8 @@ export default function InstantSearchDropdown ({
     data: SearchResponse | undefined;
     onResultClick: () => void;
 }) {
-    const hasResults = (data?.posts?.length || 0) > 0 || (data?.comments?.length || 0) > 0 || (data?.users?.length || 0) > 0;
-
+    const hasResults = (data?.posts?.length || 0) > 0 || (data?.comments?.length || 0) > 0 || (data?.users?.length || 0) > 0 || (data?.categories?.length || 0) > 0;
+    
     return (
         <div className="absolute top-full mt-2 w-full max-w-xl bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50">
             {isLoading ? (
@@ -100,6 +100,27 @@ export default function InstantSearchDropdown ({
                                                     </span>
                                                 </div>
                                             </div>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                    {data?.categories && data.categories.length > 0 && (
+                        <div className="p-2 border-t border-gray-100">
+                            <h4 className="text-xs font-semibold uppercase text-gray-500 px-3 pt-2">Categories</h4>
+                            <ul>
+                                {data.categories.slice(0, 3).map(category => (
+                                    <li key={category.id}>
+                                        <Link 
+                                            href={`/posts/category/${category.id}`} 
+                                            onClick={onResultClick}
+                                            className="flex items-start gap-3 w-full text-left p-3 rounded-md hover:bg-gray-100"
+                                        >	
+                                            <Search className="text-gray-600 w-5"/>
+											<div>
+												<p className="font-medium text-black">{category.label}</p>
+											</div>
                                         </Link>
                                     </li>
                                 ))}

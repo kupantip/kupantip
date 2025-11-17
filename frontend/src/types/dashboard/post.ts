@@ -53,3 +53,11 @@ export type CommentsResponse = {
   comments: Comment[] | []
 }
 
+export type Category = {
+	id: string;
+	label: string;
+	color_hex: string | null;
+	detail: string | null;
+	relevance_score: number;
+};
+

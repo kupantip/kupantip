@@ -1,4 +1,4 @@
-import { Post, Comment } from '@/types/dashboard/post';
+import { Post, Comment, Category } from '@/types/dashboard/post';
 
 export interface User {
   id: string;
@@ -19,5 +19,6 @@ export interface BanResponse {
 export interface SearchResponse { 
   posts: Post[];
   comments: Comment[];
-  users: User[] 
+  users: User[];
+  categories: Category[];
 }

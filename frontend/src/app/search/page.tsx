@@ -3,7 +3,7 @@
 import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSearch } from '@/services/user/search';
-import { Post, Comment } from '@/types/dashboard/post';
+import { Post, Comment, Category } from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,7 +23,7 @@ const formatTime = (minutes: number) => {
 	} ago`;
 };
 
-function SearchResultCard({ item, type }: { item: Post | Comment | User, type: 'post' | 'comment' | 'user' }) {
+function SearchResultCard({ item, type }: { item: Post | Comment | User | Category, type: 'post' | 'comment' | 'user' | 'category'}) {
     let href = '#';
     let title = '';
     let description = '';
@@ -65,6 +65,10 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
         description = `View profile for ${user.display_name}`;
         author = user.display_name;
         relevance_score = user.relevance_score;
+    } else if (type === 'category'){
+        const category = item as Category;
+        href = `/posts/category/${category.id}`;
+        title = category.label;
     }
 
     return (
@@ -179,6 +183,11 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
                                 </div>
                             </div>
                         )}
+                        {type === 'category' && (
+                            <div className='mt-1'>
+                                <h1>{title}</h1>
+                            </div>
+                        )}
                 </CardHeader>
             </Card>
         </Link>
@@ -194,8 +203,8 @@ function SearchContent({
 }: { 
     query: string | null,
     isLoading: boolean, 
-    data?: (Post | Comment | User)[],
-    type: 'post' | 'comment' | 'user'
+    data?: (Post | Comment | User | Category)[],
+    type: 'post' | 'comment' | 'user' | 'category'
     showTypeLabel?: boolean
 }) {
     if (isLoading) {
@@ -233,14 +242,15 @@ function SearchContent({
 }
 
 function AllResults({ data }: { 
-  data?: { posts: Post[]; comments: Comment[]; users: User[] }
+  data?: { posts: Post[]; comments: Comment[]; users: User[]; categories: Category[]; }
 }) {
   if (!data) return null;
 
-  const sections: { label: string; items: (Post | Comment | User)[]; type: 'post' | 'comment' | 'user' }[] = [
+  const sections: { label: string; items: (Post | Comment | User | Category)[]; type: 'post' | 'comment' | 'user' | 'category' }[] = [
     { label: 'Posts', items: data.posts || [], type: 'post' },
     { label: 'Comments', items: data.comments || [], type: 'comment' },
     { label: 'Users', items: data.users || [], type: 'user' },
+    { label: 'Categories', items: data.categories || [], type: 'category' },
   ];
 
   return (
@@ -269,16 +279,18 @@ function SearchPageComponent() {
     const total =
         (data?.posts?.length || 0) +
         (data?.comments?.length || 0) +
-        (data?.users?.length || 0);
+        (data?.users?.length || 0) +
+        (data?.categories?.length || 0);
 
     return (
-        <div className="w-full max-w-4xl mx-auto">
+        <div className="w-full max-w-6xl mx-auto">
             <Tabs defaultValue="all" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="all">All ({(total || 0)})</TabsTrigger>
                     <TabsTrigger value="posts">Posts ({data?.posts?.length || 0})</TabsTrigger>
                     <TabsTrigger value="comments">Comments ({data?.comments?.length || 0})</TabsTrigger>
                     <TabsTrigger value="users">Users ({data?.users?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="categories">Categories ({data?.categories?.length || 0})</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="all" className="mt-4">
@@ -309,6 +321,15 @@ function SearchPageComponent() {
                         isLoading={isLoading} 
                         data={data?.users} 
                         type="user" 
+                    />
+                </TabsContent>
+
+                <TabsContent value="categories" className="mt-4">
+                     <SearchContent 
+                        query={query} 
+                        isLoading={isLoading} 
+                        data={data?.categories} 
+                        type="category" 
                     />
                 </TabsContent>
 
