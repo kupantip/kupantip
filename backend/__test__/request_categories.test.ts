@@ -16,6 +16,21 @@ const b1UserPayload = {
 	token: '',
 };
 
+type ReqestedCategory = {
+	id: string;
+	requester_id: string;
+	label: string;
+	color_hex: string;
+	detail: string;
+	status: 'open' | 'actioned' | 'dismissed';
+	created_at: string;
+	reviewed_at: string | null;
+	reviewed_by: string | null;
+	requester_name: string;
+	reviewer_name: string | null;
+	minutes_since_requested: number;
+};
+
 describe('Reqest Categories Test', () => {
 	beforeAll(async () => {
 		const loginResponse = await request(app)
@@ -66,6 +81,7 @@ describe('Reqest Categories Test', () => {
 		color_hex: '#E2A16F',
 		detail: 'discuss about study',
 		id: null,
+		status: null,
 	};
 
 	test('B1 user should be able to request a new category', async () => {
@@ -80,6 +96,54 @@ describe('Reqest Categories Test', () => {
 		);
 
 		newCategory['id'] = response.body.data.id;
+	});
+
+	test('New category request should exist in the database with open status', async () => {
+		const response = await request(app)
+			.get(`${baseURL}/${newCategory.id}`)
+			.set('Authorization', `Bearer ${adminPayload.token}`);
+		expect(response.status).toBe(200);
+		expect(response.body).toHaveProperty('status', 'open');
+	});
+
+	test('B1 should be able to create new requested category with the same label if status is open', async () => {
+		const response = await request(app)
+			.post(`${baseURL}`)
+			.send(newCategory)
+			.set('Authorization', `Bearer ${b1UserPayload.token}`);
+		expect(response.status).toBe(201);
+		expect(response.body).toHaveProperty(
+			'message',
+			'Category request created'
+		);
+	});
+
+	test('Admin should be able to approve a category request & Other request with the same label should be dismissed', async () => {
+		const approveResponse = await request(app)
+			.patch(`${baseURL}/${newCategory.id}`)
+			.send({
+				status: 'actioned',
+			})
+			.set('Authorization', `Bearer ${adminPayload.token}`);
+		expect(approveResponse.status).toBe(200);
+		expect(approveResponse.body).toHaveProperty(
+			'message',
+			'Category request actioned'
+		);
+
+		// * Other label that not get appoved but have the same label should be dismissed
+		const requestsResponse = await request(app)
+			.get(`${baseURL}`)
+			.set('Authorization', `Bearer ${adminPayload.token}`);
+		expect(requestsResponse.status).toBe(200);
+		const sameLabelRequests = requestsResponse.body.filter(
+			(req: ReqestedCategory) =>
+				req.label === newCategory.label && req.id !== newCategory.id
+		);
+
+		sameLabelRequests.forEach((req: ReqestedCategory) => {
+			expect(req.status).toBe('dismissed');
+		});
 	});
 
 	test('B1 user should not be able to request an existing category', async () => {
@@ -100,19 +164,5 @@ describe('Reqest Categories Test', () => {
 			.set('Authorization', `Bearer ${adminPayload.token}`);
 		expect(response.status).toBe(200);
 		expect(Array.isArray(response.body)).toBe(true);
-	});
-
-	test('Admin should be able to approve a category request', async () => {
-		const approveResponse = await request(app)
-			.patch(`${baseURL}/${newCategory.id}`)
-			.send({
-				status: 'actioned',
-			})
-			.set('Authorization', `Bearer ${adminPayload.token}`);
-		expect(approveResponse.status).toBe(200);
-		expect(approveResponse.body).toHaveProperty(
-			'message',
-			'Category request actioned'
-		);
 	});
 });
