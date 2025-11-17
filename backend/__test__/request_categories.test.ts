@@ -165,4 +165,52 @@ describe('Reqest Categories Test', () => {
 		expect(response.status).toBe(200);
 		expect(Array.isArray(response.body)).toBe(true);
 	});
+
+	test('Admin should be able to dismissed requested category', async () => {
+		const requestResponse = await request(app)
+			.post(`${baseURL}`)
+			.send({
+				label: 'Dismissed Category',
+				color_hex: '#123456',
+				detail: 'This category will be dismissed',
+			})
+			.set('Authorization', `Bearer ${b1UserPayload.token}`);
+		expect(requestResponse.status).toBe(201);
+		const requestId = requestResponse.body.data.id;
+
+		const dismissResponse = await request(app)
+			.patch(`${baseURL}/${requestId}`)
+			.send({
+				status: 'dismissed',
+			})
+			.set('Authorization', `Bearer ${adminPayload.token}`);
+		expect(dismissResponse.status).toBe(200);
+		expect(dismissResponse.body).toHaveProperty(
+			'message',
+			'Category request dismissed'
+		);
+	});
+
+	test('Requested category detail should return 404 for non-existing id', async () => {
+		const nonexistingid = '5555555loolllllleieieieie';
+		const response = await request(app)
+			.get(`${baseURL}/${nonexistingid}`)
+			.set('Authorization', `Bearer ${adminPayload.token}`);
+		expect(response.status).toBe(404);
+		expect(response.body).toHaveProperty('message', 'Request not found');
+	});
+
+	test('Non-admin user should not be able to action category request', async () => {
+		const response = await request(app)
+			.patch(`${baseURL}/${newCategory.id}`)
+			.send({
+				status: 'dismissed',
+			})
+			.set('Authorization', `Bearer ${b1UserPayload.token}`);
+		expect(response.status).toBe(403);
+		expect(response.body).toHaveProperty(
+			'message',
+			'Forbidden: Only admin can review category requests'
+		);
+	});
 });
