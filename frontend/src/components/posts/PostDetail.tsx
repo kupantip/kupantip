@@ -506,7 +506,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	};
 
 	return (
-		<div className="min-h-screen px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
+		<div className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
 			<div className="relative w-full max-w-4xl mx-auto">
 				{/* Back Button */}
 				<Button
@@ -564,48 +564,187 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 												className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
 												onClick={handleEdit}
 											>
-												<Pen className="px-1 mr-2" />
-												<span className="mt-0.5">
-													Edit
-												</span>
-											</button>
-											<button
-												className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-b-lg cursor-pointer"
-												onClick={() =>
-													setIsDeleting(true)
-												}
+												<button
+													className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
+													onClick={handleEdit}
+												>
+													<Pen className="px-1 mr-2" />
+													<span className="mt-0.5">
+														Edit
+													</span>
+												</button>
+												<button
+													className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-b-lg cursor-pointer"
+													onClick={() =>
+														setIsDeleting(true)
+													}
+												>
+													<Trash2 className="mr-2" />
+													<span className="mt-0.5">
+														Delete
+													</span>
+												</button>
+											</motion.div>
+										)}
+									</AnimatePresence>
+								) : (
+									<AnimatePresence>
+										{menuOpen && (
+											<motion.div
+												ref={menuRef}
+												className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg"
+												initial={{
+													opacity: 0,
+													x: 0,
+													y: 0,
+												}}
+												animate={{ opacity: 1 }}
+												exit={{ opacity: 0 }}
+												transition={{ duration: 0.15 }}
 											>
-												<Trash2 className="mr-2" />
-												<span className="mt-0.5">
-													Delete
-												</span>
-											</button>
-										</motion.div>
+												<button
+													className="flex gap-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
+													onClick={handleReportPost}
+												>
+													<Flag />
+													<span className="mt-0.5">
+														Report
+													</span>
+												</button>
+											</motion.div>
+										)}
+									</AnimatePresence>
+								)}
+							</div>
+						</div>
+						{/* Post Content */}
+						<h2 className="text-lg font-medium">{post.title}</h2>
+						{post.attachments.length > 0 &&
+							post.attachments.map((attachment) => (
+								<Image
+									key={attachment.id}
+									src={attachment.url.replace(
+										'/uploads/',
+										'/backend/post/attachments/'
 									)}
-								</AnimatePresence>
+									alt="Post attachment"
+									width={300}
+									height={200}
+									className="w-full h-auto object-cover rounded-lg mb-4"
+								/>
+							))}
+						<div>{post.body_md}</div>
+						{/* AI Summary Section */}
+						<div className="mt-4">
+							{!aiSummary ? (
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={handleAISummary}
+									disabled={isLoadingAI}
+									className="relative flex items-center gap-2 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-all overflow-hidden group"
+								>
+									<span className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30 group-hover:animate-shimmer" />
+									{isLoadingAI ? (
+										<>
+											<Loader2 className="w-4 h-4 animate-spin" />
+											<span>Generating...</span>
+										</>
+									) : (
+										<>
+											<Sparkles className="w-4 h-4 animate-pulse" />
+											<span>Generate AI Summary</span>
+										</>
+									)}
+								</Button>
 							) : (
-								<AnimatePresence>
-									{menuOpen && (
-										<motion.div
-											ref={menuRef}
-											className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg"
-											initial={{ opacity: 0, x: 0, y: 0 }}
-											animate={{ opacity: 1 }}
-											exit={{ opacity: 0 }}
-											transition={{ duration: 0.15 }}
+								<div className="space-y-2">
+									<div className="flex items-center gap-2">
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() =>
+												setShowAISummary(!showAISummary)
+											}
+											className="flex items-center gap-2 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-all cursor-pointer"
 										>
-											<button
-												className="flex gap-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
-												onClick={handleReportPost}
+											<Sparkles className="w-4 h-4" />
+											<span>
+												{showAISummary
+													? 'Hide'
+													: 'Show'}{' '}
+												AI Summary
+											</span>
+											<ChevronDown
+												className={`w-4 h-4 transition-transform duration-300 ${
+													showAISummary
+														? 'rotate-180'
+														: 'rotate-0'
+												}`}
+											/>
+										</Button>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={handleAISummary}
+											disabled={isLoadingAI}
+											className="flex items-center gap-2 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-all cursor-pointer"
+										>
+											{isLoadingAI ? (
+												<>
+													<Loader2 className="w-4 h-4 animate-spin" />
+													<span>Regenerating...</span>
+												</>
+											) : (
+												<>
+													<Sparkles className="w-4 h-4" />
+													<span>Regenerate</span>
+												</>
+											)}
+										</Button>
+									</div>
+
+									<AnimatePresence>
+										{showAISummary && (
+											<motion.div
+												initial={{
+													opacity: 0,
+													height: 0,
+													y: -10,
+												}}
+												animate={{
+													opacity: 1,
+													height: 'auto',
+													y: 0,
+												}}
+												exit={{
+													opacity: 0,
+													height: 0,
+													y: -10,
+												}}
+												transition={{
+													duration: 0.3,
+													ease: 'easeInOut',
+												}}
+												className="overflow-hidden"
 											>
-												<Flag />
-												<span className="mt-0.5">
-													Report
-												</span>
-											</button>
-										</motion.div>
-									)}
-								</AnimatePresence>
+												<div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
+													<div className="flex items-start gap-2">
+														<Sparkles className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+														<div>
+															<p className="text-sm font-semibold text-purple-900 mb-1">
+																AI Summary
+															</p>
+															<p className="text-sm text-gray-700">
+																{aiSummary}
+															</p>
+														</div>
+													</div>
+												</div>
+											</motion.div>
+										)}
+									</AnimatePresence>
+								</div>
 							)}
 						</div>
 					</div>
@@ -639,86 +778,89 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 										? 'bg-green-400 text-black'
 										: 'hover:bg-gray-200'
 								}`}
-								onClick={handleUpVote}
-							/>
-							<span>{post.vote_score}</span>
-							<ArrowDown
-								className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+									onClick={handleUpVote}
+								/>
+								<span>{post.vote_score}</span>
+								<ArrowDown
+									className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
 								${
 									post.disliked_by_requesting_user
 										? 'bg-red-400 text-black'
 										: 'hover:bg-gray-200'
 								}`}
-								onClick={handleDownVote}
-							/>
-						</div>
-						<div className="flex items-center gap-2 cursor-pointer hover:text-blue-600">
-							<MessageSquare className="w-5 h-5" />
-							<span>{post.comment_count} comments</span>
+									onClick={handleDownVote}
+								/>
+							</div>
+							<div className="flex items-center gap-2 cursor-pointer hover:text-blue-600">
+								<MessageSquare className="w-5 h-5" />
+								<span>{post.comment_count} comments</span>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			{/* Comment Box */}
-			<CommentBox
-				className="w-full max-w-4xl mt-4 mx-auto"
-				postId={post.id}
-				parentId=""
-				refresh={refreshComments}
-			/>{' '}
-			{/* Comments Section */}
-			<div className="w-full max-w-4xl mt-6 space-y-4 mx-auto">
-				{loadingComments ? (
-					<p className="text-gray-500 italic">Loading comments...</p>
-				) : commentsData && commentsData.comments.length > 0 ? (
-					commentsData.comments.map((comment) => (
-						<CommentItem
-							key={comment.id}
-							comment={comment}
-							refreshComments={refreshComments}
-						/>
-					))
-				) : (
-					<p className="text-gray-500 italic">No comments yet.</p>
+				{/* Comment Box */}
+				<CommentBox
+					className="w-full max-w-4xl mt-4 mx-auto"
+					postId={post.id}
+					parentId=""
+					refresh={refreshComments}
+				/>{' '}
+				{/* Comments Section */}
+				<div className="w-full max-w-4xl mt-6 space-y-4 mx-auto">
+					{loadingComments ? (
+						<p className="text-gray-500 italic">
+							Loading comments...
+						</p>
+					) : commentsData && commentsData.comments.length > 0 ? (
+						commentsData.comments.map((comment) => (
+							<CommentItem
+								key={comment.id}
+								comment={comment}
+								refreshComments={refreshComments}
+							/>
+						))
+					) : (
+						<p className="text-gray-500 italic">No comments yet.</p>
+					)}
+				</div>
+				{reportingPost && (
+					<ReportModal
+						targetType="post"
+						target={post}
+						open={showReportPostDialog}
+						onOpenChange={setShowReportPostDialog}
+					></ReportModal>
 				)}
+				<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
+					<AlertDialogContent
+						className={isSidebarOpen ? 'ml-32' : 'ml-6'}
+					>
+						<AlertDialogHeader>
+							<AlertDialogTitle>Delete post?</AlertDialogTitle>
+							<AlertDialogDescription>
+								Once you delete this post, it can&apos;t be
+								restored.
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel
+								type="button"
+								onClick={() => setIsDeleting(false)}
+								className="cursor-pointer"
+							>
+								Cancel
+							</AlertDialogCancel>
+							<AlertDialogAction
+								type="submit"
+								onClick={handleDelete}
+								className="cursor-pointer hover:bg-red-700 bg-red-600"
+							>
+								Delete
+							</AlertDialogAction>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
 			</div>
-			{reportingPost && (
-				<ReportModal
-					targetType="post"
-					target={post}
-					open={showReportPostDialog}
-					onOpenChange={setShowReportPostDialog}
-				></ReportModal>
-			)}
-			<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-				<AlertDialogContent
-					className={isSidebarOpen ? 'ml-32' : 'ml-6'}
-				>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Delete post?</AlertDialogTitle>
-						<AlertDialogDescription>
-							Once you delete this post, it can&apos;t be
-							restored.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel
-							type="button"
-							onClick={() => setIsDeleting(false)}
-							className="cursor-pointer"
-						>
-							Cancel
-						</AlertDialogCancel>
-						<AlertDialogAction
-							type="submit"
-							onClick={handleDelete}
-							className="cursor-pointer hover:bg-red-700 bg-red-600"
-						>
-							Delete
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
-		</div>
-	);
+		);
+	};
 }
