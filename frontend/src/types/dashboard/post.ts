@@ -42,6 +42,10 @@ export type Comment = {
 	vote_score: number
 	liked_by_requesting_user: boolean
 	disliked_by_requesting_user: boolean
+  post_author_name: string;
+  post_minutes_since_posted: number;
+  post_comment_count: number;
+  post_vote_score: number;
 }
 
 export type CommentsResponse = {
@@ -49,3 +53,10 @@ export type CommentsResponse = {
   comments: Comment[] | []
 }
 
+export type Category = {
+	id: string;
+	label: string;
+	color_hex: string | null;
+	detail: string | null;
+	relevance_score: number;
+};
