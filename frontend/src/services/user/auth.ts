@@ -26,10 +26,12 @@ const instance = axios.create({
 });
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
 	try {
-		const res = await instance.post<LoginResponse>('/login', payload);
-
+		const baseURL = process.env.BACKEND_URL || '';
+		const url = baseURL + '/user/login';
+		const res = await axios.post<LoginResponse>(url, payload);
 		return res.data;
 	} catch (error) {
+		console.log(error);
 		throw error;
 	}
 }

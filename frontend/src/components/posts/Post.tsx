@@ -8,12 +8,12 @@ import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as t from '@/types/dashboard/post';
 import { fetchDeletePost } from '@/services/post/post';
+import { useUserVote } from '@/services/user/vote';
 import {
-	upvotePost,
-	downvotePost,
-	deletevotePost,
-	useUserVote,
-} from '@/services/user/vote';
+	fetchDownvotePost,
+	fetchUpvotePost,
+	fetchDeletevotePost,
+} from '@/services/post/vote';
 
 const daySincePosted = (minutes: number) => {
 	if (minutes < 60) {
@@ -48,13 +48,13 @@ export default function Post({ post, currentPage }: PostProps) {
 		if (userVote === 1) {
 			newVote = 0;
 			try {
-				await deletevotePost(post.id);
+				await fetchDeletevotePost(post.id);
 				console.log('Undo UpVote success');
 			} catch {}
 		} else {
 			newVote = 1;
 			try {
-				await upvotePost(post.id);
+				await fetchUpvotePost(post.id);
 				console.log('UpVote Post Success', post.id);
 			} catch {}
 		}
@@ -69,13 +69,13 @@ export default function Post({ post, currentPage }: PostProps) {
 		if (userVote === -1) {
 			newVote = 0;
 			try {
-				await deletevotePost(post.id);
+				await fetchDeletevotePost(post.id);
 				console.log('Undo DownVote success');
 			} catch {}
 		} else {
 			newVote = -1;
 			try {
-				await downvotePost(post.id);
+				await fetchDownvotePost(post.id);
 				console.log('DownVote Post Success', post.id);
 			} catch {}
 		}
