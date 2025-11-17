@@ -11,12 +11,10 @@ export default function InstantSearchDropdown ({
     isLoading,
     data,
     onResultClick,
-	SearchItem
 }: {
     isLoading: boolean;
     data: SearchResponse | undefined;
     onResultClick: () => void;
-	SearchItem: string;
 }) {
     const hasResults = (data?.posts?.length || 0) > 0 || (data?.comments?.length || 0) > 0 || (data?.users?.length || 0) > 0;
 

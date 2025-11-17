@@ -134,7 +134,6 @@ export default function DashboardLayout({
 								isLoading={isSearchLoading}
 								data={searchData}
 								onResultClick={handleResultClick}
-								SearchItem={SearchItem}
 							/>
 						)}
 					</form>
