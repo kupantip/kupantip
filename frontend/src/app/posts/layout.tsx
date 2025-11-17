@@ -23,7 +23,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
-import { Search } from "lucide-react"
+import { Search, Loader2 } from "lucide-react"
 import { useSearch } from '@/services/user/search';
 import InstantSearchDropdown from '@/components/posts/SearchDropdown';
 
@@ -43,6 +43,7 @@ export default function DashboardLayout({
     const searchParams = useSearchParams();
 
 	const { data: searchData, isLoading: isSearchLoading } = useSearch(debouncedTerm);
+	const [isRedirectLoading, setIsRedirectLoading] = useState(false);
 
     useEffect(() => {
         const q = searchParams.get("q");
@@ -90,6 +91,7 @@ export default function DashboardLayout({
             return;
         }
 		setShowDropdown(false);
+		setIsRedirectLoading(true);
 
 		router.push(`/search?q=${encodeURIComponent(SearchItem.trim())}`);
 	}
@@ -170,7 +172,14 @@ export default function DashboardLayout({
 				</div>
 
 				<main className="flex-1 min-h-[calc(100vh-4rem)]">
-					{children}
+					{isRedirectLoading ? (
+						<div className="flex flex-col justify-center items-center h-[60vh]">
+							<Loader2 className="h-8 w-8 animate-spin" />
+							Searching
+						</div>
+					) : (
+						children
+					)}
 				</main>
 			</div>
 		</SidebarProvider>

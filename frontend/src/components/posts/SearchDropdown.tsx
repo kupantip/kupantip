@@ -94,12 +94,9 @@ export default function InstantSearchDropdown ({
                                                     </AvatarFallback>
                                                 </Avatar>
 
-                                                <div className="flex-1 flex flex-col text-xs gap-1">
+                                                <div className="flex-1 flex flex-col text-sm gap-1">
                                                     <span className="font-semibold">
                                                         {user.display_name}
-                                                    </span>
-                                                    <span className="text-gray-400">
-                                                        Relevance Score : {user.relevance_score}
                                                     </span>
                                                 </div>
                                             </div>

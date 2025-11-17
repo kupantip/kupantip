@@ -83,12 +83,9 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User, type: '
                                         </AvatarFallback>
                                     </Avatar>
 
-                                    <div className="flex-1 flex flex-col text-xs gap-1">
+                                    <div className="flex-1 flex flex-col text-sm gap-1">
                                         <span className="font-semibold">
                                             {author}
-                                        </span>
-                                        <span className="text-gray-400">
-                                            Relevance Score : {relevance_score}
                                         </span>
                                     </div>
                                 </div>
@@ -220,9 +217,8 @@ function SearchContent({
     return (
         <div className="flex flex-col gap-2">
             {data.map(item => {
-                const key = type === 'user' ? (item as User).user_id : (item as Post | Comment).id;
                 return (
-                    <div key={key} className="flex flex-col gap-1">
+                    <div key={item.id} className="flex flex-col gap-1">
                         {showTypeLabel && (
                             <span className="text-xs font-semibold text-gray-500 uppercase">
                                 {type}
@@ -254,8 +250,7 @@ function AllResults({ data }: {
           <h2 className="text-2xl font-bold">{section.label}</h2>
           <div className="flex flex-col gap-2">
             {section.items.map(item => {
-              const key = section.type === 'user' ? (item as User).user_id : (item as Post | Comment).id;
-              return <SearchResultCard key={key} item={item} type={section.type} />;
+              return <SearchResultCard key={item.id} item={item} type={section.type} />;
             })}
           </div>
         </div>
