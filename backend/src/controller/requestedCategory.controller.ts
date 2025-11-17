@@ -58,7 +58,7 @@ export const createRequestedCategoryController = async (
 			});
 		}
 
-		// Check for duplicate label in requested_category (actioned)
+		// Check for duplicate label in requested_category (open or actioned)
 		const allRequests = await getRequestedCategories();
 		const existingRequest = allRequests.find(
 			(r) =>
@@ -68,7 +68,7 @@ export const createRequestedCategoryController = async (
 
 		if (existingRequest) {
 			return res.status(400).json({
-				message: `A request for category "${label}" already exists with status: ${existingRequest.status}`,
+				message: `Category "${label}" already exists`,
 			});
 		}
 
@@ -201,6 +201,25 @@ export const updateRequestedCategoryController = async (
 				requestedCategory.color_hex,
 				requestedCategory.detail
 			);
+
+			// Auto-dismiss all other pending requests with the same label
+			const allRequests = await getRequestedCategories();
+			const duplicateRequests = allRequests.filter(
+				(r) =>
+					r.label.toLowerCase() ===
+						requestedCategory.label.toLowerCase() &&
+					r.id !== id &&
+					r.status === 'open'
+			);
+
+			// Dismiss all duplicate requests
+			for (const duplicateRequest of duplicateRequests) {
+				await updateRequestedCategoryStatus(
+					duplicateRequest.id,
+					'dismissed',
+					req.user.user_id
+				);
+			}
 		}
 
 		// Update the requested category status
