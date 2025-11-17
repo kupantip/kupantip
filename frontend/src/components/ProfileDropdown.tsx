@@ -81,7 +81,7 @@ export default function ProfileDropDown() {
 							</Link>
 						</DropdownMenuItem>
 						<DropdownMenuItem asChild disabled={!isAuthenticated}>
-							<Link href="/my-posts" className="cursor-pointer">
+							<Link href="/profile/my-posts" className="cursor-pointer">
 								<FileText className="mr-2 h-4 w-4" />
 								<span>My Posts</span>
 							</Link>
