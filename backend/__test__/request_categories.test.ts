@@ -191,13 +191,13 @@ describe('Reqest Categories Test', () => {
 		);
 	});
 
-	test('Requested category detail should return 404 for non-existing id', async () => {
+	test('Requested category detail should return 400 for non-uuid id', async () => {
 		const nonexistingid = '5555555loolllllleieieieie';
 		const response = await request(app)
 			.get(`${baseURL}/${nonexistingid}`)
 			.set('Authorization', `Bearer ${adminPayload.token}`);
-		expect(response.status).toBe(404);
-		expect(response.body).toHaveProperty('message', 'Request not found');
+		expect(response.status).toBe(400);
+		expect(response.body).toHaveProperty('message', 'Validation failed');
 	});
 
 	test('Non-admin user should not be able to action category request', async () => {
