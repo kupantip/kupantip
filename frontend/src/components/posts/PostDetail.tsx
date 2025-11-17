@@ -18,12 +18,12 @@ import { useCommentsByPostId } from '@/services/dashboard/getCommentByPostId';
 import CommentBox from './CommentBox';
 import { fetchDeletePost } from '@/services/post/post';
 import { deleteComment } from '@/services/delete_comment';
+import { voteComment, deletevoteComment } from '@/services/user/vote';
 import {
-	votePost,
-	deletevotePost,
-	voteComment,
-	deletevoteComment,
-} from '@/services/user/vote';
+	fetchDeletevotePost,
+	fetchUpvotePost,
+	fetchDownvotePost,
+} from '@/services/post/vote';
 import { jwtDecode } from 'jwt-decode';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
@@ -444,10 +444,10 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		console.log('Upvote on');
 		try {
 			if (!post.liked_by_requesting_user) {
-				await votePost({ postId: post.id, value: 1 });
+				await fetchUpvotePost(post.id);
 				console.log('Upvote Post Success');
 			} else {
-				await deletevotePost(post.id);
+				await fetchDeletevotePost(post.id);
 				console.log('Delete Upvote Success');
 			}
 		} catch {
@@ -461,10 +461,10 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		console.log('Downvote on');
 		try {
 			if (!post.disliked_by_requesting_user) {
-				await votePost({ postId: post.id, value: -1 });
+				await fetchDownvotePost(post.id);
 				console.log('Downvote Post Success');
 			} else {
-				await deletevotePost(post.id);
+				await fetchDeletevotePost(post.id);
 				console.log('Delete Downvote Success');
 			}
 		} catch {

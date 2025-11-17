@@ -8,12 +8,12 @@ import * as t from '@/types/dashboard/post';
 import { useCommentsByPostId } from '@/services/dashboard/getCommentByPostId';
 import CommentBox from './CommentBox';
 import { fetchDeletePost } from '@/services/post/post';
+import { useUserVote } from '@/services/user/vote';
 import {
-	upvotePost,
-	downvotePost,
-	deletevotePost,
-	useUserVote,
-} from '@/services/user/vote';
+	fetchUpvotePost,
+	fetchDownvotePost,
+	fetchDeletevotePost,
+} from '@/services/post/vote';
 
 type PostProps = {
 	post: t.Post;
@@ -141,7 +141,7 @@ export default function InnerPost({ post }: PostProps) {
 		if (userVote === 1) {
 			newVote = 0;
 			try {
-				await deletevotePost(post.id);
+				await fetchDeletevotePost(post.id);
 				console.log('Undo UpVote success');
 			} catch {
 				// Handle error silently
@@ -149,7 +149,7 @@ export default function InnerPost({ post }: PostProps) {
 		} else {
 			newVote = 1;
 			try {
-				await upvotePost(post.id);
+				await fetchUpvotePost(post.id);
 				console.log('UpVote Post Success', post.id);
 			} catch {
 				// Handle error silently
@@ -167,7 +167,7 @@ export default function InnerPost({ post }: PostProps) {
 		if (userVote === -1) {
 			newVote = 0;
 			try {
-				await deletevotePost(post.id);
+				await fetchDeletevotePost(post.id);
 				console.log('Undo DownVote success');
 			} catch {
 				// Handle error silently
@@ -175,7 +175,7 @@ export default function InnerPost({ post }: PostProps) {
 		} else {
 			newVote = -1;
 			try {
-				await downvotePost(post.id);
+				await fetchDownvotePost(post.id);
 				console.log('DownVote Post Success', post.id);
 			} catch {
 				// Handle error silently
