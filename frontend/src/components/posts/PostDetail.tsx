@@ -868,4 +868,4 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			</AlertDialog>
 		</div>
 	);
-}}}
+}
