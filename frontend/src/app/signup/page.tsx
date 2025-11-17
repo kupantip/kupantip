@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signupUser } from '@/services/user/signup_page';
+import { fetchSignupUser } from '@/services/user/auth';
 
 export default function SignUp() {
 	const [formData, setFormData] = useState({
@@ -23,7 +23,7 @@ export default function SignUp() {
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		try {
-			const result = await signupUser(formData);
+			const result = await fetchSignupUser(formData);
 			router.push('/login');
 			console.log('Sign up success:', result);
 		} catch (error) {
