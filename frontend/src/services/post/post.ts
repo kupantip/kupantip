@@ -76,6 +76,13 @@ export type SummaryStat = {
 	total_engagement: number;
 };
 
+type updatePostData = {
+	title: string;
+	body_md: string;
+	category_id?: string;
+	files: File[];
+};
+
 const instance = axios.create({
 	baseURL: '/api/proxy/post',
 });
@@ -357,13 +364,6 @@ export async function fetchDeletePost(postId: string) {
 		throw error;
 	}
 }
-
-type updatePostData = {
-	title: string;
-	body_md: string;
-	category_id?: string;
-	files: File[];
-};
 
 export async function fetchUpdatePost(data: updatePostData, postID: string) {
 	const formData = new FormData();
