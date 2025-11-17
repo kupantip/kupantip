@@ -4,7 +4,7 @@ import { getSession } from 'next-auth/react';
 import axios from 'axios';
 
 const instance = axios.create({
-	baseURL: '/backend',
+	baseURL: '/api/proxy',
 	timeout: 5000,
 });
 export async function getPostById(post_id: string): Promise<t.Post[]> {

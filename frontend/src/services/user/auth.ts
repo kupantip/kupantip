@@ -1,29 +1,44 @@
+import axios from 'axios';
+
 export interface LoginPayload {
-  email?: string
-  password?: string
+	email?: string;
+	password?: string;
 }
 
-export interface LoginResponse {
-    user_id?: string,
-    role?: string,
-    email?: string,
-    display_name?: string,
-    token: string
-}
+export type LoginResponse = {
+	user_id?: string;
+	role?: string;
+	email?: string;
+	display_name?: string;
+	token: string;
+};
 
+type SignupData = {
+	email: string;
+	handle: string;
+	display_name: string;
+	password: string;
+};
+
+const instance = axios.create({
+	baseURL: '/api/proxy/user',
+	timeout: 5000,
+});
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
-  const BACKEND_URL = process.env.BACKEND_URL
-  const res = await fetch(`${BACKEND_URL}/user/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
+	try {
+		const res = await instance.post<LoginResponse>('/login', payload);
 
-  console.log(res);
+		return res.data;
+	} catch (error) {
+		throw error;
+	}
+}
 
-  if (!res.ok) {
-    throw new Error('Login failed')
-  }
-
-  return res.json()
+export async function fetchSignupUser(data: SignupData) {
+	try {
+		const res = await instance.post('/signup', data);
+		return res.data;
+	} catch (err) {
+		throw err;
+	}
 }

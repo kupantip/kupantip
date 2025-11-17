@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
 const instance = axios.create({
-	baseURL: '/backend',
+	baseURL: '/api/proxy',
 	timeout: 5000,
 });
 
