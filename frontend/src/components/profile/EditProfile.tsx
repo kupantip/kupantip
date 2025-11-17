@@ -119,8 +119,12 @@ export default function EditProfile({
 			} else {
 				setError(res.message);
 			}
-		} catch (err: any) {
-			setError(err.message || 'Failed to update profile');
+		} catch (err: unknown) {
+			if (err instanceof Error) {
+				setError(err.message || 'Failed to update profile');
+			} else {
+				setError('Failed to update profile');
+			}
 		} finally {
 			setLoading(false);
 		}
