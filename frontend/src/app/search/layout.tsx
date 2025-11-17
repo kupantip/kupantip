@@ -113,7 +113,7 @@ export default function DashboardLayout({
 					<form 
                         onSubmit={handleSearch}
 						ref={searchRef} 
-                        className="relative w-full max-w-xl gap-6 ml-26"
+                        className="relative w-full max-w-xl ml-26"
                     >
 						<InputGroup className='bg-white'>
 							<InputGroupInput 
@@ -137,9 +137,17 @@ export default function DashboardLayout({
 					</form>
 
 					<div className="flex flex-wrap items-center gap-x-3">
-						<div className="w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
+						<div className="mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
 							<Bell className="w-5 h-5 text-white cursor-pointer" />
 						</div>
+						<Link href="/posts/create-category">
+							<Button className="mr-21group w-16 bg-transparent text-white rounded-lg hover:bg-transparent flex items-center gap-2 cursor-pointer hover:scale-105">
+								<CirclePlus className="mt-[0.2em]" />
+								<div className="group-hover:underline">
+									Category
+								</div>
+							</Button>
+						</Link>
 						<Link href="/posts/create">
 							<Button className="group w-20 bg-transparent text-white rounded-lg hover:bg-transparent flex items-center gap-2 cursor-pointer hover:scale-105">
 								<CirclePlus className="mt-[0.2em]" />
