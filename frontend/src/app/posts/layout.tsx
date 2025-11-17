@@ -1,8 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSearchParams } from 'next/navigation';
+import { useState, Suspense} from 'react';
 
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -16,14 +14,8 @@ import { Bell } from 'lucide-react';
 
 import Link from 'next/link';
 import ProfileDropDown from '@/components/ProfileDropdown';
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group"
-import { Search, Loader2 } from "lucide-react"
-import { useSearch } from '@/services/user/search';
-import InstantSearchDropdown from '@/components/SearchDropDown';
+import { Loader2 } from "lucide-react"
+import SearchBar from '@/components/SearchBar';
 
 export default function DashboardLayout({
 	children,
@@ -31,78 +23,7 @@ export default function DashboardLayout({
 	children: React.ReactNode;
 }) {
 	const { data: session, status } = useSession();
-
-	const [ SearchItem, setSearchItem ] = useState('');
-	const router = useRouter();
-
-    const [debouncedTerm, setDebouncedTerm] = useState('');
-    const [showDropdown, setShowDropdown] = useState(false);
-    const searchRef = useRef<HTMLFormElement>(null);
-    const searchParams = useSearchParams();
-
-	const { data: searchData, isLoading: isSearchLoading } = useSearch(debouncedTerm);
 	const [isRedirectLoading, setIsRedirectLoading] = useState(false);
-
-    useEffect(() => {
-        const q = searchParams.get("q");
-        if (q) {
-            setSearchItem(q);
-            setDebouncedTerm(q);
-        }
-    }, [searchParams]);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (SearchItem.trim() !== '') {
-                setDebouncedTerm(SearchItem);
-            } else {
-                setDebouncedTerm('');
-            }
-        }, 300);
-
-        return () => {
-            clearTimeout(timer);
-        };
-    }, [SearchItem]);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-                setShowDropdown(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
-	useEffect(() => {
-		window.history.scrollRestoration = 'manual';
-		window.scrollTo({ top: 0 });
-		AOS.init({ duration: 800, once: true, offset: 100 });
-	}, []);
-
-	const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!SearchItem.trim()) {
-            return;
-        }
-		setShowDropdown(false);
-		setIsRedirectLoading(true);
-
-		router.push(`/search?q=${encodeURIComponent(SearchItem.trim())}`);
-	}
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setSearchItem(value);
-        setShowDropdown(value.trim() !== '');
-    };
-
-    const handleResultClick = () => {
-        setShowDropdown(false);
-    };
 
 	return (
 		<SidebarProvider>
@@ -111,33 +32,9 @@ export default function DashboardLayout({
 					<h4 className="text-white text-base font-semibold">
 						KU Pantip
 					</h4>
-
-					<form 
-                        onSubmit={handleSearch}
-						ref={searchRef} 
-                        className="relative w-full max-w-xl ml-54"
-                    >
-						<InputGroup className='bg-white'>
-							<InputGroupInput 
-								placeholder="Search..."
-								value={SearchItem}
-								onChange={handleInputChange}
-								onFocus={() => setShowDropdown(SearchItem.trim() !== '')}
-								autoComplete="off"
-							/>
-							<InputGroupAddon>
-								<Search />
-							</InputGroupAddon>
-						</InputGroup>		
-						{showDropdown && (
-							<InstantSearchDropdown
-								isLoading={isSearchLoading}
-								data={searchData}
-								onResultClick={handleResultClick}
-							/>
-						)}
-					</form>
-
+					<Suspense fallback={<p>Loading search...</p>}>
+                        <SearchBar setIsRedirectLoading={setIsRedirectLoading}/>
+                    </Suspense>
 					<div className="flex flex-wrap items-center gap-x-3">
 						<div className="mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
 							<Bell className="w-5 h-5 text-white cursor-pointer" />
