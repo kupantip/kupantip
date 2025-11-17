@@ -518,6 +518,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			router.back();
 		}
 	};
+
 	const handleAISummary = async () => {
 		setIsLoadingAI(true);
 		try {
