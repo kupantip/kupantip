@@ -58,7 +58,10 @@ export async function fetchRequestedCategories(params?: {
 	const header = {
 		Authorization: `Bearer ${session?.user?.accessToken}`,
 	};
-	const query: Record<string, any> = {};
+	const query: {
+		status?: 'open' | 'dismissed' | 'actioned';
+		recent?: boolean;
+	} = {};
 	if (params?.status) query.status = params.status;
 	if (typeof params?.recent === 'boolean') query.recent = params.recent;
 	const response = await instance.get<RequestedCategory[]>('/', {
