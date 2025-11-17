@@ -17,23 +17,26 @@ import {
 } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
-import { useCommentsByPostId } from '@/services/dashboard/getCommentByPostId';
+import { useCommentsByPostId } from '@/services/comment/comment';
 import CommentBox from './CommentBox';
-import { deletePost } from '@/services/user/delete_post';
-import { deleteComment } from '@/services/delete_comment';
+import { fetchDeletePost } from '@/services/post/post';
+import { fetchDeleteComment } from '@/services/comment/comment';
 import {
-	votePost,
-	deletevotePost,
-	voteComment,
-	deletevoteComment,
-} from '@/services/user/vote';
+	fetchVoteComment,
+	fetchDeletevoteComment,
+} from '@/services/comment/vote';
+import {
+	fetchDeletevotePost,
+	fetchUpvotePost,
+	fetchDownvotePost,
+} from '@/services/post/vote';
 import { jwtDecode } from 'jwt-decode';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { Trash2 } from 'lucide-react';
 import { Pen } from 'lucide-react';
 import { Flag } from 'lucide-react';
-import ReportModal from '@/app/posts/report/page';
+import ReportModal from './ReportModal';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -47,6 +50,7 @@ import {
 import { toast } from 'sonner';
 import { useSidebar } from '../ui/sidebar';
 import { Button } from '../ui/button';
+import Link from 'next/link';
 import { getAISummary } from '@/services/n8n/aiSummary';
 
 type PostDetailProps = {
@@ -99,10 +103,10 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		console.log('Upvote on', comment.id);
 		try {
 			if (!comment.liked_by_requesting_user) {
-				await voteComment({ commentId: comment.id, value: 1 });
+				await fetchVoteComment({ commentId: comment.id, value: 1 });
 				console.log('Upvote Comment Success');
 			} else {
-				await deletevoteComment(comment.id);
+				await fetchDeletevoteComment(comment.id);
 				console.log('Delete Upvote Success');
 			}
 		} catch (err: unknown) {
@@ -117,10 +121,10 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		console.log('Downvote on', comment.id);
 		try {
 			if (!comment.disliked_by_requesting_user) {
-				await voteComment({ commentId: comment.id, value: -1 });
+				await fetchVoteComment({ commentId: comment.id, value: -1 });
 				console.log('Downvote Comment Success');
 			} else {
-				await deletevoteComment(comment.id);
+				await fetchDeletevoteComment(comment.id);
 				console.log('Delete Downvote Success');
 			}
 		} catch (err: unknown) {
@@ -141,7 +145,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		e.stopPropagation();
 		console.log('Delete Comment on', comment.id);
 		try {
-			await deleteComment(comment.id);
+			await fetchDeleteComment(comment.id);
 			console.log('Delete comment', comment.id, ' success');
 			toast.warning('Comment deleted successfully!');
 			refreshComments();
@@ -178,14 +182,17 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 	return (
 		<div className="mb-4">
 			<div className="flex items-start gap-3">
-				<Avatar className="w-6 h-6 border-1 border-emerald-600">
-					<AvatarImage
-						src={`https://api.dicebear.com/7.x/initials/svg?seed=${comment.author_name}`}
-					/>
-					<AvatarFallback>
-						{comment.author_name.charAt(0)}
-					</AvatarFallback>
-				</Avatar>
+				<Link href={`/profile/${comment.author_id}`}>
+					<Avatar className="w-6 h-6 border-1 border-emerald-600">
+						<AvatarImage
+							src={`https://api.dicebear.com/7.x/initials/svg?seed=${comment.author_name}`}
+							className="hover:brightness-75"
+						/>
+						<AvatarFallback>
+							{comment.author_name.charAt(0)}
+						</AvatarFallback>
+					</Avatar>
+				</Link>
 				<div className="flex-1">
 					<div className="flex items-center gap-2 text-sm">
 						<span className="font-semibold">
@@ -446,10 +453,10 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		console.log('Upvote on');
 		try {
 			if (!post.liked_by_requesting_user) {
-				await votePost({ postId: post.id, value: 1 });
+				await fetchUpvotePost(post.id);
 				console.log('Upvote Post Success');
 			} else {
-				await deletevotePost(post.id);
+				await fetchDeletevotePost(post.id);
 				console.log('Delete Upvote Success');
 			}
 		} catch {
@@ -463,10 +470,10 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		console.log('Downvote on');
 		try {
 			if (!post.disliked_by_requesting_user) {
-				await votePost({ postId: post.id, value: -1 });
+				await fetchDownvotePost(post.id);
 				console.log('Downvote Post Success');
 			} else {
-				await deletevotePost(post.id);
+				await fetchDeletevotePost(post.id);
 				console.log('Delete Downvote Success');
 			}
 		} catch {
@@ -486,7 +493,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		e.stopPropagation();
 		setMenuOpen(false);
 		try {
-			await deletePost(post.id);
+			await fetchDeletePost(post.id);
 			console.log('Delete post', post.id, ' success');
 			router.push(`/posts/category/${post.category_id}`);
 			toast.warning('Post deleted successfully!');
@@ -510,88 +517,91 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		} else {
 			router.back();
 		}
+	};
+	const handleAISummary = async () => {
+		setIsLoadingAI(true);
+		try {
+			const response = await getAISummary(post.id);
+			setAiSummary(response.ai_summary);
+			setShowAISummary(true);
+			toast.success('AI Summary generated!', {
+				position: 'bottom-right',
+			});
+		} catch (error) {
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: 'Failed to generate AI summary';
+			toast.error(errorMessage, {
+				position: 'bottom-right',
+			});
+			console.error('AI Summary error:', error);
+		} finally {
+			setIsLoadingAI(false);
+		}
+	};
 
-		const handleAISummary = async () => {
-			setIsLoadingAI(true);
-			try {
-				const response = await getAISummary(post.id);
-				setAiSummary(response.ai_summary);
-				setShowAISummary(true);
-				toast.success('AI Summary generated!', {
-					position: 'bottom-right',
-				});
-			} catch (error) {
-				const errorMessage =
-					error instanceof Error
-						? error.message
-						: 'Failed to generate AI summary';
-				toast.error(errorMessage, {
-					position: 'bottom-right',
-				});
-				console.error('AI Summary error:', error);
-			} finally {
-				setIsLoadingAI(false);
-			}
-		};
-
-		return (
-			<div className="min-h-screen px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
-				<div className="relative w-full max-w-4xl mx-auto">
-					{/* Back Button */}
-					<Button
-						variant="ghost"
-						onClick={handleBackButton}
-						className="mb-5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800"
-					>
-						<ArrowLeft className="w-4 h-4 mr-2" />
-						{result ? `Back to ${result}` : 'Back to Posts'}
-					</Button>
-					{/* Post Card */}
-					<div className="w-full bg-white dark:bg-gray-9 rounded-lg shadow-md p-6 space-y-4">
-						{/* Header */}
-						<div className="flex items-center gap-3">
+	return (
+		<div className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
+			<div className="relative w-full max-w-4xl mx-auto">
+				{/* Back Button */}
+				<Button
+					variant="ghost"
+					onClick={handleBackButton}
+					className="mb-5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800"
+				>
+					<ArrowLeft className="w-4 h-4 mr-2" />
+					{result ? `Back to ${result}` : 'Back to Posts'}
+				</Button>
+				{/* Post Card */}
+				<div className="w-full bg-white dark:bg-gray-9 rounded-lg shadow-md p-6 space-y-4">
+					{/* Header */}
+					<div className="flex items-center gap-3">
+						<Link href={`/profile/${post.author_id}`}>
 							<Avatar className="w-10 h-10 border-3 border-emerald-600 dark:border-emerald-700">
 								<AvatarImage
 									src={`https://api.dicebear.com/7.x/initials/svg?seed=${post.author_name}`}
+									className="transition duration-200 hover:brightness-75"
 								/>
 								<AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xl">
 									{post.author_name.charAt(0).toUpperCase()}
 								</AvatarFallback>
 							</Avatar>
+						</Link>
 
-							<div className="flex-1 flex flex-col text-sm">
-								<span className="font-semibold">
-									{post.author_name}
-								</span>
-								<span className="text-gray-400">
-									{formatTime(post.minutes_since_posted)}
-								</span>
-							</div>
-							<div className="ml-auto relative">
-								<button
-									className="p-1 rounded-lg hover:bg-gray-200 cursor-pointer"
-									onClick={(e) => {
-										e.stopPropagation();
-										setMenuOpen(!menuOpen);
-									}}
-								>
-									<Ellipsis />
-								</button>
+						<div className="flex-1 flex flex-col text-sm">
+							<span className="font-semibold">
+								{post.author_name}
+							</span>
+							<span className="text-gray-400">
+								{formatTime(post.minutes_since_posted)}
+							</span>
+						</div>
+						<div className="ml-auto relative">
+							<button
+								className="p-1 rounded-lg hover:bg-gray-200 cursor-pointer"
+								onClick={(e) => {
+									e.stopPropagation();
+									setMenuOpen(!menuOpen);
+								}}
+							>
+								<Ellipsis />
+							</button>
 
-								{post.author_id === currentUserId ? (
-									<AnimatePresence>
-										{menuOpen && (
-											<motion.div
-												ref={menuRef}
-												className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg"
-												initial={{
-													opacity: 0,
-													x: 0,
-													y: 0,
-												}}
-												animate={{ opacity: 1 }}
-												exit={{ opacity: 0 }}
-												transition={{ duration: 0.15 }}
+							{post.author_id === currentUserId ? (
+								<AnimatePresence>
+									{menuOpen && (
+										<motion.div
+											ref={menuRef}
+											className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg"
+											initial={{ opacity: 0, x: 0, y: 0 }}
+											animate={{ opacity: 1 }}
+											exit={{ opacity: 0 }}
+											transition={{ duration: 0.15 }}
+										>
+											<button
+												className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
+												onClick={handleEdit}
 											>
 												<button
 													className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
@@ -775,12 +785,141 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 									</AnimatePresence>
 								</div>
 							)}
-						</div>{' '}
-						{/* Post Actions */}
-						<div className="flex items-center gap-6 text-gray-600">
-							<div className="flex items-center gap-2">
-								<ArrowUp
-									className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+						</div>
+					</div>
+					{/* Post Content */}
+					<h2 className="text-lg font-medium">{post.title}</h2>
+					{post.attachments.length > 0 &&
+						post.attachments.map((attachment) => (
+							<Image
+								key={attachment.id}
+								src={attachment.url.replace(
+									'/uploads/',
+									'/api/proxy/post/attachments/'
+								)}
+								alt="Post attachment"
+								width={300}
+								height={200}
+								className="w-full h-auto object-cover rounded-lg mb-4"
+							/>
+						))}
+					<div>{post.body_md}</div>
+					{/* AI Summary Section */}
+					<div className="mt-4">
+						{!aiSummary ? (
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={handleAISummary}
+								disabled={isLoadingAI}
+								className="relative flex items-center gap-2 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-all overflow-hidden group"
+							>
+								<span className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30 group-hover:animate-shimmer" />
+								{isLoadingAI ? (
+									<>
+										<Loader2 className="w-4 h-4 animate-spin" />
+										<span>Generating...</span>
+									</>
+								) : (
+									<>
+										<Sparkles className="w-4 h-4 animate-pulse" />
+										<span>Generate AI Summary</span>
+									</>
+								)}
+							</Button>
+						) : (
+							<div className="space-y-2">
+								<div className="flex items-center gap-2">
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() =>
+											setShowAISummary(!showAISummary)
+										}
+										className="flex items-center gap-2 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-all cursor-pointer"
+									>
+										<Sparkles className="w-4 h-4" />
+										<span>
+											{showAISummary ? 'Hide' : 'Show'} AI
+											Summary
+										</span>
+										<ChevronDown
+											className={`w-4 h-4 transition-transform duration-300 ${
+												showAISummary
+													? 'rotate-180'
+													: 'rotate-0'
+											}`}
+										/>
+									</Button>
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={handleAISummary}
+										disabled={isLoadingAI}
+										className="flex items-center gap-2 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-all cursor-pointer"
+									>
+										{isLoadingAI ? (
+											<>
+												<Loader2 className="w-4 h-4 animate-spin" />
+												<span>Regenerating...</span>
+											</>
+										) : (
+											<>
+												<Sparkles className="w-4 h-4" />
+												<span>Regenerate</span>
+											</>
+										)}
+									</Button>
+								</div>
+
+								<AnimatePresence>
+									{showAISummary && (
+										<motion.div
+											initial={{
+												opacity: 0,
+												height: 0,
+												y: -10,
+											}}
+											animate={{
+												opacity: 1,
+												height: 'auto',
+												y: 0,
+											}}
+											exit={{
+												opacity: 0,
+												height: 0,
+												y: -10,
+											}}
+											transition={{
+												duration: 0.3,
+												ease: 'easeInOut',
+											}}
+											className="overflow-hidden"
+										>
+											<div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
+												<div className="flex items-start gap-2">
+													<Sparkles className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+													<div>
+														<p className="text-sm font-semibold text-purple-900 mb-1">
+															AI Summary
+														</p>
+														<p className="text-sm text-gray-700">
+															{aiSummary}
+														</p>
+													</div>
+												</div>
+											</div>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							</div>
+						)}
+					</div>{' '}
+					{/* Post Actions */}
+					<div className="flex items-center gap-6 text-gray-600">
+						<div className="flex items-center gap-2">
+							<ArrowUp
+								className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
 								${
 									post.liked_by_requesting_user
 										? 'bg-green-400 text-black'
