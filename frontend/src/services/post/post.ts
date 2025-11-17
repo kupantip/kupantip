@@ -56,8 +56,19 @@ export type AdminPost = {
 	author_display_name: string;
 };
 
+export type SummaryStat = {
+	category_id: string;
+	category_label: string;
+	category_color: string;
+	post_count: number;
+	total_vote_count: number;
+	total_comment: number;
+	total_engagement: number;
+};
+
+
 const instance = axios.create({
-	baseURL: '/backend',
+	baseURL: '/backend/post',
 	timeout: 5000,
 });
 
@@ -69,7 +80,7 @@ export async function fetchPosts(category_id: string | null): Promise<Post[]> {
 			Authorization: `Bearer ${session?.user?.accessToken}`,
 		};
 
-		const response = await instance.get<Post[]>('/post', {
+		const response = await instance.get<Post[]>('/', {
 			headers: header,
 			params: category_id ? { category_id } : {},
 		});
@@ -103,7 +114,7 @@ export const fetchPostDetailById = async (post_id: string): Promise<Post> => {
 			Authorization: `Bearer ${session?.user?.accessToken}`,
 		};
 
-		const response = await instance.get<Post[]>('/post', {
+		const response = await instance.get<Post[]>('/', {
 			headers: header,
 			params: { post_id },
 		});
@@ -140,7 +151,7 @@ export const fetchPostByUserId = async (user_id: string): Promise<Post[]> => {
 			Authorization: `Bearer ${session?.user?.accessToken}`,
 		};
 
-		const response = await instance.get<Post[]>('/post', {
+		const response = await instance.get<Post[]>('/', {
 			headers: header,
 			params: { user_id },
 		});
@@ -177,7 +188,7 @@ export const fetchPriorityPosts = async (): Promise<Post[]> => {
 			Authorization: `Bearer ${session?.user?.accessToken}`,
 		};
 
-		const response = await instance.get<Post[]>('/post/priority', {
+		const response = await instance.get<Post[]>('/priority', {
 			headers: header,
 		});
 
@@ -211,7 +222,7 @@ export const fetchHotPosts = async (): Promise<Post[]> => {
 			Authorization: `Bearer ${session?.user?.accessToken}`,
 		};
 
-		const response = await instance.get<Post[]>('/post/hot', {
+		const response = await instance.get<Post[]>('/hot', {
 			headers: header,
 		});
 		return response.data;
@@ -237,16 +248,6 @@ export function useHotPosts() {
 	});
 }
 
-export type SummaryStat = {
-	category_id: string;
-	category_label: string;
-	category_color: string;
-	post_count: number;
-	total_vote_count: number;
-	total_comment: number;
-	total_engagement: number;
-};
-
 export const fetchSummaryStats = async (): Promise<SummaryStat[]> => {
 	try {
 		const session = await getSession();
@@ -256,7 +257,7 @@ export const fetchSummaryStats = async (): Promise<SummaryStat[]> => {
 		};
 
 		const response = await instance.get<SummaryStat[]>(
-			'/post/summarystats',
+			'/summarystats',
 			{
 				headers: header,
 			}

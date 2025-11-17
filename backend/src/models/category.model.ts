@@ -45,3 +45,18 @@ export const getCategoryById = async (category_id: string) => {
 
 	return result.recordset.length > 0 ? result.recordset[0] : null;
 };
+
+export const getCategoryByLabel = async (label: string) => {
+	const pool = await getDbConnection();
+
+	const result = await pool
+		.request()
+		.input('label', label)
+		.query(`
+			SELECT id, label, color_hex, detail 
+			FROM [dbo].[category]
+			WHERE LOWER(label) = LOWER(@label)
+		`);
+
+	return result.recordset.length > 0 ? result.recordset[0] : null;
+};

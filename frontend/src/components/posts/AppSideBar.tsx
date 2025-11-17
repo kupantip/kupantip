@@ -21,6 +21,30 @@ const topicItems = [
 	{ title: 'Important Post', url: '/posts/priority', icon: '📌' },
 ];
 
+const adminLinks = [
+	{
+		href: '/posts/admin/report',
+		icon: Calendar,
+		label: 'Report Panel',
+		aria: 'Report Panel',
+		title: 'Report Panel',
+	},
+	{
+		href: '/posts/admin/category',
+		icon: BriefcaseBusiness,
+		label: 'Category Confirm',
+		aria: 'Category Confirm',
+		title: 'Category Confirm',
+	},
+	{
+		href: '/posts/admin/announcement',
+		icon: Megaphone,
+		label: 'Announcement Panel',
+		aria: 'Announcement Panel',
+		title: 'Announcement Panel',
+	},
+];
+
 export function AppSidebar() {
 	const { open, toggleSidebar } = useSidebar();
 	const [hovered, setHovered] = useState(false);
@@ -177,50 +201,27 @@ export function AppSidebar() {
 									Admin
 								</li>
 							)}
-							<li>
-								<Link
-									href="/posts/admin"
-									className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
-										expanded
-											? 'justify-start'
-											: 'justify-center'
-									}`}
-									aria-label={
-										expanded ? undefined : 'Admin Panel'
-									}
-									title={
-										!expanded ? 'Admin Panel' : undefined
-									}
-								>
-									<Calendar className="h-4 w-4 shrink-0" />
-									{expanded && <span>Admin Panel</span>}
-								</Link>
-							</li>
-							<li>
-								<Link
-									href="/posts/admin/announcement"
-									className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
-										expanded
-											? 'justify-start'
-											: 'justify-center'
-									}`}
-									aria-label={
-										expanded
-											? undefined
-											: 'Announcement Panel'
-									}
-									title={
-										!expanded
-											? 'Announcement Panel'
-											: undefined
-									}
-								>
-									<Megaphone className="h-4 w-4 shrink-0" />
-									{expanded && (
-										<span>Announcement Panel</span>
-									)}
-								</Link>
-							</li>
+							{adminLinks.map((link) => (
+								<li key={link.href}>
+									<Link
+										href={link.href}
+										className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
+											expanded
+												? 'justify-start'
+												: 'justify-center'
+										}`}
+										aria-label={
+											expanded ? undefined : link.aria
+										}
+										title={
+											!expanded ? link.title : undefined
+										}
+									>
+										<link.icon className="h-4 w-4 shrink-0" />
+										{expanded && <span>{link.label}</span>}
+									</Link>
+								</li>
+							))}
 						</>
 					)}
 				</ul>
