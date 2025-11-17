@@ -63,7 +63,7 @@ export const createRequestedCategoryController = async (
 		const existingRequest = allRequests.find(
 			(r) =>
 				r.label.toLowerCase() === label.toLowerCase() &&
-				(r.status === 'actioned')
+				r.status === 'actioned'
 		);
 
 		if (existingRequest) {
@@ -201,6 +201,25 @@ export const updateRequestedCategoryController = async (
 				requestedCategory.color_hex,
 				requestedCategory.detail
 			);
+
+			// Auto-dismiss all other pending requests with the same label
+			const allRequests = await getRequestedCategories();
+			const duplicateRequests = allRequests.filter(
+				(r) =>
+					r.label.toLowerCase() ===
+						requestedCategory.label.toLowerCase() &&
+					r.id !== id &&
+					r.status === 'open'
+			);
+
+			// Dismiss all duplicate requests
+			for (const duplicateRequest of duplicateRequests) {
+				await updateRequestedCategoryStatus(
+					duplicateRequest.id,
+					'dismissed',
+					req.user.user_id
+				);
+			}
 		}
 
 		// Update the requested category status
