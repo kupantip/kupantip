@@ -26,7 +26,7 @@ export type CreateCategoryResponse = {
 };
 
 const instance = axios.create({
-	baseURL: '/backend/categories',
+	baseURL: '/api/proxy/categories',
 	timeout: 5000,
 });
 
