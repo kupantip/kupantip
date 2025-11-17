@@ -9,7 +9,7 @@ export type Category = {
 };
 
 const instance = axios.create({
-	baseURL: '/backend',
+	baseURL: '/api/proxy',
 	timeout: 5000,
 });
 

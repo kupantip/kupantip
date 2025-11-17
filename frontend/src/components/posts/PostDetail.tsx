@@ -16,7 +16,7 @@ import * as t from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
 import { useCommentsByPostId } from '@/services/dashboard/getCommentByPostId';
 import CommentBox from './CommentBox';
-import { deletePost } from '@/services/user/delete_post';
+import { fetchDeletePost } from '@/services/post/post';
 import { deleteComment } from '@/services/delete_comment';
 import {
 	votePost,
@@ -30,7 +30,7 @@ import Image from 'next/image';
 import { Trash2 } from 'lucide-react';
 import { Pen } from 'lucide-react';
 import { Flag } from 'lucide-react';
-import ReportModal from '@/app/posts/report/page';
+import ReportModal from './ReportModal';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -476,7 +476,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		e.stopPropagation();
 		setMenuOpen(false);
 		try {
-			await deletePost(post.id);
+			await fetchDeletePost(post.id);
 			console.log('Delete post', post.id, ' success');
 			router.push(`/posts/category/${post.category_id}`);
 			toast.warning('Post deleted successfully!');

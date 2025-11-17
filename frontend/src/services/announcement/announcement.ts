@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getSession } from 'next-auth/react';
 const instance = axios.create({
-	baseURL: '/backend',
+	baseURL: '/api/proxy',
 	timeout: 5000,
 });
 export type Announcement = {

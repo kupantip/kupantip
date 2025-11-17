@@ -7,7 +7,7 @@ import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
 import { useCommentsByPostId } from '@/services/dashboard/getCommentByPostId';
 import CommentBox from './CommentBox';
-import { deletePost } from '@/services/user/delete_post';
+import { fetchDeletePost } from '@/services/post/post';
 import {
 	upvotePost,
 	downvotePost,
@@ -201,7 +201,7 @@ export default function InnerPost({ post }: PostProps) {
 		e.stopPropagation();
 		setMenuOpen(false);
 		try {
-			await deletePost(post.id);
+			await fetchDeletePost(post.id);
 			console.log('Delete post', post.id, ' success');
 			router.push('/dashboard');
 		} catch {

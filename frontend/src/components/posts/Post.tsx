@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquare, ArrowUp, ArrowDown, Ellipsis } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as t from '@/types/dashboard/post';
-import { deletePost } from '@/services/user/delete_post';
+import { fetchDeletePost } from '@/services/post/post';
 import {
 	upvotePost,
 	downvotePost,
@@ -99,7 +99,7 @@ export default function Post({ post, currentPage }: PostProps) {
 		e.stopPropagation();
 		setMenuOpen(false);
 		try {
-			await deletePost(post.id);
+			await fetchDeletePost(post.id);
 			console.log('Delete post', post.id, ' success');
 			window.location.reload();
 		} catch {

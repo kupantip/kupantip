@@ -5,9 +5,8 @@ import { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCategories } from '@/services/post/category';
-import { Post } from '@/types/dashboard/post';
 import { usePostById } from '@/services/dashboard/getPostById';
-import { updatePost } from '@/services/user/updatePost';
+import { fetchUpdatePost } from '@/services/post/post';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import AOS from 'aos';
@@ -124,7 +123,7 @@ export default function EditPostPage() {
 
 		if (!post) return;
 		try {
-			await updatePost(
+			await fetchUpdatePost(
 				{ title, body_md: body, category_id, files },
 				post.id
 			);
