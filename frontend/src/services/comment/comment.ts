@@ -40,3 +40,30 @@ export async function fetchUpdateComment(data: updateCommentData) {
 
 	return res.data;
 }
+
+export async function fetchDeleteComment(commentId: string) {
+	const session = await getSession();
+
+	const token = session?.user?.accessToken;
+	const res = await instance.delete(`/${commentId}`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	});
+
+	if (!res.status.toString().startsWith('2')) {
+		let errorData: BanResponse | null = null;
+		errorData = res.data as BanResponse;
+		const error = new Error(
+			errorData?.message ?? 'Failed to delete comment'
+		);
+		if (errorData) {
+			(error as Error & BanResponse).reason = errorData.reason;
+			(error as Error & BanResponse).end_at = errorData.end_at;
+			(error as Error & BanResponse).status = res.status;
+		}
+		throw error;
+	}
+
+	return res.data;
+}

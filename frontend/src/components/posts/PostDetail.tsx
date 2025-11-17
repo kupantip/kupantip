@@ -17,8 +17,11 @@ import { User } from '@/types/dashboard/user';
 import { useCommentsByPostId } from '@/services/dashboard/getCommentByPostId';
 import CommentBox from './CommentBox';
 import { fetchDeletePost } from '@/services/post/post';
-import { deleteComment } from '@/services/delete_comment';
-import { voteComment, deletevoteComment } from '@/services/user/vote';
+import { fetchDeleteComment } from '@/services/comment/comment';
+import {
+	fetchVoteComment,
+	fetchDeletevoteComment,
+} from '@/services/comment/vote';
 import {
 	fetchDeletevotePost,
 	fetchUpvotePost,
@@ -96,10 +99,10 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		console.log('Upvote on', comment.id);
 		try {
 			if (!comment.liked_by_requesting_user) {
-				await voteComment({ commentId: comment.id, value: 1 });
+				await fetchVoteComment({ commentId: comment.id, value: 1 });
 				console.log('Upvote Comment Success');
 			} else {
-				await deletevoteComment(comment.id);
+				await fetchDeletevoteComment(comment.id);
 				console.log('Delete Upvote Success');
 			}
 		} catch (err: unknown) {
@@ -114,10 +117,10 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		console.log('Downvote on', comment.id);
 		try {
 			if (!comment.disliked_by_requesting_user) {
-				await voteComment({ commentId: comment.id, value: -1 });
+				await fetchVoteComment({ commentId: comment.id, value: -1 });
 				console.log('Downvote Comment Success');
 			} else {
-				await deletevoteComment(comment.id);
+				await fetchDeletevoteComment(comment.id);
 				console.log('Delete Downvote Success');
 			}
 		} catch (err: unknown) {
@@ -138,7 +141,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		e.stopPropagation();
 		console.log('Delete Comment on', comment.id);
 		try {
-			await deleteComment(comment.id);
+			await fetchDeleteComment(comment.id);
 			console.log('Delete comment', comment.id, ' success');
 			toast.warning('Comment deleted successfully!');
 			refreshComments();
@@ -179,8 +182,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 					<Avatar className="w-6 h-6 border-1 border-emerald-600">
 						<AvatarImage
 							src={`https://api.dicebear.com/7.x/initials/svg?seed=${comment.author_name}`}
-							className='hover:brightness-75'
-
+							className="hover:brightness-75"
 						/>
 						<AvatarFallback>
 							{comment.author_name.charAt(0)}
