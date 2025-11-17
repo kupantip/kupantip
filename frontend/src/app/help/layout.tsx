@@ -2,8 +2,6 @@
 
 import { useState, Suspense} from 'react';
 
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import { useSession } from 'next-auth/react';
 
 import { SidebarProvider } from '@/components/ui/sidebar';
