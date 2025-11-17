@@ -46,12 +46,32 @@ export default function CreateCategoryPage() {
 			} else {
 				setError(res.message || 'Failed to create category request');
 			}
-		} catch (err: any) {
+		} catch (err: unknown) {
 			// Try to show backend error message if available
-			const backendMsg = err?.response?.data?.message;
-			setError(
-				backendMsg || err.message || 'Failed to create category request'
-			);
+			let errorMessage = 'Failed to create category request';
+			if (err && typeof err === 'object') {
+				if (
+					'response' in err &&
+					typeof (err as any).response === 'object' &&
+					(err as any).response !== null
+				) {
+					const response = (err as any).response;
+					if (
+						'data' in response &&
+						typeof response.data === 'object' &&
+						response.data !== null &&
+						'message' in response.data
+					) {
+						errorMessage = response.data.message;
+					}
+				} else if (
+					'message' in err &&
+					typeof (err as any).message === 'string'
+				) {
+					errorMessage = (err as any).message;
+				}
+			}
+			setError(errorMessage);
 		} finally {
 			setLoading(false);
 		}
