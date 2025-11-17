@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCategories } from '@/services/post/category';
-import { usePostById } from '@/services/dashboard/getPostById';
+import { usePostById } from '@/services/post/post';
 import { fetchUpdatePost } from '@/services/post/post';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -178,9 +178,9 @@ export default function EditPostPage() {
 		.filter((att) => !attachmentsToDelete.includes(att.id))
 		.map((att) => ({
 			id: att.id,
-			url: att.url.includes('/backend/')
+			url: att.url.includes('/api/proxy/')
 				? att.url
-				: att.url.replace('/uploads/', '/backend/post/attachments/'),
+				: att.url.replace('/uploads/', '/api/proxy/post/attachments/'),
 			isNew: false,
 		}));
 

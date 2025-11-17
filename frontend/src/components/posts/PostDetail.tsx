@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
-import { useCommentsByPostId } from '@/services/dashboard/getCommentByPostId';
+import { useCommentsByPostId } from '@/services/comment/comment';
 import CommentBox from './CommentBox';
 import { fetchDeletePost } from '@/services/post/post';
 import { fetchDeleteComment } from '@/services/comment/comment';
@@ -516,8 +516,8 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			router.push('/posts');
 		} else {
 			router.back();
-    }
-  }
+		}
+	};
 	const handleAISummary = async () => {
 		setIsLoadingAI(true);
 		try {
@@ -656,7 +656,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 								key={attachment.id}
 								src={attachment.url.replace(
 									'/uploads/',
-									'/backend/post/attachments/'
+									'/api/proxy/post/attachments/'
 								)}
 								alt="Post attachment"
 								width={300}

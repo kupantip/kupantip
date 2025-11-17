@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
-import { usePostComment } from '@/services/dashboard/postComment';
+import { usePostComment } from '@/services/comment/comment';
 import { fetchUpdateComment } from '@/services/comment/comment';
 import { AlertTriangle } from 'lucide-react';
 import {
