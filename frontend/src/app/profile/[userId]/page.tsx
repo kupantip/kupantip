@@ -193,11 +193,13 @@ export default function MyProfilePage() {
 								</div>
 							</div>{' '}
 							<div className="flex gap-2 pt-2">
-								{session?.user.id === userId && (
-									<Button className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer">
-										<Edit className="w-4 h-4 mr-2" />
-										Edit Profile
-									</Button>
+								{session?.user.user_id === userId && (
+									<Link href={'/profile/edit'}>
+										<Button className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer">
+											<Edit className="w-4 h-4 mr-2" />
+											Edit Profile
+										</Button>
+									</Link>
 								)}
 
 								<Button

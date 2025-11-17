@@ -3,7 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { getSession } from 'next-auth/react';
 
 const instance = axios.create({
-	baseURL: '/backend/requested-categories',
+	baseURL: '/api/proxy/requested-categories',
 	timeout: 5000,
 });
 

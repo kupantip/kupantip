@@ -51,7 +51,7 @@ export type CreateAnnouncementResponse = {
 };
 
 const instance = axios.create({
-	baseURL: '/api/proxy/annoucement',
+	baseURL: '/api/proxy/announcement',
 	timeout: 5000,
 });
 
