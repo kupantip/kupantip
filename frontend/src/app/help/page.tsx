@@ -1,5 +1,5 @@
-'ีuse client';
+"use client";
 
 export default function HelpPage() {
-	return <div>Help Page</div>;
+  return <div>Help Page</div>;
 }
