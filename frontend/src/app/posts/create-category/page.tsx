@@ -50,25 +50,34 @@ export default function CreateCategoryPage() {
 			// Try to show backend error message if available
 			let errorMessage = 'Failed to create category request';
 			if (err && typeof err === 'object') {
+				// Check for error with response.data.message
 				if (
 					'response' in err &&
-					typeof (err as any).response === 'object' &&
-					(err as any).response !== null
+					typeof (err as Record<string, unknown>).response ===
+						'object' &&
+					(err as Record<string, unknown>).response !== null
 				) {
-					const response = (err as any).response;
+					const response = (err as Record<string, unknown>)
+						.response as Record<string, unknown>;
 					if (
 						'data' in response &&
 						typeof response.data === 'object' &&
-						response.data !== null &&
-						'message' in response.data
+						response.data !== null
 					) {
-						errorMessage = response.data.message;
+						const data = response.data as Record<string, unknown>;
+						if (
+							'message' in data &&
+							typeof data.message === 'string'
+						) {
+							errorMessage = data.message;
+						}
 					}
 				} else if (
 					'message' in err &&
-					typeof (err as any).message === 'string'
+					typeof (err as Record<string, unknown>).message === 'string'
 				) {
-					errorMessage = (err as any).message;
+					errorMessage = (err as Record<string, unknown>)
+						.message as string;
 				}
 			}
 			setError(errorMessage);
