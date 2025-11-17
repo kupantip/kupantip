@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -44,6 +44,7 @@ import {
 import { toast } from 'sonner';
 import { useSidebar } from '../ui/sidebar';
 import { Button } from '../ui/button';
+import Link from 'next/link';
 
 type PostDetailProps = {
 	post: t.Post;
@@ -174,14 +175,18 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 	return (
 		<div className="mb-4">
 			<div className="flex items-start gap-3">
-				<Avatar className="w-6 h-6 border-1 border-emerald-600">
-					<AvatarImage
-						src={`https://api.dicebear.com/7.x/initials/svg?seed=${comment.author_name}`}
-					/>
-					<AvatarFallback>
-						{comment.author_name.charAt(0)}
-					</AvatarFallback>
-				</Avatar>
+				<Link href={`/profile/${comment.author_id}`}>
+					<Avatar className="w-6 h-6 border-1 border-emerald-600">
+						<AvatarImage
+							src={`https://api.dicebear.com/7.x/initials/svg?seed=${comment.author_name}`}
+							className='hover:brightness-75'
+
+						/>
+						<AvatarFallback>
+							{comment.author_name.charAt(0)}
+						</AvatarFallback>
+					</Avatar>
+				</Link>
 				<div className="flex-1">
 					<div className="flex items-center gap-2 text-sm">
 						<span className="font-semibold">
@@ -396,6 +401,9 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const [reportingPost, setReportingPost] = useState<t.Post | null>(null);
 	const [showReportPostDialog, setShowReportPostDialog] = useState(false);
 
+	const searchParams = useSearchParams();
+	const result = searchParams.get('r');
+
 	const { data: session } = useSession();
 	const tokenPayload = session?.accessToken
 		? jwtDecode<User>(session.accessToken)
@@ -494,30 +502,41 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		setShowReportPostDialog(true);
 	};
 
+	const handleBackButton = async () => {
+		if (!result) {
+			router.push('/posts');
+		} else {
+			router.back();
+		}
+	};
+
 	return (
 		<div className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
 			<div className="relative w-full max-w-4xl mx-auto">
 				{/* Back Button */}
 				<Button
 					variant="ghost"
-					onClick={() => router.back()}
+					onClick={handleBackButton}
 					className="mb-5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800"
 				>
 					<ArrowLeft className="w-4 h-4 mr-2" />
-					Back to Posts
+					{result ? `Back to ${result}` : 'Back to Posts'}
 				</Button>
 				{/* Post Card */}
 				<div className="w-full bg-white dark:bg-gray-9 rounded-lg shadow-md p-6 space-y-4">
 					{/* Header */}
 					<div className="flex items-center gap-3">
-						<Avatar className="w-10 h-10 border-3 border-emerald-600 dark:border-emerald-700">
-							<AvatarImage
-								src={`https://api.dicebear.com/7.x/initials/svg?seed=${post.author_name}`}
-							/>
-							<AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xl">
-								{post.author_name.charAt(0).toUpperCase()}
-							</AvatarFallback>
-						</Avatar>
+						<Link href={`/profile/${post.author_id}`}>
+							<Avatar className="w-10 h-10 border-3 border-emerald-600 dark:border-emerald-700">
+								<AvatarImage
+									src={`https://api.dicebear.com/7.x/initials/svg?seed=${post.author_name}`}
+									className="transition duration-200 hover:brightness-75"
+								/>
+								<AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xl">
+									{post.author_name.charAt(0).toUpperCase()}
+								</AvatarFallback>
+							</Avatar>
+						</Link>
 
 						<div className="flex-1 flex flex-col text-sm">
 							<span className="font-semibold">

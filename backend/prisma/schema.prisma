@@ -8,25 +8,28 @@ datasource db {
 }
 
 model app_user {
-  id                                     String              @id(map: "PK__app_user__3213E83F9FE66E99") @default(dbgenerated("newsequentialid()"), map: "DF__app_user__id__398D8EEE") @db.UniqueIdentifier
-  email                                  String              @unique(map: "UQ__app_user__AB6E61647535C41D") @db.NVarChar(320)
-  handle                                 String              @unique(map: "UQ__app_user__7ED567C0A5DC2FD7") @db.NVarChar(32)
-  display_name                           String              @db.NVarChar(100)
-  created_at                             DateTime            @default(now(), map: "DF__app_user__create__3A81B327") @db.DateTime
-  updated_at                             DateTime            @default(now(), map: "DF__app_user__update__3B75D760") @db.DateTime
-  announcement                           announcement[]
-  comment                                comment[]
-  comment_vote                           comment_vote[]
-  moderation_action                      moderation_action[]
-  post                                   post[]
-  post_vote                              post_vote[]
-  report                                 report[]
-  reset_token                            reset_token[]
-  user_ban_user_ban_created_byToapp_user user_ban[]          @relation("user_ban_created_byToapp_user")
-  user_ban_user_ban_revoked_byToapp_user user_ban[]          @relation("user_ban_revoked_byToapp_user")
-  user_ban_user_ban_user_idToapp_user    user_ban[]          @relation("user_ban_user_idToapp_user")
-  user_role                              user_role[]
-  user_secret                            user_secret?
+  id                                                    String               @id(map: "PK__app_user__3213E83F9FE66E99") @default(dbgenerated("newsequentialid()"), map: "DF__app_user__id__398D8EEE") @db.UniqueIdentifier
+  email                                                 String               @unique(map: "UQ__app_user__AB6E61647535C41D") @db.NVarChar(320)
+  handle                                                String               @unique(map: "UQ__app_user__7ED567C0A5DC2FD7") @db.NVarChar(32)
+  display_name                                          String               @db.NVarChar(100)
+  created_at                                            DateTime             @default(now(), map: "DF__app_user__create__3A81B327") @db.DateTime
+  updated_at                                            DateTime             @default(now(), map: "DF__app_user__update__3B75D760") @db.DateTime
+  announcement                                          announcement[]
+  comment                                               comment[]
+  comment_vote                                          comment_vote[]
+  moderation_action                                     moderation_action[]
+  post                                                  post[]
+  post_vote                                             post_vote[]
+  report                                                report[]
+  reset_token                                           reset_token[]
+  user_ban_user_ban_created_byToapp_user                user_ban[]           @relation("user_ban_created_byToapp_user")
+  user_ban_user_ban_revoked_byToapp_user                user_ban[]           @relation("user_ban_revoked_byToapp_user")
+  user_ban_user_ban_user_idToapp_user                   user_ban[]           @relation("user_ban_user_idToapp_user")
+  user_role                                             user_role[]
+  user_secret                                           user_secret?
+  requested_category_requester                          requested_category[] @relation("category_requester")
+  requested_category_reviewer                           requested_category[] @relation("category_reviewer")
+  user_profile                                          user_profile?
 }
 
 model attachment {
@@ -45,6 +48,24 @@ model category {
   detail    String? @db.NVarChar(Max)
   
   post      post[]
+}
+
+model requested_category {
+  id            String    @id(map: "PK__requested_category__3213E83F") @default(dbgenerated("newsequentialid()"), map: "DF__requested_category__id") @db.UniqueIdentifier
+  requester_id  String    @db.UniqueIdentifier
+  label         String    @db.NVarChar(64)
+  color_hex     String?   @db.VarChar(7)
+  detail        String?   @db.NVarChar(Max)
+  status        String    @default("open", map: "DF__requested_category__status") @db.NVarChar(16)
+  created_at    DateTime  @default(now(), map: "DF__requested_category__created_at") @db.DateTime
+  reviewed_at   DateTime? @db.DateTime
+  reviewed_by   String?   @db.UniqueIdentifier
+  
+  requester     app_user  @relation("category_requester", fields: [requester_id], references: [id], onUpdate: NoAction, map: "FK__requested_category__requester")
+  reviewer      app_user? @relation("category_reviewer", fields: [reviewed_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__requested_category__reviewer")
+
+  @@index([requester_id, status, created_at], map: "requested_category_index_1")
+  @@index([status, created_at], map: "requested_category_index_2")
 }
 
 model comment {
@@ -187,4 +208,14 @@ model reset_token {
   create_at DateTime @default(now(), map: "DF__reset_tok__creat__6A30C649") @db.DateTime
   isValid   Boolean  @default(true, map: "DF__reset_tok__isVal__6B24EA82")
   app_user  app_user @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__reset_tok__user___7D439ABD")
+}
+
+model user_profile {
+  user_id    String   @id(map: "PK__user_profile__B9BE370F") @db.UniqueIdentifier
+  bio        String?  @db.NVarChar(500)
+  interests  String?  @db.NVarChar(Max)
+  skills     String?  @db.NVarChar(Max)
+  created_at DateTime @default(now(), map: "DF__user_profile__created_at") @db.DateTime
+  updated_at DateTime @default(now(), map: "DF__user_profile__updated_at") @db.DateTime
+  app_user   app_user @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__user_profile__user_id")
 }

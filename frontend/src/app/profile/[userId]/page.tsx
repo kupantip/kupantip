@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
@@ -59,9 +59,17 @@ export default function MyProfilePage() {
 	const params = useParams();
 	const userId = params.userId as string;
 
-	const tokenPayload = session?.accessToken
-		? jwtDecode<UserPayload>(session.accessToken)
-		: null;
+	const [copied, setCopied] = useState(false);
+
+	const copyCurrentUrl = async () => {
+		try {
+			await navigator.clipboard.writeText(window.location.href);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000); // Reset 'copied' state after 2 seconds
+		} catch (err) {
+			console.error('Failed to copy URL: ', err);
+		}
+	};
 
 	useEffect(() => {
 		AOS.init({
@@ -185,15 +193,20 @@ export default function MyProfilePage() {
 								</div>
 							</div>{' '}
 							<div className="flex gap-2 pt-2">
-								<Button className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer">
-									<Edit className="w-4 h-4 mr-2" />
-									Edit Profile
-								</Button>
+								{session?.user.id === userId && (
+									<Button className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer">
+										<Edit className="w-4 h-4 mr-2" />
+										Edit Profile
+									</Button>
+								)}
+
 								<Button
 									variant="outline"
 									className="cursor-pointer"
+									onClick={copyCurrentUrl}
+									disabled={copied}
 								>
-									Share Profile
+									{copied ? 'Copied!' : 'Share Profile'}
 								</Button>
 							</div>
 						</div>
@@ -269,14 +282,14 @@ export default function MyProfilePage() {
 
 			{/* Tabs Section */}
 			<Tabs defaultValue="activity" className="w-full">
-				<TabsList className="grid w-full grid-cols-3">
+				<TabsList className="grid w-full grid-cols-2">
 					<TabsTrigger value="activity">Recent Activity</TabsTrigger>
-					<TabsTrigger value="badges">Badges</TabsTrigger>
+					{/* <TabsTrigger value="badges">Badges</TabsTrigger> */}
 					<TabsTrigger value="about">About</TabsTrigger>
 				</TabsList>
 
 				{/* Recent Activity Tab */}
-				<TabsContent value="activity">
+				<TabsContent value="activity" id="post">
 					<Card>
 						<CardHeader>
 							<CardTitle>Recent Activity</CardTitle>
@@ -300,7 +313,7 @@ export default function MyProfilePage() {
 										href={`/posts/${activity.id}`}
 										className="block"
 									>
-										<div className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition hover:scale-102 cursor-pointer">
+										<div className="flex items-start gap-4 px-3 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition hover:scale-102 cursor-pointer">
 											<div className="p-2 bg-green-100 dark:bg-green-900 rounded-full">
 												<FileText className="w-4 h-4 text-green-600" />
 											</div>

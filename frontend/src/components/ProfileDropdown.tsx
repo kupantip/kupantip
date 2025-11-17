@@ -80,36 +80,6 @@ export default function ProfileDropDown() {
 								<span>My Profile</span>
 							</Link>
 						</DropdownMenuItem>
-						<DropdownMenuItem asChild disabled={!isAuthenticated}>
-							<Link href="/my-posts" className="cursor-pointer">
-								<FileText className="mr-2 h-4 w-4" />
-								<span>My Posts</span>
-							</Link>
-						</DropdownMenuItem>
-						{/* <DropdownMenuItem asChild disabled={!isAuthenticated}>
-							<Link href="/bookmarks" className="cursor-pointer">
-								<Bookmark className="mr-2 h-4 w-4" />
-								<span>Saved Posts</span>
-							</Link>
-						</DropdownMenuItem> */}
-					</DropdownMenuGroup>
-					<DropdownMenuSeparator />
-					<DropdownMenuGroup>
-						{/* <DropdownMenuItem asChild disabled={!isAuthenticated}>
-							<Link href="/settings" className="cursor-pointer">
-								<Settings className="mr-2 h-4 w-4" />
-								<span>Settings</span>
-							</Link>
-						</DropdownMenuItem> */}
-						<DropdownMenuItem asChild disabled={!isAuthenticated}>
-							<Link
-								href="/notifications"
-								className="cursor-pointer"
-							>
-								<Bell className="mr-2 h-4 w-4" />
-								<span>Notifications</span>
-							</Link>
-						</DropdownMenuItem>
 					</DropdownMenuGroup>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem asChild disabled={!isAuthenticated}>

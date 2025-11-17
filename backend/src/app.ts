@@ -7,6 +7,7 @@ import initRoute from './routes/init';
 import userRoute from './routes/user.route';
 import postRoute from './routes/post.route';
 import categoryRoutes from './routes/category.route';
+import requestedCategoryRoutes from './routes/requestedCategory.route';
 import commentRoutes from './routes/comment.route';
 import postVoteRoutes from './routes/postVote.route';
 import commentVoteRoutes from './routes/commentVote.route';
@@ -17,6 +18,7 @@ import statsRoutes from './routes/stats.route';
 import announcementRoute from './routes/announcement.route';
 import searchRoute from './routes/search.route';
 import n8nRoute from './routes/n8n.route';
+import userProfileRoutes from './routes/userProfile.routes';
 import * as z from 'zod';
 
 const app = express();
@@ -38,6 +40,7 @@ apiV1.use('/init', initRoute);
 apiV1.use('/user', userRoute);
 apiV1.use('/post', postRoute);
 apiV1.use('/categories', categoryRoutes);
+apiV1.use('/requested-categories', requestedCategoryRoutes);
 apiV1.use('/comment', commentRoutes);
 apiV1.use('/post-vote', postVoteRoutes);
 apiV1.use('/comment-vote', commentVoteRoutes);
@@ -48,6 +51,7 @@ apiV1.use('/stats', statsRoutes);
 apiV1.use('/announcement', announcementRoute);
 apiV1.use('/search', searchRoute);
 apiV1.use('/n8n', n8nRoute);
+apiV1.use('/profile', userProfileRoutes);
 
 app.use('/api/v1', apiV1);
 
@@ -58,7 +62,6 @@ app.use((req: Request, res: Response) => {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
 	if (err instanceof z.ZodError) {
-		console.log('Zodd Errorr');
 		const errors = err.issues.map((issue: z.ZodIssue) => {
 			const errorObj: {
 				path: string;

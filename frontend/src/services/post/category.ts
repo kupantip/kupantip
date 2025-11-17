@@ -1,15 +1,32 @@
 import axios from 'axios';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { getSession } from 'next-auth/react';
 
 export type Category = {
 	id: string;
 	label: string;
 	color_hex: string;
+	detail: string;
+};
+
+export type CreateCategoryInput = {
+	label: string;
+	color_hex: string;
+	detail: string;
+};
+
+export type CreateCategoryResponse = {
+	message: string;
+	category: {
+		id: string;
+		label: string;
+		color_hex: string;
+		detail: string;
+	};
 };
 
 const instance = axios.create({
-	baseURL: '/api/proxy',
+	baseURL: '/api/proxy/categories',
 	timeout: 5000,
 });
 
@@ -21,7 +38,7 @@ export async function fetchCategories(): Promise<Category[]> {
 			Authorization: `Bearer ${session?.user?.accessToken}`,
 		};
 
-		const response = await instance.get<Category[]>('/categories', {
+		const response = await instance.get<Category[]>('/', {
 			headers: header,
 		});
 		return response.data;
@@ -46,12 +63,9 @@ export async function fetchCategoryById(categoryId: string): Promise<Category> {
 			Authorization: `Bearer ${session?.user?.accessToken}`,
 		};
 
-		const response = await instance.get<Category>(
-			`/categories/${categoryId}`,
-			{
-				headers: header,
-			}
-		);
+		const response = await instance.get<Category>(`/${categoryId}`, {
+			headers: header,
+		});
 		return response.data;
 	} catch (error: unknown) {
 		if (axios.isAxiosError(error)) {
@@ -62,6 +76,43 @@ export async function fetchCategoryById(categoryId: string): Promise<Category> {
 			throw new Error(error.message);
 		} else {
 			throw new Error(String(error));
+		}
+	}
+}
+
+export async function createCategory(
+	input: CreateCategoryInput
+): Promise<CreateCategoryResponse> {
+	try {
+		const session = await getSession();
+		if (!session) {
+			throw new Error('Not authenticated');
+		}
+
+		const response = await instance.post<CreateCategoryResponse>(
+			'/',
+			input,
+			{
+				headers: {
+					Authorization: `Bearer ${session.user.accessToken}`,
+				},
+			}
+		);
+
+		return response.data;
+
+	} catch (error: unknown) {
+		if (axios.isAxiosError(error)) {
+			const errorMessage =
+				error.response?.data?.message ||
+				`Failed to create announcement: ${error.response?.status} ${error.response?.statusText}`;
+			throw new Error(errorMessage);
+		} else if (error instanceof Error) {
+			throw new Error(error.message);
+		} else {
+			throw new Error(
+				'An unknown error occurred while creating the announcement.'
+			);
 		}
 	}
 }
@@ -88,3 +139,13 @@ export const useCategoryById = (categoryId: string) => {
 		enabled: !!categoryId, // Only fetch if categoryId is provided
 	});
 };
+
+export function useCreateCategory() {
+	return useMutation<
+		CreateCategoryResponse,
+		Error,
+		CreateCategoryInput
+	>({
+		mutationFn: createCategory,
+	});
+}

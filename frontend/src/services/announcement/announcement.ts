@@ -1,10 +1,7 @@
 import axios from 'axios';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getSession } from 'next-auth/react';
-const instance = axios.create({
-	baseURL: '/api/proxy',
-	timeout: 5000,
-});
+
 export type Announcement = {
 	id: string;
 	author_id: string;
@@ -53,6 +50,11 @@ export type CreateAnnouncementResponse = {
 	};
 };
 
+const instance = axios.create({
+	baseURL: '/api/proxy',
+	timeout: 5000,
+});
+
 export async function fetchAnnouncement(): Promise<Announcement[]> {
 	try {
 		const session = await getSession();
@@ -62,7 +64,7 @@ export async function fetchAnnouncement(): Promise<Announcement[]> {
 		};
 
 		const response = await instance.get<AnnouncementResponse>(
-			'/announcement',
+			'/',
 			{
 				headers: header,
 			}
@@ -101,7 +103,7 @@ export async function fetchAnnouncementById(
 		};
 
 		const response = await instance.get<Announcement>(
-			`/announcement/${announcement_id}`,
+			`/${announcement_id}`,
 			{
 				headers: header,
 			}
@@ -139,7 +141,7 @@ export async function createAnnouncement(
 		}
 
 		const response = await instance.post<CreateAnnouncementResponse>(
-			'/announcement',
+			'/',
 			input,
 			{
 				headers: {
@@ -187,7 +189,7 @@ export const deleteAnnouncement = async (
 	if (!session) {
 		throw new Error('Not authenticated');
 	}
-	const response = await instance.delete(`/announcement/${announcement_id}`, {
+	const response = await instance.delete(`/${announcement_id}`, {
 		headers: {
 			Authorization: `Bearer ${session.user.accessToken}`,
 		},

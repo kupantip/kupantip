@@ -57,7 +57,8 @@ export type AdminPost = {
 	author_display_name: string;
 };
 
-type CreatePostData = {
+
+export type CreatePostData = {
 	title: string;
 	body_md: string;
 	url: string;
@@ -65,10 +66,19 @@ type CreatePostData = {
 	files: File[];
 };
 
+export type SummaryStat = {
+	category_id: string;
+	category_label: string;
+	category_color: string;
+	post_count: number;
+	total_vote_count: number;
+	total_comment: number;
+	total_engagement: number;
+};
+
 const instance = axios.create({
 	baseURL: '/api/proxy/post',
-	timeout: 5000,
-});
+
 
 export async function fetchPosts(category_id: string | null): Promise<Post[]> {
 	try {
@@ -245,16 +255,6 @@ export function useHotPosts() {
 		refetchOnMount: 'always',
 	});
 }
-
-export type SummaryStat = {
-	category_id: string;
-	category_label: string;
-	category_color: string;
-	post_count: number;
-	total_vote_count: number;
-	total_comment: number;
-	total_engagement: number;
-};
 
 export const fetchSummaryStats = async (): Promise<SummaryStat[]> => {
 	try {
