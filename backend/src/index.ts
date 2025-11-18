@@ -11,7 +11,7 @@ app.get('/', (req, res) => {
 const httpServer = createServer(app);
 
 // Initialize Socket.IO
-const io = initializeSocket(httpServer);
+initializeSocket(httpServer);
 
 const server = httpServer.listen(env.port, () => {
 	console.log(`API running on http://localhost:${env.port}`);

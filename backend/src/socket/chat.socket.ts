@@ -10,10 +10,6 @@ interface SocketUser {
 	role: string;
 }
 
-interface AuthenticatedSocket extends Socket {
-	user?: SocketUser;
-}
-
 export const initializeSocket = (httpServer: HTTPServer) => {
 	const io = new Server(httpServer, {
 		cors: {
@@ -24,7 +20,7 @@ export const initializeSocket = (httpServer: HTTPServer) => {
 	});
 
 	// Authentication middleware
-	io.use((socket: any, next) => {
+	io.use((socket: Socket & { user?: SocketUser }, next) => {
 		const token = socket.handshake.auth.token;
 
 		if (!token) {
@@ -39,13 +35,13 @@ export const initializeSocket = (httpServer: HTTPServer) => {
 
 			socket.user = decoded;
 			next();
-		} catch (err) {
+		} catch {
 			return next(new Error('Authentication error: Invalid token'));
 		}
 	});
 
-	io.on('connection', (socket: any) => {
-		const user: SocketUser = socket.user;
+	io.on('connection', (socket: Socket & { user?: SocketUser }) => {
+		const user: SocketUser = socket.user as SocketUser;
 		console.log(`User connected: ${user.display_name} (${user.user_id})`);
 
 		// Join room
@@ -96,21 +92,31 @@ export const initializeSocket = (httpServer: HTTPServer) => {
 					const { roomId, content } = data;
 
 					if (!content || content.trim() === '') {
-						socket.emit('error', { message: 'Message content is required' });
+						socket.emit('error', {
+							message: 'Message content is required',
+						});
 						return;
 					}
 
 					// Verify user is participant
-					const isParticipant = await isUserInRoom(roomId, user.user_id);
+					const isParticipant = await isUserInRoom(
+						roomId,
+						user.user_id
+					);
 					if (!isParticipant) {
 						socket.emit('error', {
-							message: 'Not authorized to send messages in this room',
+							message:
+								'Not authorized to send messages in this room',
 						});
 						return;
 					}
 
 					// Save message to database
-					const message = await createMessage(roomId, user.user_id, content.trim());
+					const message = await createMessage(
+						roomId,
+						user.user_id,
+						content.trim()
+					);
 
 					// Broadcast to all users in the room (including sender)
 					io.to(roomId).emit('new_message', {
@@ -146,7 +152,9 @@ export const initializeSocket = (httpServer: HTTPServer) => {
 
 		// Disconnect
 		socket.on('disconnect', () => {
-			console.log(`User disconnected: ${user.display_name} (${user.user_id})`);
+			console.log(
+				`User disconnected: ${user.display_name} (${user.user_id})`
+			);
 
 			socket.broadcast.emit('user_offline', {
 				user_id: user.user_id,

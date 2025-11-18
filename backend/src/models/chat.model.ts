@@ -122,10 +122,10 @@ export const getUserChatRooms = async (user_id: string) => {
 	`);
 
 	// Parse participants JSON
-	return result.recordset.map((room: any) => ({
+	return result.recordset.map((room: Record<string, unknown>) => ({
 		...room,
 		participants: room.participants_json
-			? JSON.parse(room.participants_json)
+			? JSON.parse(room.participants_json as string)
 			: [],
 		participants_json: undefined, // Remove the JSON string field
 	}));
