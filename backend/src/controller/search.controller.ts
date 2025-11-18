@@ -4,7 +4,7 @@ import { search } from '../models/search.model';
 
 const searchSchema = z.object({
 	query: z.string().min(1, 'Search query is required'),
-	type: z.enum(['post', 'comment', 'user', 'all']).default('all'),
+	type: z.enum(['post', 'comment', 'user', 'category', 'all']).default('all'),
 	limit: z.coerce.number().int().min(1).max(50).default(10),
 });
 

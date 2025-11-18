@@ -1,17 +1,19 @@
 'use client';
 
-import { useEffect } from 'react';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import { useState, Suspense} from 'react';
+
 import { useSession } from 'next-auth/react';
 
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/posts/AppSideBar';
 import { Button } from '@/components/ui/button';
 import { CirclePlus } from 'lucide-react';
+import { Bell } from 'lucide-react';
 
 import Link from 'next/link';
 import ProfileDropDown from '@/components/ProfileDropdown';
+import { Loader2 } from "lucide-react"
+import SearchBar from '@/components/SearchBar';
 
 export default function DashboardLayout({
 	children,
@@ -19,12 +21,7 @@ export default function DashboardLayout({
 	children: React.ReactNode;
 }) {
 	const { data: session, status } = useSession();
-
-	useEffect(() => {
-		window.history.scrollRestoration = 'manual';
-		window.scrollTo({ top: 0 });
-		AOS.init({ duration: 800, once: true, offset: 100 });
-	}, []);
+	const [isRedirectLoading, setIsRedirectLoading] = useState(false);
 
 	return (
 		<SidebarProvider>
@@ -33,11 +30,13 @@ export default function DashboardLayout({
 					<h4 className="text-white text-base font-semibold">
 						KU Pantip
 					</h4>
-
+					<Suspense fallback={<p>Loading search...</p>}>
+                        <SearchBar setIsRedirectLoading={setIsRedirectLoading}/>
+                    </Suspense>
 					<div className="flex flex-wrap items-center gap-x-3">
-						{/* <div className="mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
+						<div className="mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
 							<Bell className="w-5 h-5 text-white cursor-pointer" />
-						</div> */}
+						</div>
 						<Link href="/posts/create-category">
 							<Button className="mr-21group w-16 bg-transparent text-white rounded-lg hover:bg-transparent flex items-center gap-2 cursor-pointer hover:scale-105">
 								<CirclePlus className="mt-[0.2em]" />
@@ -63,14 +62,6 @@ export default function DashboardLayout({
 								</Button>
 							</Link>
 						)}
-						{/* <Button
-							variant="ghost"
-							className="p-0 bg-transparent hover:bg-transparent focus-visible:ring-0 cursor-pointer hover:scale-105"
-						>
-							<div className="w-9 h-9 bg-white rounded-full flex items-center justify-center hover:bg-grey-1">
-								<UserPen className="w-5 h-5 text-green-700" />
-							</div>
-						</Button> */}
 						<ProfileDropDown />
 					</div>
 				</div>
@@ -82,7 +73,14 @@ export default function DashboardLayout({
 				</div>
 
 				<main className="flex-1 min-h-[calc(100vh-4rem)]">
-					{children}
+					{isRedirectLoading ? (
+						<div className="flex flex-col justify-center items-center h-[60vh]">
+							<Loader2 className="h-8 w-8 animate-spin" />
+							Searching
+						</div>
+					) : (
+						children
+					)}
 				</main>
 			</div>
 		</SidebarProvider>

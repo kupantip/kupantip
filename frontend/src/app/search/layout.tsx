@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense} from 'react';
+import { Suspense } from 'react';
 
 import { useSession } from 'next-auth/react';
 
@@ -12,7 +12,6 @@ import { Bell } from 'lucide-react';
 
 import Link from 'next/link';
 import ProfileDropDown from '@/components/ProfileDropdown';
-import { Loader2 } from "lucide-react"
 import SearchBar from '@/components/SearchBar';
 
 export default function DashboardLayout({
@@ -21,7 +20,6 @@ export default function DashboardLayout({
 	children: React.ReactNode;
 }) {
 	const { data: session, status } = useSession();
-	const [isRedirectLoading, setIsRedirectLoading] = useState(false);
 
 	return (
 		<SidebarProvider>
@@ -30,9 +28,11 @@ export default function DashboardLayout({
 					<h4 className="text-white text-base font-semibold">
 						KU Pantip
 					</h4>
+
 					<Suspense fallback={<p>Loading search...</p>}>
-                        <SearchBar setIsRedirectLoading={setIsRedirectLoading}/>
-                    </Suspense>
+						<SearchBar/>
+					</Suspense>
+
 					<div className="flex flex-wrap items-center gap-x-3">
 						<div className="mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
 							<Bell className="w-5 h-5 text-white cursor-pointer" />
@@ -72,15 +72,8 @@ export default function DashboardLayout({
 					<AppSidebar />
 				</div>
 
-				<main className="flex-1 min-h-[calc(100vh-4rem)]">
-					{isRedirectLoading ? (
-						<div className="flex flex-col justify-center items-center h-[60vh]">
-							<Loader2 className="h-8 w-8 animate-spin" />
-							Searching
-						</div>
-					) : (
-						children
-					)}
+				<main className="flex-1 p-10 min-h-[calc(100vh-4rem)]">
+					{children}
 				</main>
 			</div>
 		</SidebarProvider>

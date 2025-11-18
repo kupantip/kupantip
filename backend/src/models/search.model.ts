@@ -28,6 +28,10 @@ export type CommentSearchResult = {
 	body_md: string;
 	post_id: string;
 	post_title: string;
+	post_author_name: string;
+	post_vote_score: number;
+	post_comment_count: number;
+	post_minutes_since_posted: number;
 	author_name: string;
 	author_id: string;
 	minutes_since_commented: number;
@@ -50,10 +54,19 @@ export type UserSearchResult = {
 	relevance_score: number;
 };
 
+export type CategorySearchResult = {
+	id: string;
+	label: string;
+	color_hex: string | null;
+	detail: string | null;
+	relevance_score: number;
+};
+
 export type SearchResult = {
 	posts?: PostSearchResult[];
 	comments?: CommentSearchResult[];
 	users?: UserSearchResult[];
+	categories?: CategorySearchResult[];
 };
 
 export const search = async (
@@ -181,6 +194,14 @@ export const search = async (
 						c.post_id,
 						c.author_id,
 						p.title AS post_title,
+						post_author.display_name AS post_author_name,
+						DATEDIFF(MINUTE, p.created_at, GETDATE()) AS post_minutes_since_posted,
+						(SELECT COUNT(*) FROM [dbo].[comment] WITH (NOLOCK) WHERE post_id = p.id AND deleted_at IS NULL) AS post_comment_count,
+						(SELECT 
+							COUNT(CASE WHEN value = 1 THEN 1 END) - COUNT(CASE WHEN value = -1 THEN 1 END)
+							FROM [dbo].[post_vote] WITH (NOLOCK) 
+							WHERE post_id = p.id
+						) AS post_vote_score,
 						u.display_name AS author_name,
 						DATEDIFF(MINUTE, c.created_at, GETDATE()) AS minutes_since_commented,
 						(SELECT COUNT(*) FROM [dbo].[comment] r WITH (NOLOCK) WHERE r.parent_id = c.id AND r.deleted_at IS NULL) AS reply_count,
@@ -210,6 +231,7 @@ export const search = async (
 					FROM [dbo].[comment] c WITH (NOLOCK)
 					LEFT JOIN [dbo].[app_user] u WITH (NOLOCK) ON c.author_id = u.id
 					LEFT JOIN [dbo].[post] p WITH (NOLOCK) ON c.post_id = p.id
+					LEFT JOIN [dbo].[app_user] post_author WITH (NOLOCK) ON p.author_id = post_author.id
 					WHERE c.deleted_at IS NULL
 						AND c.body_md LIKE @query
 					ORDER BY 
@@ -268,6 +290,48 @@ export const search = async (
 				)
 				.then((res) => {
 					result.users = res.recordset;
+				})
+		);
+	}
+
+	// Search Categories
+	if (type === 'category' || type === 'all') {
+		queries.push(
+			pool
+				.request()
+				.input('query', sql.NVarChar, `%${query}%`)
+				.input('exact_query', sql.NVarChar, query)
+				.input('limit', sql.Int, limit)
+				.query(
+					`
+					SELECT TOP (@limit)
+						id,
+						label,
+						color_hex,
+						detail,
+						(CASE 
+							WHEN label = @exact_query THEN 1000
+							WHEN label LIKE @exact_query + '%' THEN 500
+							WHEN label LIKE @query THEN 100
+							WHEN detail LIKE '%' + @exact_query + '%' THEN 50
+							WHEN detail LIKE @query THEN 10
+							ELSE 0
+						END) AS relevance_score
+					FROM [dbo].[category] WITH (NOLOCK)
+					WHERE label LIKE @query OR detail LIKE @query
+					ORDER BY 
+						CASE 
+							WHEN label = @exact_query THEN 1000
+							WHEN label LIKE @exact_query + '%' THEN 500
+							WHEN label LIKE @query THEN 100
+							WHEN detail LIKE '%' + @exact_query + '%' THEN 50
+							WHEN detail LIKE @query THEN 10
+							ELSE 0
+						END DESC
+				`
+				)
+				.then((res) => {
+					result.categories = res.recordset;
 				})
 		);
 	}
