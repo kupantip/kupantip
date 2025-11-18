@@ -122,15 +122,13 @@ export default function LoginPage() {
 
 				<Link
 					href="/posts"
-					className="text-center block text-blue-600 hover:underline"
+					className="group flex items-center justify-center gap-2 w-full text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors duration-200"
 					onClick={(e) => {
 						e.preventDefault();
 						router.push('/posts');
 					}}
 				>
-					<Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg flex items-center justify-center cursor-pointer">
-						Continue to KU Pantip
-					</Button>
+					Continue without signing in
 				</Link>
 			</form>
 
