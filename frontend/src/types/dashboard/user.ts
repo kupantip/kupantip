@@ -5,6 +5,7 @@ export interface User {
   user_id: string;
   role?: string;
   email?: string;
+  handle?: string;
   display_name: string;
   relevance_score: number;
 }

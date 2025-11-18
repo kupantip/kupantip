@@ -7,8 +7,7 @@ import { useSession } from 'next-auth/react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/posts/AppSideBar';
 import { Button } from '@/components/ui/button';
-import { CirclePlus } from 'lucide-react';
-import { Bell } from 'lucide-react';
+import { CirclePlus, Bell, MessageCircle } from 'lucide-react';
 
 import Link from 'next/link';
 import ProfileDropDown from '@/components/ProfileDropdown';
@@ -36,6 +35,14 @@ export default function DashboardLayout({
 						/>
 					</Suspense>
 					<div className="flex flex-wrap items-center gap-x-3">
+						<Link href="/posts/chat">
+							<div className="mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
+								<MessageCircle className="w-5 h-5 text-white cursor-pointer" />
+							</div>
+						</Link>
+						<div className="mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
+							<Bell className="w-5 h-5 text-white cursor-pointer" />
+						</div>
 						<Link href="/posts/create-category">
 							<Button className="mr-21group w-16 bg-transparent text-white rounded-lg hover:bg-transparent flex items-center gap-2 cursor-pointer hover:scale-105">
 								<CirclePlus className="mt-[0.2em]" />
