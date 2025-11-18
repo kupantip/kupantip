@@ -37,13 +37,6 @@ import { useProfileByUserId } from '@/services/user/profile';
 import Link from 'next/link';
 import EditProfile from '@/components/profile/EditProfile';
 
-type UserPayload = {
-	user_id: string;
-	email: string;
-	username: string;
-	role: string;
-};
-
 const formatTime = (minutes: number) => {
 	if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
 	if (minutes < 1440)

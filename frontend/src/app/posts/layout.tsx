@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense} from 'react';
+import { useState, Suspense } from 'react';
 
 import { useSession } from 'next-auth/react';
 
@@ -12,7 +12,7 @@ import { Bell } from 'lucide-react';
 
 import Link from 'next/link';
 import ProfileDropDown from '@/components/ProfileDropdown';
-import { Loader2 } from "lucide-react"
+import { Loader2 } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 
 export default function DashboardLayout({
@@ -31,12 +31,11 @@ export default function DashboardLayout({
 						KU Pantip
 					</h4>
 					<Suspense fallback={<p>Loading search...</p>}>
-                        <SearchBar setIsRedirectLoading={setIsRedirectLoading}/>
-                    </Suspense>
+						<SearchBar
+							setIsRedirectLoading={setIsRedirectLoading}
+						/>
+					</Suspense>
 					<div className="flex flex-wrap items-center gap-x-3">
-						<div className="mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
-							<Bell className="w-5 h-5 text-white cursor-pointer" />
-						</div>
 						<Link href="/posts/create-category">
 							<Button className="mr-21group w-16 bg-transparent text-white rounded-lg hover:bg-transparent flex items-center gap-2 cursor-pointer hover:scale-105">
 								<CirclePlus className="mt-[0.2em]" />
@@ -68,7 +67,7 @@ export default function DashboardLayout({
 			</header>
 
 			<div className="flex pt-16 w-full">
-				<div className="sticky top-16 h-[calc(100vh-4rem)] shrink-0 overflow-hidden">
+				<div className="sticky top-16 h-[calc(100vh-4rem)] shrink-0">
 					<AppSidebar />
 				</div>
 
