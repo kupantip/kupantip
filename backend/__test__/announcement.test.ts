@@ -11,8 +11,8 @@ const adminPayload = {
 };
 
 const b1UserPayload = {
-	email: 'b1@user.com',
-	password: 'B1user@1234',
+	email: 'b2@user.com',
+	password: 'B2user@1234',
 	token: '',
 };
 
