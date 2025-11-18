@@ -10,7 +10,7 @@ const adminPayload = {
 	token: '',
 };
 
-const b1UserPayload = {
+const b2UserPayload = {
 	email: 'b2@user.com',
 	password: 'B2user@1234',
 	token: '',
@@ -46,21 +46,21 @@ describe('Request Annoucement Test', () => {
 		const b1signupResponse = await request(app)
 			.post('/api/v1/user/signup')
 			.send({
-				email: b1UserPayload.email,
-				password: b1UserPayload.password,
-				handle: 'b1user',
-				display_name: 'B1 User',
+				email: b2UserPayload.email,
+				password: b2UserPayload.password,
+				handle: 'b2user',
+				display_name: 'B2 User',
 			});
 		expect(b1signupResponse.status).toBe(201);
 
 		const b1LoginResponse = await request(app)
 			.post('/api/v1/user/login')
 			.send({
-				email: b1UserPayload.email,
-				password: b1UserPayload.password,
+				email: b2UserPayload.email,
+				password: b2UserPayload.password,
 			});
 		expect(b1LoginResponse.status).toBe(200);
-		b1UserPayload.token = b1LoginResponse.body.token;
+		b2UserPayload.token = b1LoginResponse.body.token;
 	});
 
     //** CREATE POST */
@@ -87,7 +87,7 @@ describe('Request Annoucement Test', () => {
 		const response = await request(app)
 			.post(`${baseURL}`)
 			.send(newAnnoucement)
-			.set('Authorization', `Bearer ${b1UserPayload.token}`);
+			.set('Authorization', `Bearer ${b2UserPayload.token}`);
 		expect(response.status).toBe(403);
 		expect(response.body).toHaveProperty(
 			'message',
@@ -121,7 +121,7 @@ describe('Request Annoucement Test', () => {
 	test('B1 should be able to get post', async () => {
 		const response = await request(app)
 			.get(`${baseURL}`)
-			.set('Authorization', `Bearer ${b1UserPayload.token}`);
+			.set('Authorization', `Bearer ${b2UserPayload.token}`);
 		expect(response.status).toBe(200);
 		expect(Array.isArray(response.body.announcements)).toBe(true);
 	});
@@ -147,7 +147,7 @@ describe('Request Annoucement Test', () => {
 	test('B1 should not be able to delete announcement', async () => {
 		const response = await request(app)
 			.delete(`${baseURL}/${newAnnoucement.id}`)
-			.set('Authorization', `Bearer ${b1UserPayload.token}`);
+			.set('Authorization', `Bearer ${b2UserPayload.token}`);
 		expect(response.status).toBe(403);
 		expect(response.body).toHaveProperty(
 			'message',
