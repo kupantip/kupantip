@@ -35,8 +35,7 @@ export const createChatRoom = async (
 	const result = await pool
 		.request()
 		.input('name', name)
-		.input('is_group', is_group)
-		.query(`
+		.input('is_group', is_group).query(`
 			INSERT INTO [dbo].[chat_room] (name, is_group)
 			OUTPUT inserted.id, inserted.name, inserted.is_group, 
 				   inserted.created_at, inserted.updated_at
@@ -64,8 +63,7 @@ export const updateChatRoomName = async (room_id: string, name: string) => {
 	const result = await pool
 		.request()
 		.input('room_id', room_id)
-		.input('name', name)
-		.query(`
+		.input('name', name).query(`
 			UPDATE [dbo].[chat_room]
 			SET name = @name, updated_at = CURRENT_TIMESTAMP
 			OUTPUT inserted.id, inserted.name, inserted.is_group, 
@@ -103,6 +101,7 @@ export const getUserChatRooms = async (user_id: string) => {
 				FROM [dbo].[chat_message] cm
 				WHERE cm.room_id = cr.id
 				AND cm.created_at > ISNULL(cp.last_read, '1900-01-01')
+				AND cm.sender_id != @user_id
 			) as unread_count,
 			(
 				SELECT 
@@ -125,7 +124,9 @@ export const getUserChatRooms = async (user_id: string) => {
 	// Parse participants JSON
 	return result.recordset.map((room: any) => ({
 		...room,
-		participants: room.participants_json ? JSON.parse(room.participants_json) : [],
+		participants: room.participants_json
+			? JSON.parse(room.participants_json)
+			: [],
 		participants_json: undefined, // Remove the JSON string field
 	}));
 };
@@ -133,7 +134,9 @@ export const getUserChatRooms = async (user_id: string) => {
 // Participant operations
 export const addParticipant = async (room_id: string, user_id: string) => {
 	if (!room_id || !user_id) {
-		throw new Error(`Invalid parameters: room_id=${room_id}, user_id=${user_id}`);
+		throw new Error(
+			`Invalid parameters: room_id=${room_id}, user_id=${user_id}`
+		);
 	}
 
 	const pool = await getDbConnection();
@@ -141,8 +144,7 @@ export const addParticipant = async (room_id: string, user_id: string) => {
 	const result = await pool
 		.request()
 		.input('room_id', room_id)
-		.input('user_id', user_id)
-		.query(`
+		.input('user_id', user_id).query(`
 			INSERT INTO [dbo].[chat_participant] (room_id, user_id)
 			OUTPUT inserted.room_id, inserted.user_id, inserted.joined_at, inserted.last_read
 			VALUES (@room_id, @user_id)
@@ -176,8 +178,7 @@ export const isUserInRoom = async (room_id: string, user_id: string) => {
 	const result = await pool
 		.request()
 		.input('room_id', room_id)
-		.input('user_id', user_id)
-		.query(`
+		.input('user_id', user_id).query(`
 			SELECT COUNT(*) as count
 			FROM [dbo].[chat_participant]
 			WHERE room_id = @room_id AND user_id = @user_id
@@ -189,10 +190,7 @@ export const isUserInRoom = async (room_id: string, user_id: string) => {
 export const updateLastRead = async (room_id: string, user_id: string) => {
 	const pool = await getDbConnection();
 
-	await pool
-		.request()
-		.input('room_id', room_id)
-		.input('user_id', user_id)
+	await pool.request().input('room_id', room_id).input('user_id', user_id)
 		.query(`
 			UPDATE [dbo].[chat_participant]
 			SET last_read = CURRENT_TIMESTAMP
@@ -214,8 +212,7 @@ export const createMessage = async (
 		.request()
 		.input('room_id', room_id)
 		.input('sender_id', sender_id)
-		.input('content', content)
-		.query(`
+		.input('content', content).query(`
 			INSERT INTO [dbo].[chat_message] (room_id, sender_id, content)
 			OUTPUT inserted.id, inserted.room_id, inserted.sender_id, 
 				   inserted.content, inserted.created_at
@@ -262,7 +259,10 @@ export const getRoomMessages = async (
 		ORDER BY cm.created_at DESC
 	`;
 
-	const request = pool.request().input('room_id', room_id).input('limit', limit);
+	const request = pool
+		.request()
+		.input('room_id', room_id)
+		.input('limit', limit);
 
 	if (before_id) {
 		request.input('before_id', before_id);
@@ -284,8 +284,7 @@ export const getOrCreateDirectRoom = async (
 	const existingResult = await pool
 		.request()
 		.input('user1_id', user1_id)
-		.input('user2_id', user2_id)
-		.query(`
+		.input('user2_id', user2_id).query(`
 			SELECT cr.id, cr.name, cr.is_group, cr.created_at, cr.updated_at
 			FROM [dbo].[chat_room] cr
 			WHERE cr.is_group = 0

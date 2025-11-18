@@ -41,13 +41,20 @@ export default function ChatPage() {
 			if (selectedRoom && message.room_id === selectedRoom.id) {
 				setMessages((prev) => [...prev, message]);
 
-				// Mark as read if it's not our message
+				// Mark as read if it's not our message and refresh room list
 				if (
 					message.sender_id !== session?.user?.user_id &&
 					session?.accessToken
 				) {
-					markRoomAsRead(session.accessToken, message.room_id);
+					markRoomAsRead(session.accessToken, message.room_id).then(
+						() => {
+							setRefreshKey((prev) => prev + 1);
+						}
+					);
 				}
+			} else {
+				// Message from another room, refresh list to show unread badge
+				setRefreshKey((prev) => prev + 1);
 			}
 		},
 		[selectedRoom, session]
@@ -113,8 +120,9 @@ export default function ChatPage() {
 			);
 			setMessages(data);
 
-			// Mark as read
+			// Mark as read and refresh room list to update unread count
 			await markRoomAsRead(session.accessToken, selectedRoom.id);
+			setRefreshKey((prev) => prev + 1);
 		} catch (error) {
 			console.error('Failed to load messages:', error);
 		} finally {
