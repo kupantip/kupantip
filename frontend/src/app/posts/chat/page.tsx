@@ -16,6 +16,7 @@ import MessageList from '@/components/chat/MessageList';
 import MessageInput from '@/components/chat/MessageInput';
 import NewChatDialog from '@/components/chat/NewChatDialog';
 import EditRoomNameDialog from '@/components/chat/EditRoomNameDialog';
+import GroupMembersDialog from '@/components/chat/GroupMembersDialog';
 import { MessageCircle } from 'lucide-react';
 
 export default function ChatPage() {
@@ -238,14 +239,28 @@ export default function ChatPage() {
 										</p>
 									)}
 								</div>
-								{selectedRoom.is_group && (
-									<EditRoomNameDialog
-										currentName={
-											selectedRoom.name || 'Unnamed Group'
-										}
-										onSave={handleUpdateRoomName}
-									/>
-								)}
+								<div className="flex items-center gap-2">
+									{selectedRoom.is_group &&
+										selectedRoom.participants && (
+											<GroupMembersDialog
+												participants={
+													selectedRoom.participants
+												}
+												currentUserId={
+													session.user.user_id
+												}
+											/>
+										)}
+									{selectedRoom.is_group && (
+										<EditRoomNameDialog
+											currentName={
+												selectedRoom.name ||
+												'Unnamed Group'
+											}
+											onSave={handleUpdateRoomName}
+										/>
+									)}
+								</div>
 							</div>
 						</div>{' '}
 						{/* Messages */}
