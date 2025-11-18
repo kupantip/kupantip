@@ -34,9 +34,6 @@ export default function DashboardLayout({
                         <SearchBar setIsRedirectLoading={setIsRedirectLoading}/>
                     </Suspense>
 					<div className="flex flex-wrap items-center gap-x-3">
-						<div className="mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
-							<Bell className="w-5 h-5 text-white cursor-pointer" />
-						</div>
 						<Link href="/posts/create-category">
 							<Button className="mr-21group w-16 bg-transparent text-white rounded-lg hover:bg-transparent flex items-center gap-2 cursor-pointer hover:scale-105">
 								<CirclePlus className="mt-[0.2em]" />

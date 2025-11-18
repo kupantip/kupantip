@@ -16,6 +16,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { useSidebar } from '@/components/ui/sidebar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const topicItems = [
 	{ title: 'Important Post', url: '/posts/priority', icon: '📌' },
@@ -108,55 +109,59 @@ export function AppSidebar() {
 				</button>
 			</div>
 
-			<nav className="h-[calc(100%-3rem)] overflow-y-auto pb-6">
+			<nav className="h-[calc(100%-3rem)] pb-6">
 				<ul className="space-y-1 px-4">
-					<li>
-						<Link
-							href="/posts"
-							className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
-								expanded ? 'justify-start' : 'justify-center'
-							}`}
-							aria-label={expanded ? undefined : 'Hot Posts'}
-							title={!expanded ? 'News' : undefined}
-						>
-							<span className="text-base ">
-								<Newspaper className="h-5 w-5 shrink-0" />
-							</span>
-							{expanded && <span>News</span>}
-						</Link>
-					</li>
-					{!isLoadingCategories &&
-						categories?.map((category) => {
-							const Icon = iconMenu[category.label] || Home;
+					<ScrollArea className="h-[30vh]">
+						<li>
+							<Link
+								href="/posts"
+								className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
+									expanded
+										? 'justify-start'
+										: 'justify-center'
+								}`}
+								aria-label={expanded ? undefined : 'Hot Posts'}
+								title={!expanded ? 'News' : undefined}
+							>
+								<span className="text-base ">
+									<Newspaper className="h-5 w-5 shrink-0" />
+								</span>
+								{expanded && <span>News</span>}
+							</Link>
+						</li>
+						{!isLoadingCategories &&
+							categories?.map((category) => {
+								const Icon = iconMenu[category.label] || Home;
 
-							return (
-								<li key={category.id}>
-									<Link
-										href={`/posts/category/${category.id}`}
-										className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
-											expanded
-												? 'justify-start'
-												: 'justify-center'
-										}`}
-										aria-label={
-											expanded
-												? undefined
-												: category.label
-										}
-										title={
-											!expanded
-												? category.label
-												: undefined
-										}
-									>
-										<Icon className="h-5 w-5 shrink-0" />
-										{expanded && (
-											<span>{category.label}</span>
-										)}
-									</Link>
-								</li>
-							);
-						})}
+								return (
+									<li key={category.id}>
+										<Link
+											href={`/posts/category/${category.id}`}
+											className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
+												expanded
+													? 'justify-start'
+													: 'justify-center'
+											}`}
+											aria-label={
+												expanded
+													? undefined
+													: category.label
+											}
+											title={
+												!expanded
+													? category.label
+													: undefined
+											}
+										>
+											<Icon className="h-5 w-5 shrink-0" />
+											{expanded && (
+												<span>{category.label}</span>
+											)}
+										</Link>
+									</li>
+								);
+							})}
+					</ScrollArea>
 
 					{expanded && (
 						<li className="pt-2">
