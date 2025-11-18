@@ -26,7 +26,6 @@ export default function ChatPage() {
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [loadingMessages, setLoadingMessages] = useState(false);
 	const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
-	const [refreshKey, setRefreshKey] = useState(0);
 
 	// Redirect if not authenticated
 	useEffect(() => {
@@ -48,13 +47,15 @@ export default function ChatPage() {
 				) {
 					markRoomAsRead(session.accessToken, message.room_id).then(
 						() => {
-							setRefreshKey((prev) => prev + 1);
+							window.dispatchEvent(
+								new Event('chat:refresh-rooms')
+							);
 						}
 					);
 				}
 			} else {
 				// Message from another room, refresh list to show unread badge
-				setRefreshKey((prev) => prev + 1);
+				window.dispatchEvent(new Event('chat:refresh-rooms'));
 			}
 		},
 		[selectedRoom, session]
@@ -122,7 +123,10 @@ export default function ChatPage() {
 
 			// Mark as read and refresh room list to update unread count
 			await markRoomAsRead(session.accessToken, selectedRoom.id);
-			setRefreshKey((prev) => prev + 1);
+			window.dispatchEvent(new Event('chat:refresh-rooms'));
+
+			// Trigger global unread count refresh
+			window.dispatchEvent(new Event('chat:refresh-unread'));
 		} catch (error) {
 			console.error('Failed to load messages:', error);
 		} finally {
@@ -161,7 +165,7 @@ export default function ChatPage() {
 				newName
 			);
 			setSelectedRoom(updatedRoom);
-			setRefreshKey((prev) => prev + 1); // Refresh room list
+			window.dispatchEvent(new Event('chat:refresh-rooms')); // Refresh room list
 		} catch (error) {
 			console.error('Failed to update room name:', error);
 			throw error;
@@ -169,7 +173,7 @@ export default function ChatPage() {
 	};
 
 	const handleChatCreated = (room: ChatRoom) => {
-		setRefreshKey((prev) => prev + 1); // Refresh room list
+		window.dispatchEvent(new Event('chat:refresh-rooms')); // Refresh room list
 		setSelectedRoom(room); // Select the new room immediately
 	};
 
@@ -210,7 +214,6 @@ export default function ChatPage() {
 
 				<div className="flex-1 overflow-hidden">
 					<ChatRoomList
-						key={refreshKey}
 						onSelectRoom={handleSelectRoom}
 						selectedRoomId={selectedRoom?.id}
 					/>

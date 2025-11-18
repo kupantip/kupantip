@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { ChatMessage } from '@/services/chat/chatService';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8000';
+const SOCKET_URL =
+	process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8000';
 
 interface UseChatOptions {
 	token: string | null;
@@ -56,6 +57,8 @@ export const useChat = (options: UseChatOptions) => {
 		newSocket.on('new_message', (message: ChatMessage) => {
 			console.log('New message received:', message);
 			onNewMessage?.(message);
+			// Trigger global unread count refresh
+			window.dispatchEvent(new Event('chat:refresh-unread'));
 		});
 
 		newSocket.on('user_typing', (data: TypingData) => {

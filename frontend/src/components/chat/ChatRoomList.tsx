@@ -21,6 +21,14 @@ export default function ChatRoomList({
 
 	useEffect(() => {
 		loadRooms();
+
+		// Listen for refresh events
+		const handleRefresh = () => loadRooms();
+		window.addEventListener('chat:refresh-rooms', handleRefresh);
+
+		return () => {
+			window.removeEventListener('chat:refresh-rooms', handleRefresh);
+		};
 	}, [session]);
 
 	const loadRooms = async () => {
@@ -78,7 +86,9 @@ export default function ChatRoomList({
 					key={room.id}
 					onClick={() => onSelectRoom(room)}
 					className={`w-full p-4 hover:bg-gray-50 transition-colors text-left ${
-						selectedRoomId === room.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+						selectedRoomId === room.id
+							? 'bg-blue-50 border-l-4 border-blue-500'
+							: ''
 					}`}
 				>
 					<div className="flex items-start gap-3">
@@ -99,9 +109,12 @@ export default function ChatRoomList({
 								</h3>
 								{room.last_message_at && (
 									<span className="text-xs text-gray-500 ml-2">
-										{formatDistanceToNow(new Date(room.last_message_at), {
-											addSuffix: true,
-										})}
+										{formatDistanceToNow(
+											new Date(room.last_message_at),
+											{
+												addSuffix: true,
+											}
+										)}
 									</span>
 								)}
 							</div>
