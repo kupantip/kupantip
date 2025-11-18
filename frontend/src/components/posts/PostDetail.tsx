@@ -224,7 +224,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 									className={`w-6 h-6 p-1 cursor-pointer hover:bg-gray-100 rounded-full
 									${
 										comment.liked_by_requesting_user
-											? 'text-emerald-600 fill-emerald-600'
+											? 'text-emerald-500 fill-emerald-500'
 											: 'hover:bg-gray-200'
 									}`}
 									onClick={handleUpVote}
@@ -234,7 +234,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 									className={`w-6 h-6 p-1 cursor-pointer hover:bg-gray-100 rounded-full
 									${
 										comment.disliked_by_requesting_user
-											? 'text-red-600 fill-red-600'
+											? 'text-red-500 fill-red-500'
 											: 'hover:bg-gray-200'
 									}`}
 									onClick={handleDownVote}
