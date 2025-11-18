@@ -35,7 +35,10 @@ export default function ChatRoomList({
 		if (!session?.accessToken) return;
 
 		try {
-			setLoading(true);
+			// Only show loading state if there are no rooms yet
+			if (rooms.length === 0) {
+				setLoading(true);
+			}
 			const data = await getUserChatRooms(session.accessToken);
 			setRooms(data);
 		} catch (error) {
