@@ -601,6 +601,40 @@ describe('Test Suspend ban', () => {
 	});
 
 	test('E should not be able to post, login, comment or vote', async () => {
-		
-	})
+		// Try to create a post
+		const postPayload = {
+			title: 'Should not work',
+			body_md: 'Suspended user should not post',
+			url: 'http://example.com',
+			category_id: CategoryId,
+		};
+		const postRes = await request(app)
+			.post(postBaseURL)
+			.set('Authorization', `Bearer ${eUserPayload.token}`)
+			.send(postPayload);
+		expect([401, 403]).toContain(postRes.status);
+		expect(postRes.body).toHaveProperty('message');
+
+		// Try to comment
+		const commentPayload = {
+			post_id: PostId,
+			body_md: 'Suspended user should not comment',
+		};
+		const commentRes = await request(app)
+			.post(commentBaseURL)
+			.set('Authorization', `Bearer ${eUserPayload.token}`)
+			.send(commentPayload);
+		expect([401, 403]).toContain(commentRes.status);
+		expect(commentRes.body).toHaveProperty('message');
+
+		// Try to vote on a comment (use the provided comment id)
+		const commentVoteId = 'F67B433E-F36B-1410-8FF8-000C4550AF76';
+		const votePayload = { value: 1 };
+		const voteRes = await request(app)
+			.post(`/api/v1/comment-vote/${commentVoteId}`)
+			.set('Authorization', `Bearer ${eUserPayload.token}`)
+			.send(votePayload);
+		expect([401, 403]).toContain(voteRes.status);
+		expect(voteRes.body).toHaveProperty('message');
+	});
 });
