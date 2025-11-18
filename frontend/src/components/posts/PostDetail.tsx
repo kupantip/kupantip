@@ -14,6 +14,8 @@ import {
 	Sparkles,
 	Loader2,
 	ChevronDown,
+	ArrowBigDown,
+	ArrowBigUp
 } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
@@ -220,22 +222,22 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 					)}
 					{!isEditing && (
 						<div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
-							<div className="flex items-center gap-1 px-2 py-1">
-								<ArrowUp
-									className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+							<div className="flex items-center gap-1 py-1">
+								<ArrowBigUp
+									className={`w-4 h-4 cursor-pointer hover:bg-gray-100 rounded-full
 									${
 										comment.liked_by_requesting_user
-											? 'bg-green-400 text-black'
+											? 'text-emerald-600 fill-emerald-600'
 											: 'hover:bg-gray-200'
 									}`}
 									onClick={handleUpVote}
 								/>
 								<span>{comment.vote_score}</span>
-								<ArrowDown
-									className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+								<ArrowBigDown
+									className={`w-4 h-4 cursor-pointer hover:bg-gray-100 rounded-full
 									${
 										comment.disliked_by_requesting_user
-											? 'bg-red-400 text-black'
+											? 'text-red-600 fill-red-600'
 											: 'hover:bg-gray-200'
 									}`}
 									onClick={handleDownVote}
