@@ -6,6 +6,7 @@ const categoryBaseURL = '/api/v1/categories';
 const postBaseURL = '/api/v1/post';
 const reportBaseURL = '/api/v1/report';
 const banBaseURL = '/api/v1/ban';
+const commentBaseURL = '/api/v1/comment';
 
 const adminPayload = {
 	email: 'admin@admin.com',
@@ -242,6 +243,16 @@ describe('Normal Post Ban', () => {
 		expect(response.body).toHaveProperty('report_updated', true);
 	});
 
+	test('B1 post should not be available to other user now', async () => {
+		// Try to get the banned/deleted post as b2
+		const response = await request(app)
+			.get(`${postBaseURL}/${createdPostId}`)
+			.set('Authorization', `Bearer ${b2UserPayload.token}`);
+		// Acceptable: 404 Not Found, 410 Gone, or custom error
+		expect([404, 410]).toContain(response.status);
+		expect(response.body).toHaveProperty('message');
+	});
+
 	test('B1 should not be able to post anymore', async () => {
 		const payload = {
 			title: 'Should not work',
@@ -253,6 +264,185 @@ describe('Normal Post Ban', () => {
 			.set('Authorization', `Bearer ${b1UserPayload.token}`)
 			.send(payload);
 		// Acceptable: 403 Forbidden, 401 Unauthorized, or custom error
+		expect([401, 403]).toContain(response.status);
+		expect(response.body).toHaveProperty('message');
+	});
+});
+
+describe('Test Comment Ban', () => {
+	const b3UserPayload = {
+		email: 'b3@user.com',
+		password: 'B3user@1234',
+		token: '',
+	};
+	const cUserPayload = {
+		email: 'c@user.com',
+		password: 'Cuser@1234',
+		token: '',
+	};
+	let commentCategoryId = '';
+	let commentPostId = '';
+	let createdCommentId = '';
+	let createdCommentReportId = '';
+
+	beforeAll(async () => {
+		// Signup and login B3
+		const b3SignupRes = await request(app)
+			.post('/api/v1/user/signup')
+			.send({
+				email: b3UserPayload.email,
+				password: b3UserPayload.password,
+				handle: 'b3user',
+				display_name: 'B3 User',
+			});
+		expect([200, 201]).toContain(b3SignupRes.status);
+		const b3LoginRes = await request(app).post('/api/v1/user/login').send({
+			email: b3UserPayload.email,
+			password: b3UserPayload.password,
+		});
+		expect(b3LoginRes.status).toBe(200);
+		b3UserPayload.token = b3LoginRes.body.token;
+
+		// Signup and login C
+		const cSignupRes = await request(app).post('/api/v1/user/signup').send({
+			email: cUserPayload.email,
+			password: cUserPayload.password,
+			handle: 'cuser',
+			display_name: 'C User',
+		});
+		expect([200, 201]).toContain(cSignupRes.status);
+		const cLoginRes = await request(app).post('/api/v1/user/login').send({
+			email: cUserPayload.email,
+			password: cUserPayload.password,
+		});
+		expect(cLoginRes.status).toBe(200);
+		cUserPayload.token = cLoginRes.body.token;
+
+		// Admin creates a category for comment ban test
+		const categoryPayload = {
+			label: 'Comment Ban Category',
+			color_hex: '#654321',
+			detail: 'category for comment ban',
+		};
+		const categoryRes = await request(app)
+			.post(categoryBaseURL)
+			.send(categoryPayload)
+			.set('Authorization', `Bearer ${adminPayload.token}`);
+		expect(categoryRes.status).toBe(201);
+		expect(categoryRes.body).toHaveProperty('category');
+		commentCategoryId = categoryRes.body.category.id;
+
+		// B3 creates a post for comment ban test
+		const postPayload = {
+			title: 'Comment Ban Test Post',
+			body_md: 'Testing comment ban',
+			url: 'http://example.com',
+			category_id: commentCategoryId,
+		};
+		const postRes = await request(app)
+			.post(postBaseURL)
+			.set('Authorization', `Bearer ${b3UserPayload.token}`)
+			.send(postPayload);
+		expect(postRes.status).toBe(201);
+		expect(postRes.body).toHaveProperty('post');
+		// Only assign, do not redeclare
+		commentPostId = postRes.body.post.id;
+	});
+
+	// ...category and post creation now handled in beforeAll...
+
+	test('C comments on B3 post', async () => {
+		const payload = {
+			parent_id: "",
+			body_md: 'This is a comment from C',
+		};
+		const response = await request(app)
+			.post(`${commentBaseURL}?post_id=${commentPostId}`)
+			.set('Authorization', `Bearer ${cUserPayload.token}`)
+			.send(payload);
+		expect(response.status).toBe(200);
+		expect(response.body).toHaveProperty('message', 'Comment success');
+		createdCommentId = response.body.comment.id;
+
+		console.log('test here ------------');
+		console.log('createdCommentId: ', createdCommentId);
+	});
+
+	test('B3 reports C comment', async () => {
+		const reportPayload = {
+			target_type: 'comment',
+			target_id: createdCommentId,
+			reason: 'Inappropriate comment',
+		};
+		console.log('B3 Report payload ', reportPayload);
+		const response = await request(app)
+			.post(reportBaseURL)
+			.set('Authorization', `Bearer ${b3UserPayload.token}`)
+			.send(reportPayload);
+		if (response.status !== 201) {
+			console.log(
+				'B3 report comment response:',
+				response.status,
+				response.body
+			);
+		}
+		expect(response.status).toBe(201);
+		expect(response.body).toHaveProperty('report');
+		createdCommentReportId = response.body.report.id;
+	});
+
+	test('Admin bans C (comment ban)', async () => {
+		// Get the report to find reported_user_id
+		const getReportsRes = await request(app)
+			.get(reportBaseURL)
+			.set('Authorization', `Bearer ${adminPayload.token}`);
+		expect(getReportsRes.status).toBe(200);
+		const report = getReportsRes.body.find(
+			(r: any) => r.id === createdCommentReportId
+		);
+		expect(report).toBeDefined();
+		const banPayload = {
+			user_id: report.reported_user_id || '',
+			ban_type: 'comment_ban',
+			reason_admin: 'Spam comment',
+			reason_user: 'You posted spam comment',
+			end_at: new Date(
+				Date.now() + 7 * 24 * 60 * 60 * 1000
+			).toISOString(),
+			related_report_id: createdCommentReportId,
+		};
+		const response = await request(app)
+			.post(banBaseURL)
+			.set('Authorization', `Bearer ${adminPayload.token}`)
+			.send(banPayload);
+		expect(response.status).toBe(201);
+		expect(response.body).toHaveProperty('message');
+		expect(response.body).toHaveProperty('ban');
+		expect(response.body.ban).toMatchObject({
+			user_id: banPayload.user_id,
+			ban_type: 'comment_ban',
+			reason_admin: banPayload.reason_admin,
+			reason_user: banPayload.reason_user,
+			related_report_id: banPayload.related_report_id,
+		});
+		expect(response.body).toHaveProperty('content_deleted');
+		expect(response.body.content_deleted).toHaveProperty('type', 'comment');
+		expect(response.body.content_deleted).toHaveProperty(
+			'id',
+			createdCommentId
+		);
+		expect(response.body).toHaveProperty('report_updated', true);
+	});
+
+	test('C cannot comment anymore', async () => {
+		const payload = {
+			post_id: commentPostId,
+			body_md: 'Should not work',
+		};
+		const response = await request(app)
+			.post(commentBaseURL)
+			.set('Authorization', `Bearer ${cUserPayload.token}`)
+			.send(payload);
 		expect([401, 403]).toContain(response.status);
 		expect(response.body).toHaveProperty('message');
 	});
