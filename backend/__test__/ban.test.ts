@@ -270,9 +270,9 @@ describe('Normal Post Ban', () => {
 });
 
 describe('Test Comment Ban', () => {
-	const b3UserPayload = {
-		email: 'b3@user.com',
-		password: 'B3user@1234',
+	const dUserPayload = {
+		email: 'd@user.com',
+		password: 'Duser@1234',
 		token: '',
 	};
 	const cUserPayload = {
@@ -290,18 +290,18 @@ describe('Test Comment Ban', () => {
 		const b3SignupRes = await request(app)
 			.post('/api/v1/user/signup')
 			.send({
-				email: b3UserPayload.email,
-				password: b3UserPayload.password,
-				handle: 'b3user',
-				display_name: 'B3 User',
+				email: dUserPayload.email,
+				password: dUserPayload.password,
+				handle: 'duser',
+				display_name: 'D User',
 			});
 		expect([200, 201]).toContain(b3SignupRes.status);
 		const b3LoginRes = await request(app).post('/api/v1/user/login').send({
-			email: b3UserPayload.email,
-			password: b3UserPayload.password,
+			email: dUserPayload.email,
+			password: dUserPayload.password,
 		});
 		expect(b3LoginRes.status).toBe(200);
-		b3UserPayload.token = b3LoginRes.body.token;
+		dUserPayload.token = b3LoginRes.body.token;
 
 		// Signup and login C
 		const cSignupRes = await request(app).post('/api/v1/user/signup').send({
@@ -341,7 +341,7 @@ describe('Test Comment Ban', () => {
 		};
 		const postRes = await request(app)
 			.post(postBaseURL)
-			.set('Authorization', `Bearer ${b3UserPayload.token}`)
+			.set('Authorization', `Bearer ${dUserPayload.token}`)
 			.send(postPayload);
 		expect(postRes.status).toBe(201);
 		expect(postRes.body).toHaveProperty('post');
@@ -349,11 +349,9 @@ describe('Test Comment Ban', () => {
 		commentPostId = postRes.body.post.id;
 	});
 
-	// ...category and post creation now handled in beforeAll...
-
-	test('C comments on B3 post', async () => {
+	test('C comments on D post', async () => {
 		const payload = {
-			parent_id: "",
+			parent_id: '',
 			body_md: 'This is a comment from C',
 		};
 		const response = await request(app)
@@ -368,24 +366,24 @@ describe('Test Comment Ban', () => {
 		console.log('createdCommentId: ', createdCommentId);
 	});
 
-	test('B3 reports C comment', async () => {
+	test('D reports C comment', async () => {
 		const reportPayload = {
 			target_type: 'comment',
 			target_id: createdCommentId,
 			reason: 'Inappropriate comment',
 		};
-		console.log('B3 Report payload ', reportPayload);
+		// console.log('D Report payload ', reportPayload);
 		const response = await request(app)
 			.post(reportBaseURL)
-			.set('Authorization', `Bearer ${b3UserPayload.token}`)
+			.set('Authorization', `Bearer ${dUserPayload.token}`)
 			.send(reportPayload);
-		if (response.status !== 201) {
-			console.log(
-				'B3 report comment response:',
-				response.status,
-				response.body
-			);
-		}
+		// if (response.status !== 201) {
+		// 	console.log(
+		// 		'D report comment response:',
+		// 		response.status,
+		// 		response.body
+		// 	);
+		// }
 		expect(response.status).toBe(201);
 		expect(response.body).toHaveProperty('report');
 		createdCommentReportId = response.body.report.id;
@@ -446,4 +444,163 @@ describe('Test Comment Ban', () => {
 		expect([401, 403]).toContain(response.status);
 		expect(response.body).toHaveProperty('message');
 	});
+});
+
+describe('Test Suspend ban', () => {
+	// Banned
+	const eUserPayload = {
+		email: 'e@user.com',
+		password: 'Euser@1234',
+		token: '',
+	};
+
+	// Reporter
+	const fUserPayload = {
+		email: 'f@user.com',
+		password: 'Fuser@1234',
+		token: '',
+	};
+
+	let CategoryId = '';
+	let PostId = '';
+	let ReportId = '';
+
+	beforeAll(async () => {
+		// Sign up and login E
+		const eSignupRes = await request(app).post('/api/v1/user/signup').send({
+			email: eUserPayload.email,
+			password: eUserPayload.password,
+			handle: 'euser',
+			display_name: 'E User',
+		});
+		expect([200, 201]).toContain(eSignupRes.status);
+		const eLoginRes = await request(app).post('/api/v1/user/login').send({
+			email: eUserPayload.email,
+			password: eUserPayload.password,
+		});
+		expect(eLoginRes.status).toBe(200);
+		eUserPayload.token = eLoginRes.body.token;
+
+		// Sign up and login F
+		const fSignupRes = await request(app).post('/api/v1/user/signup').send({
+			email: fUserPayload.email,
+			password: fUserPayload.password,
+			handle: 'fuser',
+			display_name: 'F User',
+		});
+		expect([200, 201]).toContain(fSignupRes.status);
+		const fLoginRes = await request(app).post('/api/v1/user/login').send({
+			email: fUserPayload.email,
+			password: fUserPayload.password,
+		});
+		expect(fLoginRes.status).toBe(200);
+		fUserPayload.token = fLoginRes.body.token;
+
+		// Admin creates a category for comment ban test
+		const categoryPayload = {
+			label: 'Suspend Ban Category', // Make this unique
+			color_hex: '#654321',
+			detail: 'category for suspend ban',
+		};
+		const categoryRes = await request(app)
+			.post(categoryBaseURL)
+			.send(categoryPayload)
+			.set('Authorization', `Bearer ${adminPayload.token}`);
+		expect(categoryRes.status).toBe(201);
+		expect(categoryRes.body).toHaveProperty('category');
+		CategoryId = categoryRes.body.category.id;
+
+		// creates a post for comment ban test
+		const postPayload = {
+			title: 'Comment Ban Test Post',
+			body_md: 'Testing comment ban',
+			url: 'http://example.com',
+			category_id: CategoryId,
+		};
+		const postRes = await request(app)
+			.post(postBaseURL)
+			.set('Authorization', `Bearer ${eUserPayload.token}`)
+			.send(postPayload);
+		expect(postRes.status).toBe(201);
+		expect(postRes.body).toHaveProperty('post');
+		PostId = postRes.body.post.id;
+	});
+
+	test('F report on E', async () => {
+		const reportPayload = {
+			target_type: 'post',
+			target_id: PostId,
+			reason: 'Inappropriate post',
+		};
+		console.log('Report Payload', reportPayload);
+		const response = await request(app)
+			.post(reportBaseURL)
+			.set('Authorization', `Bearer ${fUserPayload.token}`)
+			.send(reportPayload);
+		expect(response.status).toBe(201);
+		expect(response.body).toHaveProperty('report');
+		ReportId = response.body.report.id;
+
+		// Now, update the report status
+		const updatePayload = { status: 'actioned' };
+		// console.log('PATCH endpoint:', `${reportBaseURL}/${report.id}`);
+		const updateRes = await request(app)
+			.patch(`${reportBaseURL}/${ReportId}`)
+			.set('Authorization', `Bearer ${adminPayload.token}`)
+			.send(updatePayload);
+		// console.log('Update response:', updateRes.status, updateRes.body);
+		expect(updateRes.status).toBe(200);
+		expect(updateRes.body).toHaveProperty('message', 'Report updated');
+		expect(updateRes.body).toHaveProperty('report');
+		expect(updateRes.body.report).toMatchObject({
+			id: ReportId,
+			target_type: 'post',
+			target_id: PostId,
+			status: 'actioned',
+		});
+		expect(updateRes.body.report).toHaveProperty('reporter_id');
+		expect(updateRes.body.report).toHaveProperty('reason');
+		expect(updateRes.body.report).toHaveProperty('created_at');
+	});
+
+	test('Admin suspend ban E', async () => {
+		const getReportsRes = await request(app)
+			.get(reportBaseURL)
+			.set('Authorization', `Bearer ${adminPayload.token}`);
+		expect(getReportsRes.status).toBe(200);
+		const report = getReportsRes.body.find((r: any) => r.id === ReportId);
+		expect(report).toBeDefined();
+		const banPayload = {
+			user_id: report.reported_user_id || '',
+			ban_type: 'suspend',
+			reason_admin: 'Spam comment',
+			reason_user: 'You posted spam comment',
+			end_at: new Date(
+				Date.now() + 7 * 24 * 60 * 60 * 1000
+			).toISOString(),
+			related_report_id: ReportId,
+		};
+		const response = await request(app)
+			.post(banBaseURL)
+			.set('Authorization', `Bearer ${adminPayload.token}`)
+			.send(banPayload);
+		expect(response.status).toBe(201);
+		expect(response.body).toHaveProperty('message');
+		expect(response.body).toHaveProperty('ban');
+		expect(response.body.ban).toMatchObject({
+			user_id: banPayload.user_id,
+			ban_type: 'suspend',
+			reason_admin: banPayload.reason_admin,
+			reason_user: banPayload.reason_user,
+			related_report_id: banPayload.related_report_id,
+		});
+		expect(response.body).toHaveProperty('content_deleted');
+		expect(response.body.content_deleted).toHaveProperty('type', 'post');
+		expect(response.body.content_deleted).toHaveProperty('id', PostId);
+		expect(response.body).toHaveProperty('report_updated', true);
+	});
+
+	test('E should not be able to post, login, comment or vote', async () => {
+		
+	})
 });
