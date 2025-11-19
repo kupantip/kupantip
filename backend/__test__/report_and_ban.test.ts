@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll, beforeEach } from '@jest/globals';
+import { describe, test, expect, beforeAll } from '@jest/globals';
 import request from 'supertest';
 import app from '../src/app';
 
