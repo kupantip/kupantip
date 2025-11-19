@@ -231,7 +231,6 @@ export default function SignUp() {
 									placeholder="Your Display Name"
 								/>
 							</div>
-
 						</div>
 						<div className='flex mt-6 mb-4'>
 							<div className='flex gap-2 scroll-m-20 border-b pb-2 text-2xl font-semibold tracking-tight first:mt-0'>
@@ -342,7 +341,6 @@ export default function SignUp() {
 										</Badge>
 									))}
 								</div>
-
 							</div>
 						</div>
 						<div className='max-w-md flex mt-10 ml-auto mr-auto'>

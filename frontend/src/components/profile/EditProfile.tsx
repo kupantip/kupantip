@@ -171,6 +171,7 @@ export default function EditProfile({
 								type="button"
 								onClick={handleAddInterest}
 								disabled={!interestInput.trim()}
+								className='cursor-pointer bg-emerald-600 hover:bg-emerald-700'
 							>
 								Add
 							</Button>
@@ -179,7 +180,7 @@ export default function EditProfile({
 							{interests.map((interest, idx) => (
 								<Badge
 									key={idx}
-									className="flex items-center gap-1 pr-1"
+									className="flex items-center gap-1 pr-1 bg-orange-100 text-orange-800"
 								>
 									{interest}
 									<button
@@ -189,7 +190,7 @@ export default function EditProfile({
 										}
 										className="ml-1"
 									>
-										<X className="w-3 h-3" />
+										<X className="w-3 h-3 cursor-pointer" />
 									</button>
 								</Badge>
 							))}
@@ -214,6 +215,7 @@ export default function EditProfile({
 								type="button"
 								onClick={handleAddSkill}
 								disabled={!skillInput.trim()}
+								className='cursor-pointer bg-emerald-600 hover:bg-emerald-700'
 							>
 								Add
 							</Button>
@@ -230,7 +232,7 @@ export default function EditProfile({
 										onClick={() => handleRemoveSkill(idx)}
 										className="ml-1"
 									>
-										<X className="w-3 h-3" />
+										<X className="w-3 h-3 cursor-pointer" />
 									</button>
 								</Badge>
 							))}
@@ -245,12 +247,13 @@ export default function EditProfile({
 							variant="outline"
 							onClick={() => onOpenChange(false)}
 							disabled={loading}
+							className='cursor-pointer'
 						>
 							Cancel
 						</Button>
 						<Button
 							type="submit"
-							className="bg-emerald-600"
+							className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
 							disabled={loading}
 						>
 							{loading ? 'Saving...' : 'Save'}
