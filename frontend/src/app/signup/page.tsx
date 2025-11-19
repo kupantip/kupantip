@@ -5,7 +5,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { SquarePen } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { fetchSignupUser } from '@/services/user/auth';
@@ -16,13 +18,15 @@ import {
 	UpdateProfileInput,
 } from '@/services/user/profile';
 
-
 export default function SignUp() {
 	const [formData, setFormData] = useState({
 		email: '',
 		handle: '',
 		display_name: '',
 		password: '',
+		bio: '',
+		interests: '',
+		skills: '',
 	});
 
 	const router = useRouter();
@@ -32,11 +36,6 @@ export default function SignUp() {
 	const [PasswordErrorMessage, setPasswordErrorMessage] = useState('');
 	const [isPasswordError, setIsPasswordError] = useState(false);
 
-	const [form, setForm] = useState<UpdateProfileInput>({
-		bio: '',
-		interests: '',
-		skills: '',
-	});
 	const [interests, setInterests] = useState<string[]>([]);
 	const [skills, setSkills] = useState<string[]>([]);
 	const [interestInput, setInterestInput] = useState('');
@@ -66,7 +65,7 @@ export default function SignUp() {
 		setSkills(skills.filter((_, i) => i !== idx));
 	};
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		setIsError(false);
 		setIsPasswordError(false);
 		setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -115,222 +114,220 @@ export default function SignUp() {
 
 	return (
 		<div className='min-h-screen bg-gray-100 p-6 flex justify-center items-center'>
-			<div className='bg-white max-w-2xl w-full rounded-lg shadow-lg p-8'>
+			<div className='bg-white max-w-3xl w-full rounded-lg shadow-lg p-8'>
 				<div className='flex'>
-					<h1 className="text-4xl font-bold m-auto">Profile</h1>
+					<h1 className="text-4xl font-bold py-2">Create Account</h1>
 				</div>
 				<div className='flex flex-col gap-8 py-6'>
 					<div className="flex items-center gap-3">
-						<Avatar className="m-auto w-24 h-24 border-3 border-emerald-600 dark:border-emerald-700">
+						<Avatar className="w-24 h-24 border-3 border-emerald-600 dark:border-emerald-700">
 							<AvatarImage
 								src={`https://api.dicebear.com/7.x/initials/svg?seed=${formData.display_name}`}
 							/>
 							<AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xl">
-								{'Pattadon'.charAt(0).toUpperCase()}
+								{formData.display_name.charAt(0).toUpperCase()}
 							</AvatarFallback>
 						</Avatar>
+						<div className="ml-4 flex-1 flex flex-col">
+							<span className="font-semibold truncate max-w-[200px] text-2xl">
+								{formData.display_name}
+							</span>
+							<span className="font-semibold truncate max-w-[200px] text-gray-400">
+								{formData.handle}
+							</span>
+						</div>
 					</div>
-					<form id="signupForm" onSubmit={handleSubmit} className='flex flex-col gap-6'>
-						<div>
-							<label className="text-sm font-medium">Email</label>
-							<Input
-								type='email'
-								name='email'
-								value={formData.email}
-								onChange={handleChange}
-								required
-								className="w-full mt-1 border rounded-xl p-3 text-sm"
-								placeholder="Your Email"
-							/>
-							{isError && (
-								<div className='ml-2 mt-1'>
-									<p className='text-sm text-red-500'>{ErrorMessage}</p>
-								</div>
-							)}
-						</div>
-	
-						<div>
-							<label className="text-sm font-medium">Username</label>
-							<Input
-								type='text'
-								name='handle'
-								value={formData.handle}
-								onChange={handleChange}
-								required
-								className="w-full mt-1 border rounded-xl p-3 text-sm"
-								placeholder="Your Username"
-							/>
-							{isError && (
-								<div className='ml-2 mt-1'>
-									<p className='text-sm text-red-500'>{ErrorMessage}</p>
-								</div>
-							)}
-						</div>
-
-						<div>
-							<label className="text-sm font-medium">Display Name</label>
-							<Input
-								type='text'
-								name='display_name'
-								value={formData.display_name}
-								onChange={handleChange}
-								required
-								className="w-full mt-1 border rounded-xl p-3 text-sm"
-								placeholder="Your Display Name"
-							/>
-						</div>
-
-						<div>
-							<label className="text-sm font-medium">Password</label>
-							<Input
-								type='password'
-								name='password'
-								value={formData.password}
-								onChange={handleChange}
-								required
-								className="w-full mt-1 border rounded-xl p-3 text-sm"
-								placeholder="Your Password"
-							/>
-							{isPasswordError && (
-								<div className='ml-2 mt-1'>
-									<p className='text-sm text-red-500'>{PasswordErrorMessage}</p>
-								</div>
-							)}
-						</div>
-
-						<Button
-							type='submit' 
-							className='bg-emerald-600 hover:bg-emerald-700 w-full cursor-pointer'>
-							Sign Up
-						</Button>
-					</form>
-				</div>
-				<div className='flex'>
-					<h1 className="text-2xl font-semibold m-auto">About Me</h1>
-				</div>
-				<div className='mt-4'>
-					<form className='relative flex flex-col gap-6'>
-						{/* <div>
-							<label className="text-sm font-medium">Bio</label>
-							<Textarea
-								className="w-full mt-1 border rounded-xl p-3 text-sm"
-								placeholder="Tell us about yourself"
-							/>
-						</div>
-						<div>
-							<label className="text-sm font-medium">Interesing</label>
-							<Input
-								className="w-full mt-1 border rounded-xl p-3 text-sm"
-								placeholder="Your Display Name"
-							/>
-						</div>
-						<div>
-							<label className="text-sm font-medium">Description</label>
-							<Input
-								className="w-full mt-1 border rounded-xl p-3 text-sm"
-								placeholder="Your Email"
-							/>
-						</div> */}
-						{/* <div>
-							<label className="block mb-1 font-medium">Bio</label>
-							<Textarea
-								name="bio"
-								value={form.bio}
-								rows={3}
-								placeholder="Tell us about yourself"
-								required
-							/>
-						</div>
-						<div>
-							<label className="block mb-1 font-medium">
-								Interests
-							</label>
-							<div className="flex gap-2 mb-2">
+					<form onSubmit={handleSubmit} className=''>
+						<div className='grid grid-cols-2 gap-6'>
+							<div>
+								<label className="text-sm font-medium">Email</label>
 								<Input
-									name="interestInput"
-									value={interestInput}
-									onChange={(e) =>
-										setInterestInput(e.target.value)
-									}
-									placeholder="Add an interest"
-									onKeyDown={(e) => {
-										if (e.key === 'Enter') {
-											e.preventDefault();
-											handleAddInterest();
-										}
-									}}
+									type='email'
+									name='email'
+									value={formData.email}
+									onChange={handleChange}
+									required
+									className="w-full mt-1 border rounded-xl p-3 text-sm"
+									placeholder="Your Email"
 								/>
-								<Button
-									type="button"
-									onClick={handleAddInterest}
-									disabled={!interestInput.trim()}
-									className='cursor-pointer bg-emerald-600 hover:bg-emerald-700'
-								>
-									Add
-								</Button>
+								{isError && (
+									<div className='ml-2 mt-1'>
+										<p className='text-sm text-red-500'>{ErrorMessage}</p>
+									</div>
+								)}
 							</div>
-							<div className="flex flex-wrap gap-2">
-								{interests.map((interest, idx) => (
-									<Badge
-										key={idx}
-										className="flex items-center gap-1 pr-1"
-									>
-										{interest}
-										<button
-											type="button"
-											onClick={() =>
-												handleRemoveInterest(idx)
+		
+							<div>
+								<label className="text-sm font-medium">Username</label>
+								<Input
+									type='text'
+									name='handle'
+									value={formData.handle}
+									onChange={handleChange}
+									required
+									className="w-full mt-1 border rounded-xl p-3 text-sm"
+									placeholder="Your Username"
+								/>
+								{isError && (
+									<div className='ml-2 mt-1'>
+										<p className='text-sm text-red-500'>{ErrorMessage}</p>
+									</div>
+								)}
+							</div>
+
+							<div>
+								<label className="text-sm font-medium">Password</label>
+								<Input
+									type='password'
+									name='password'
+									value={formData.password}
+									onChange={handleChange}
+									required
+									className="w-full mt-1 border rounded-xl p-3 text-sm"
+									placeholder="Your Password"
+								/>
+								{isPasswordError && (
+									<div className='ml-2 mt-1'>
+										<p className='text-sm text-red-500'>{PasswordErrorMessage}</p>
+									</div>
+								)}
+							</div>
+
+							<div>
+								<label className="text-sm font-medium">Display Name</label>
+								<Input
+									type='text'
+									name='display_name'
+									value={formData.display_name}
+									onChange={handleChange}
+									required
+									className="w-full mt-1 border rounded-xl p-3 text-sm"
+									placeholder="Your Display Name"
+								/>
+							</div>
+
+						</div>
+						<div className='flex mt-6 mb-4'>
+							<div className='flex gap-2 scroll-m-20 border-b pb-2 text-2xl font-semibold tracking-tight first:mt-0'>
+								<h2 className="">
+									About Me
+								</h2>
+								<SquarePen className='mt-1'/>
+							</div>
+						</div>
+						<div className='flex flex-col gap-6'>
+
+							<div>
+								<label className="block mb-1 font-medium">Bio</label>
+								<Textarea
+									name="bio"
+									value={formData.bio}
+									onChange={handleChange}
+									rows={3}
+									placeholder="Tell us about yourself"
+									required
+								/>
+							</div>
+							<div>
+								<label className="block mb-1 font-medium">
+									Interests
+								</label>
+								<div className="flex gap-2 mb-2">
+									<Input
+										name="interestInput"
+										value={interestInput}
+										onChange={(e) =>
+											setInterestInput(e.target.value)
+										}
+										placeholder="Add an interest"
+										onKeyDown={(e) => {
+											if (e.key === 'Enter') {
+												e.preventDefault();
+												handleAddInterest();
 											}
-											className="ml-1"
+										}}
+									/>
+									<Button
+										type="button"
+										onClick={handleAddInterest}
+										disabled={!interestInput.trim()}
+										className='cursor-pointer bg-emerald-600 hover:bg-emerald-700'
+									>
+										Add
+									</Button>
+								</div>
+								<div className="flex flex-wrap gap-2">
+									{interests.map((interest, idx) => (
+										<Badge
+											key={idx}
+											className="flex items-center gap-1 pr-1 bg-orange-100 text-orange-800"
 										>
-											<X className="w-3 h-3" />
-										</button>
-									</Badge>
-								))}
+											{interest}
+											<button
+												type="button"
+												onClick={() =>
+													handleRemoveInterest(idx)
+												}
+												className="ml-1"
+											>
+												<X className="w-3 h-3 cursor-pointer" />
+											</button>
+										</Badge>
+									))}
+								</div>
+							</div>
+							<div>
+								<label className="block mb-1 font-medium">Skills</label>
+								<div className="flex gap-2 mb-2">
+									<Input
+										name="skillInput"
+										value={skillInput}
+										onChange={(e) => setSkillInput(e.target.value)}
+										placeholder="Add a skill"
+										onKeyDown={(e) => {
+											if (e.key === 'Enter') {
+												e.preventDefault();
+												handleAddSkill();
+											}
+										}}
+									/>
+									<Button
+										type="button"
+										onClick={handleAddSkill}
+										disabled={!skillInput.trim()}
+										className='cursor-pointer bg-emerald-600 hover:bg-emerald-700'
+									>
+										Add
+									</Button>
+								</div>
+								<div className="flex flex-wrap gap-2">
+									{skills.map((skill, idx) => (
+										<Badge
+											key={idx}
+											className="flex items-center gap-1 pr-1 bg-blue-100 text-blue-800"
+										>
+											{skill}
+											<button
+												type="button"
+												onClick={() => handleRemoveSkill(idx)}
+												className="ml-1"
+											>
+												<X className="w-3 h-3 cursor-pointer" />
+											</button>
+										</Badge>
+									))}
+								</div>
+
 							</div>
 						</div>
-						<div>
-							<label className="block mb-1 font-medium">Skills</label>
-							<div className="flex gap-2 mb-2">
-								<Input
-									name="skillInput"
-									value={skillInput}
-									onChange={(e) => setSkillInput(e.target.value)}
-									placeholder="Add a skill"
-									onKeyDown={(e) => {
-										if (e.key === 'Enter') {
-											e.preventDefault();
-											handleAddSkill();
-										}
-									}}
-								/>
-								<Button
-									type="button"
-									onClick={handleAddSkill}
-									disabled={!skillInput.trim()}
-								>
-									Add
-								</Button>
-							</div>
-							<div className="flex flex-wrap gap-2">
-								{skills.map((skill, idx) => (
-									<Badge
-										key={idx}
-										className="flex items-center gap-1 pr-1 bg-blue-100 text-blue-800"
-									>
-										{skill}
-										<button
-											type="button"
-											onClick={() => handleRemoveSkill(idx)}
-											className="ml-1"
-										>
-											<X className="w-3 h-3" />
-										</button>
-									</Badge>
-								))}
-							</div>
-						</div> */}
-
+						<div className='max-w-md flex mt-10 ml-auto mr-auto'>
+							<Button
+								type='submit' 
+								className='bg-emerald-600 hover:bg-emerald-700 w-full cursor-pointer rounded-full py-6 text-lg'
+							>
+								Sign Up
+							</Button>
+						</div>
 					</form>
 				</div>
 			</div>
