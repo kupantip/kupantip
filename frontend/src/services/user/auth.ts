@@ -41,6 +41,8 @@ export async function fetchSignupUser(data: SignupData) {
 		const res = await instance.post('/signup', data);
 		return res.data;
 	} catch (err) {
-		throw err;
+		if (axios.isAxiosError(err)) {
+			throw err.response?.data;
+		}
 	}
 }
