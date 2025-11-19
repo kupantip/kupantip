@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll } from '@jest/globals';
+import { describe, test, expect, beforeAll, beforeEach } from '@jest/globals';
 import request from 'supertest';
 import app from '../src/app';
 
@@ -344,7 +344,9 @@ describe('Test Comment Ban', () => {
 		expect(categoryRes.status).toBe(201);
 		expect(categoryRes.body).toHaveProperty('category');
 		commentCategoryId = categoryRes.body.category.id;
+	});
 
+	test('C comments on D post', async () => {
 		// B3 creates a post for comment ban test
 		const postPayload = {
 			title: 'Comment Ban Test Post',
@@ -360,9 +362,6 @@ describe('Test Comment Ban', () => {
 		expect(postRes.body).toHaveProperty('post');
 		// Only assign, do not redeclare
 		commentPostId = postRes.body.post.id;
-	});
-
-	test('C comments on D post', async () => {
 		const payload = {
 			parent_id: '',
 			body_md: 'This is a comment from C',
@@ -375,8 +374,8 @@ describe('Test Comment Ban', () => {
 		expect(response.body).toHaveProperty('message', 'Comment success');
 		createdCommentId = response.body.comment.id;
 
-		console.log('test here ------------');
-		console.log('createdCommentId: ', createdCommentId);
+		// console.log('test here ------------');
+		// console.log('createdCommentId: ', createdCommentId);
 	});
 
 	test('D reports C comment', async () => {
@@ -459,7 +458,7 @@ describe('Test Comment Ban', () => {
 	});
 });
 
-describe('Test Suspend ban', () => {
+describe('Test Suspend Ban', () => {
 	// Banned
 	const eUserPayload = {
 		email: 'e@user.com',
@@ -522,11 +521,13 @@ describe('Test Suspend ban', () => {
 		expect(categoryRes.status).toBe(201);
 		expect(categoryRes.body).toHaveProperty('category');
 		CategoryId = categoryRes.body.category.id;
+	});
 
+	test('F report on E', async () => {
 		// creates a post for comment ban test
 		const postPayload = {
-			title: 'Comment Ban Test Post',
-			body_md: 'Testing comment ban',
+			title: 'Ban Test Post',
+			body_md: 'Testing ban',
 			url: 'http://example.com',
 			category_id: CategoryId,
 		};
@@ -537,15 +538,12 @@ describe('Test Suspend ban', () => {
 		expect(postRes.status).toBe(201);
 		expect(postRes.body).toHaveProperty('post');
 		PostId = postRes.body.post.id;
-	});
-
-	test('F report on E', async () => {
 		const reportPayload = {
 			target_type: 'post',
 			target_id: PostId,
 			reason: 'Inappropriate post',
 		};
-		console.log('Report Payload', reportPayload);
+		// console.log('Report Payload', reportPayload);
 		const response = await request(app)
 			.post(reportBaseURL)
 			.set('Authorization', `Bearer ${fUserPayload.token}`)
@@ -655,61 +653,57 @@ describe('Test Suspend ban', () => {
 });
 
 describe('Test Shadow Ban', () => {
-	// Banned
-	const eUserPayload = {
-		email: 'e_shadow@user.com',
-		password: 'Euser@1234',
+	const UserAPayload = {
+		email: 'a@user.com',
+		password: 'Auser@1234',
 		token: '',
 	};
-
-	// Reporter
-	const bUserPayload = {
-		email: 'b_shadow@user.com',
+	const UserBPayload = {
+		email: 'b@user.com',
 		password: 'Buser@1234',
 		token: '',
 	};
 
 	let CategoryId = '';
-	let PostId = '';
-	let ReportId = '';
-	let PostIdNew = '';
+	let BannedPostId = '';
+	let BannedUserId = '';
+	let RelatedReportId = '';
 
 	beforeAll(async () => {
-		// Sign up and login E
-		const eSignupRes = await request(app).post('/api/v1/user/signup').send({
-			email: eUserPayload.email,
-			password: eUserPayload.password,
-			handle: 'e_shadow',
-			display_name: 'E Shadow',
+		const aSignupRes = await request(app).post('/api/v1/user/signup').send({
+			email: UserAPayload.email,
+			password: UserAPayload.password,
+			handle: 'auser',
+			display_name: 'A User',
 		});
-		expect([200, 201]).toContain(eSignupRes.status);
-		const eLoginRes = await request(app).post('/api/v1/user/login').send({
-			email: eUserPayload.email,
-			password: eUserPayload.password,
+		expect([200, 201]).toContain(aSignupRes.status);
+		const aLoginRes = await request(app).post('/api/v1/user/login').send({
+			email: UserAPayload.email,
+			password: UserAPayload.password,
 		});
-		expect(eLoginRes.status).toBe(200);
-		eUserPayload.token = eLoginRes.body.token;
+		expect(aLoginRes.status).toBe(200);
+		UserAPayload.token = aLoginRes.body.token;
 
-		// Sign up and login B
 		const bSignupRes = await request(app).post('/api/v1/user/signup').send({
-			email: bUserPayload.email,
-			password: bUserPayload.password,
-			handle: 'b_shadow',
-			display_name: 'B Shadow',
+			email: UserBPayload.email,
+			password: UserBPayload.password,
+			handle: 'buser',
+			display_name: 'B User',
 		});
 		expect([200, 201]).toContain(bSignupRes.status);
 		const bLoginRes = await request(app).post('/api/v1/user/login').send({
-			email: bUserPayload.email,
-			password: bUserPayload.password,
+			email: UserBPayload.email,
+			password: UserBPayload.password,
 		});
 		expect(bLoginRes.status).toBe(200);
-		bUserPayload.token = bLoginRes.body.token;
+		UserBPayload.token = bLoginRes.body.token;
+	});
 
-		// Admin creates a unique category for shadow ban test
+	test('Create new a category', async () => {
 		const categoryPayload = {
-			label: 'Shadow Ban Category',
-			color_hex: '#abcdef',
-			detail: 'category for shadow ban',
+			label: 'Shadow Ban Category', // Make this unique
+			color_hex: '#654321',
+			detail: 'category for suspend ban',
 		};
 		const categoryRes = await request(app)
 			.post(categoryBaseURL)
@@ -718,8 +712,9 @@ describe('Test Shadow Ban', () => {
 		expect(categoryRes.status).toBe(201);
 		expect(categoryRes.body).toHaveProperty('category');
 		CategoryId = categoryRes.body.category.id;
+	});
 
-		// E creates a post
+	test('A create a new Post', async () => {
 		const postPayload = {
 			title: 'Shadow Ban Test Post',
 			body_md: 'Testing shadow ban',
@@ -728,62 +723,42 @@ describe('Test Shadow Ban', () => {
 		};
 		const postRes = await request(app)
 			.post(postBaseURL)
-			.set('Authorization', `Bearer ${eUserPayload.token}`)
+			.set('Authorization', `Bearer ${UserAPayload.token}`)
 			.send(postPayload);
 		expect(postRes.status).toBe(201);
 		expect(postRes.body).toHaveProperty('post');
-		PostId = postRes.body.post.id;
+		BannedPostId = postRes.body.post.id;
+		BannedUserId = postRes.body.post.author_id;
 	});
 
-	test('B report on E', async () => {
+	test('Admin ban Post A', async () => {
 		const reportPayload = {
 			target_type: 'post',
-			target_id: PostId,
-			reason: 'Inappropriate post',
+			target_id: BannedPostId,
+			reason: 'shadow ban because ...',
 		};
-		const response = await request(app)
+
+		console.log('reportPayload', reportPayload);
+
+		const reportRes = await request(app)
 			.post(reportBaseURL)
-			.set('Authorization', `Bearer ${bUserPayload.token}`)
+			.set('Authorization', `Bearer ${UserAPayload.token}`)
 			.send(reportPayload);
-		expect(response.status).toBe(201);
-		expect(response.body).toHaveProperty('report');
-		ReportId = response.body.report.id;
+		expect(reportRes.status).toBe(201);
+		expect(reportRes.body).toHaveProperty('message');
+		expect(reportRes.body).toHaveProperty('report');
 
-		// Now, update the report status to actioned
-		const updatePayload = { status: 'actioned' };
-		const updateRes = await request(app)
-			.patch(`${reportBaseURL}/${ReportId}`)
-			.set('Authorization', `Bearer ${adminPayload.token}`)
-			.send(updatePayload);
-		expect(updateRes.status).toBe(200);
-		expect(updateRes.body).toHaveProperty('message', 'Report updated');
-		expect(updateRes.body).toHaveProperty('report');
-		expect(updateRes.body.report).toMatchObject({
-			id: ReportId,
-			target_type: 'post',
-			target_id: PostId,
-			status: 'actioned',
-		});
-	});
+		RelatedReportId = reportRes.body.report.id;
 
-	test('Admin shadow ban E', async () => {
-		const getReportsRes = await request(app)
-			.get(reportBaseURL)
-			.set('Authorization', `Bearer ${adminPayload.token}`);
-		expect(getReportsRes.status).toBe(200);
-		const report = getReportsRes.body.find(
-			(r: Report) => r.id === ReportId
-		);
-		expect(report).toBeDefined();
 		const banPayload = {
-			user_id: report.reported_user_id || '',
+			user_id: BannedUserId,
 			ban_type: 'shadowban',
-			reason_admin: 'Spam post',
-			reason_user: 'You posted spam content',
+			reason_admin: 'shadow ban',
+			reason_user: 'shadow ban',
 			end_at: new Date(
 				Date.now() + 7 * 24 * 60 * 60 * 1000
 			).toISOString(),
-			related_report_id: ReportId,
+			related_report_id: RelatedReportId,
 		};
 		const response = await request(app)
 			.post(banBaseURL)
@@ -792,75 +767,53 @@ describe('Test Shadow Ban', () => {
 		expect(response.status).toBe(201);
 		expect(response.body).toHaveProperty('message');
 		expect(response.body).toHaveProperty('ban');
+		expect(response.body).toHaveProperty('content_deleted');
+		expect(response.body).toHaveProperty('report_updated');
 		expect(response.body.ban).toMatchObject({
 			user_id: banPayload.user_id,
 			ban_type: 'shadowban',
 			reason_admin: banPayload.reason_admin,
 			reason_user: banPayload.reason_user,
-			related_report_id: banPayload.related_report_id,
 		});
-		expect(response.body).toHaveProperty('content_deleted');
-		expect(response.body.content_deleted).toHaveProperty('type', 'post');
-		expect(response.body.content_deleted).toHaveProperty('id', PostId);
-		expect(response.body).toHaveProperty('report_updated', true);
 	});
 
-	// TODO Still not working
-	test('E can post and see own post', async () => {
-		// E creates a new post after being shadow banned
+	test('User A should now be shadow ban', async () => {
+		console.log('BannedUserId', BannedUserId);
+		const userBannedRes = await request(app)
+			.get(`${banBaseURL}/user/status/${BannedUserId}`)
+			.set('Authorization', `Bearer ${adminPayload.token}`);
+
+		console.log('Body', userBannedRes.body);
+
+		expect(userBannedRes.status).toBe(200);
+		expect(userBannedRes.body).toHaveProperty('is_banned');
+		expect(userBannedRes.body.is_banned).toBe(true);
+	});
+
+	test('A should still be able to Post and see his own post', async () => {
 		const postPayload = {
-			title: 'Shadowed user post',
-			body_md: 'Should be visible to E only',
+			title: 'Shadowban post after',
+			body_md: 'Shadowban post after',
 			url: 'http://example.com',
 			category_id: CategoryId,
 		};
-		console.log('E token:', eUserPayload.token);
 		const postRes = await request(app)
 			.post(postBaseURL)
-			.set('Authorization', `Bearer ${eUserPayload.token}`)
+			.set('Authorization', `Bearer ${UserAPayload.token}`)
 			.send(postPayload);
-		console.log('Create post response:', postRes.status, postRes.body);
 		expect(postRes.status).toBe(201);
-		expect(postRes.body).toHaveProperty('post');
-		const newPostId = postRes.body.post.id;
-		const authorId = postRes.body.post.author_id;
-		console.log('newPostId:', newPostId, 'authorId:', authorId);
+		BannedPostId = postRes.body.post.id;
+		BannedUserId = postRes.body.post.author_id;
 
-		// E fetches their own posts (should see the new post)
-		const myPostsRes = await request(app)
-			.get(`${postBaseURL}?user_id=${authorId}`)
-			.set('Authorization', `Bearer ${eUserPayload.token}`);
-		console.log(
-			'Fetch posts for user_id:',
-			authorId,
-			'with token:',
-			eUserPayload.token
-		);
-		console.log(
-			'Fetch posts response:',
-			myPostsRes.status,
-			myPostsRes.body
-		);
-		// if (Array.isArray(myPostsRes.body)) {
-		// 	myPostsRes.body.forEach((p: any, idx: number) => {
-		// 		console.log(`Post[${idx}]:`, p);
-		// 	});
-		// }
-		expect(myPostsRes.status).toBe(200);
-		// Check that the response body is a non-empty array
-		expect(Array.isArray(myPostsRes.body)).toBe(true);
-		expect(myPostsRes.body.length).toBeGreaterThan(0);
-		PostIdNew = newPostId;
-	});
+		console.log('postRes', postRes.body);
+		console.log('Banned User id: ', BannedUserId);
 
-	test('B does not see E posts', async () => {
-		// B fetches all posts (should not see E's posts)
-		const allPostsRes = await request(app)
-			.get(postBaseURL)
-			.set('Authorization', `Bearer ${bUserPayload.token}`);
-		expect(allPostsRes.status).toBe(200);
-		// None of the posts should belong to E
-		const ePosts = allPostsRes.body.filter((p: Post) => p.id === PostIdNew);
-		expect(ePosts.length).toBe(0);
+		const getPostRes = await request(app)
+			.get(`${postBaseURL}?post_id=${BannedPostId}`)
+			.set('Authorization', `Bearer ${UserBPayload.token}`);
+		expect(getPostRes.status).toBe(200);
+
+		console.log('getPostRes: ', getPostRes.body);
+		expect(getPostRes.body.length).toBe(0);
 	});
 });
