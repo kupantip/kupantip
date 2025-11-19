@@ -128,6 +128,8 @@ export default function SignUp() {
 			toast.error('Sign up Fail', {
 				description: 'Unable to sign up. Please try again.',
 			});
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
