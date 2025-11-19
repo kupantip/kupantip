@@ -29,19 +29,6 @@ export type ReportResponse = {
 	report: Report;
 };
 
-export type Post = {
-	id: string;
-	title: string;
-	body_md: string;
-	url: string;
-	created_at: string;
-	updated_at: string;
-	author_name: string;
-	author_id: string;
-	category_label: string;
-	category_id: string;
-	attachments: any[];
-};
 
 describe('Normal Post Ban', () => {
 	const ReportBan1UserPayload = {
