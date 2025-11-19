@@ -9,7 +9,6 @@ import { X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { SquarePen } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { fetchSignupUser } from '@/services/user/auth';
 import { toast } from 'sonner';
 import {
@@ -28,6 +27,21 @@ export default function SignUp() {
 		interests: '',
 		skills: '',
 	});
+
+	const [previewData, setPreviewData] = useState({
+        handle: '',
+        display_name: ''
+    });
+
+	const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+		if (name === 'handle' || name === 'display_name') {
+			setPreviewData(prev => ({
+				...prev,
+				[name]: value
+			}));
+		}
+	};
 
 	const router = useRouter();
 	const [ErrorMessage, setErrorMessage] = useState('');
@@ -122,18 +136,18 @@ export default function SignUp() {
 					<div className="flex items-center gap-3">
 						<Avatar className="w-24 h-24 border-3 border-emerald-600 dark:border-emerald-700">
 							<AvatarImage
-								src={`https://api.dicebear.com/7.x/initials/svg?seed=${formData.display_name}`}
+								src={`https://api.dicebear.com/7.x/initials/svg?seed=${previewData.display_name}`}
 							/>
 							<AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xl">
-								{formData.display_name.charAt(0).toUpperCase()}
+								{(previewData.display_name || '').charAt(0).toUpperCase()}
 							</AvatarFallback>
 						</Avatar>
 						<div className="ml-4 flex-1 flex flex-col">
 							<span className="font-semibold truncate max-w-[200px] text-2xl">
-								{formData.display_name}
+								{previewData.display_name}
 							</span>
 							<span className="font-semibold truncate max-w-[200px] text-gray-400">
-								{formData.handle}
+								{previewData.handle ? `@${previewData.handle}` : ''}
 							</span>
 						</div>
 					</div>
@@ -164,6 +178,7 @@ export default function SignUp() {
 									name='handle'
 									value={formData.handle}
 									onChange={handleChange}
+									onBlur={handleBlur}
 									required
 									className="w-full mt-1 border rounded-xl p-3 text-sm"
 									placeholder="Your Username"
@@ -200,6 +215,7 @@ export default function SignUp() {
 									name='display_name'
 									value={formData.display_name}
 									onChange={handleChange}
+									onBlur={handleBlur}
 									required
 									className="w-full mt-1 border rounded-xl p-3 text-sm"
 									placeholder="Your Display Name"
@@ -225,7 +241,6 @@ export default function SignUp() {
 									onChange={handleChange}
 									rows={3}
 									placeholder="Tell us about yourself"
-									required
 								/>
 							</div>
 							<div>
