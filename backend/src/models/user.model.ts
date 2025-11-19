@@ -7,7 +7,10 @@ export const signup = async (
 	handle: string,
 	display_name: string,
 	password: string,
-	role?: string
+	role?: string,
+	bio?: string,
+	interests?: string,
+	skills?: string
 ) => {
 	if (!email || !handle || !display_name || !password)
 		return { message: 'Missing fields' };
@@ -64,6 +67,19 @@ export const signup = async (
 				.query(
 					'INSERT INTO [dbo].[user_role] ([user_id], [role]) VALUES (@user_id, @role)'
 				);
+
+			// Insert user_profile if bio, interests, or skills provided
+			if (bio || interests || skills) {
+				await transaction
+					.request()
+					.input('user_id', NVarChar, user_id)
+					.input('bio', NVarChar, bio || null)
+					.input('interests', NVarChar, interests || null)
+					.input('skills', NVarChar, skills || null)
+					.query(
+						'INSERT INTO [dbo].[user_profile] ([user_id], [bio], [interests], [skills]) VALUES (@user_id, @bio, @interests, @skills)'
+					);
+			}
 
 			await transaction.commit();
 			return { message: 'Register success' };
