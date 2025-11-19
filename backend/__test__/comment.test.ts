@@ -15,8 +15,8 @@ const adminPayload = {
 
 describe('Comment Test Flow', () => {
 	const UserAPayload = {
-		email: 'a@user.com',
-		password: 'Auser@1234',
+		email: 'commentA@user.com',
+		password: 'commentAuser@1234',
 		token: '',
 	};
 	let CategoryId = '';
@@ -37,8 +37,8 @@ describe('Comment Test Flow', () => {
 		const aSignupRes = await request(app).post('/api/v1/user/signup').send({
 			email: UserAPayload.email,
 			password: UserAPayload.password,
-			handle: 'auser',
-			display_name: 'A User',
+			handle: 'comment auser',
+			display_name: 'comment A User',
 		});
 		expect([200, 201]).toContain(aSignupRes.status);
 		const aLoginRes = await request(app).post('/api/v1/user/login').send({
@@ -51,14 +51,15 @@ describe('Comment Test Flow', () => {
 
 	test('Create new a category', async () => {
 		const categoryPayload = {
-			label: 'Shadow Ban Category', // Make this unique
+			label: 'Comment Category', // Make this unique
 			color_hex: '#654321',
 			detail: 'category for suspend ban',
 		};
 		const categoryRes = await request(app)
 			.post(categoryBaseURL)
-			.send(categoryPayload)
-			.set('Authorization', `Bearer ${adminPayload.token}`);
+			.set('Authorization', `Bearer ${adminPayload.token}`)
+			.send(categoryPayload);
+
 		expect(categoryRes.status).toBe(201);
 		expect(categoryRes.body).toHaveProperty('category');
 		CategoryId = categoryRes.body.category.id;

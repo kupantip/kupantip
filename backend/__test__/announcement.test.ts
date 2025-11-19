@@ -10,8 +10,8 @@ const adminPayload = {
 	token: '',
 };
 
-const b2UserPayload = {
-	email: 'b2@user.com',
+const AnnouncementUserPayload = {
+	email: 'Announcemen2@user.com',
 	password: 'B2user@1234',
 	token: '',
 };
@@ -46,8 +46,8 @@ describe('Request Annoucement Test', () => {
 		const b1signupResponse = await request(app)
 			.post('/api/v1/user/signup')
 			.send({
-				email: b2UserPayload.email,
-				password: b2UserPayload.password,
+				email: AnnouncementUserPayload.email,
+				password: AnnouncementUserPayload.password,
 				handle: 'b2user',
 				display_name: 'B2 User',
 			});
@@ -56,14 +56,14 @@ describe('Request Annoucement Test', () => {
 		const b1LoginResponse = await request(app)
 			.post('/api/v1/user/login')
 			.send({
-				email: b2UserPayload.email,
-				password: b2UserPayload.password,
+				email: AnnouncementUserPayload.email,
+				password: AnnouncementUserPayload.password,
 			});
 		expect(b1LoginResponse.status).toBe(200);
-		b2UserPayload.token = b1LoginResponse.body.token;
+		AnnouncementUserPayload.token = b1LoginResponse.body.token;
 	});
 
-    //** CREATE POST */
+	//** CREATE POST */
 
 	const newAnnoucement = {
 		title: 'Course registration period',
@@ -87,7 +87,7 @@ describe('Request Annoucement Test', () => {
 		const response = await request(app)
 			.post(`${baseURL}`)
 			.send(newAnnoucement)
-			.set('Authorization', `Bearer ${b2UserPayload.token}`);
+			.set('Authorization', `Bearer ${AnnouncementUserPayload.token}`);
 		expect(response.status).toBe(403);
 		expect(response.body).toHaveProperty(
 			'message',
@@ -110,7 +110,7 @@ describe('Request Annoucement Test', () => {
 		newAnnoucement['id'] = resBody.announcement.id;
 	});
 
-    //** GET POST */
+	//** GET POST */
 
 	test('Unauthorized user should be able to get post', async () => {
 		const response = await request(app).get(`${baseURL}`);
@@ -121,7 +121,7 @@ describe('Request Annoucement Test', () => {
 	test('B1 should be able to get post', async () => {
 		const response = await request(app)
 			.get(`${baseURL}`)
-			.set('Authorization', `Bearer ${b2UserPayload.token}`);
+			.set('Authorization', `Bearer ${AnnouncementUserPayload.token}`);
 		expect(response.status).toBe(200);
 		expect(Array.isArray(response.body.announcements)).toBe(true);
 	});
@@ -134,7 +134,7 @@ describe('Request Annoucement Test', () => {
 		expect(Array.isArray(response.body.announcements)).toBe(true);
 	});
 
-    //** DELETE */
+	//** DELETE */
 
 	test('Unauthorized user should not be able to delete announcement', async () => {
 		const response = await request(app).delete(
@@ -147,7 +147,7 @@ describe('Request Annoucement Test', () => {
 	test('B1 should not be able to delete announcement', async () => {
 		const response = await request(app)
 			.delete(`${baseURL}/${newAnnoucement.id}`)
-			.set('Authorization', `Bearer ${b2UserPayload.token}`);
+			.set('Authorization', `Bearer ${AnnouncementUserPayload.token}`);
 		expect(response.status).toBe(403);
 		expect(response.body).toHaveProperty(
 			'message',

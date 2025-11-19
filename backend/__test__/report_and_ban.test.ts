@@ -44,14 +44,14 @@ export type Post = {
 };
 
 describe('Normal Post Ban', () => {
-	const b1UserPayload = {
-		email: 'b1@user.com',
+	const ReportBan1UserPayload = {
+		email: 'ReportBan1@user.com',
 		password: 'B1user@1234',
 		token: '',
 	};
 
-	const b2UserPayload = {
-		email: 'b2@user.com',
+	const ReportBan2UserPayload = {
+		email: 'ReportBan2@user.com',
 		password: 'B2user@1234',
 		token: '',
 	};
@@ -68,40 +68,40 @@ describe('Normal Post Ban', () => {
 		const b1signupResponse = await request(app)
 			.post('/api/v1/user/signup')
 			.send({
-				email: b1UserPayload.email,
-				password: b1UserPayload.password,
-				handle: 'b1user',
-				display_name: 'B1 User',
+				email: ReportBan1UserPayload.email,
+				password: ReportBan1UserPayload.password,
+				handle: 'ReportBan b1user',
+				display_name: 'ReportBan B1 User',
 			});
 		expect(b1signupResponse.status).toBe(201);
 
 		const b1LoginResponse = await request(app)
 			.post('/api/v1/user/login')
 			.send({
-				email: b1UserPayload.email,
-				password: b1UserPayload.password,
+				email: ReportBan1UserPayload.email,
+				password: ReportBan1UserPayload.password,
 			});
 		expect(b1LoginResponse.status).toBe(200);
-		b1UserPayload.token = b1LoginResponse.body.token;
+		ReportBan1UserPayload.token = b1LoginResponse.body.token;
 
 		const b2signupResponse = await request(app)
 			.post('/api/v1/user/signup')
 			.send({
-				email: b2UserPayload.email,
-				password: b2UserPayload.password,
-				handle: 'b2user',
-				display_name: 'B2 User',
+				email: ReportBan2UserPayload.email,
+				password: ReportBan2UserPayload.password,
+				handle: 'ReportBan b2user',
+				display_name: 'ReportBan B2 User',
 			});
 		expect(b2signupResponse.status).toBe(201);
 
 		const b2LoginResponse = await request(app)
 			.post('/api/v1/user/login')
 			.send({
-				email: b2UserPayload.email,
-				password: b2UserPayload.password,
+				email: ReportBan2UserPayload.email,
+				password: ReportBan2UserPayload.password,
 			});
 		expect(b2LoginResponse.status).toBe(200);
-		b2UserPayload.token = b2LoginResponse.body.token;
+		ReportBan2UserPayload.token = b2LoginResponse.body.token;
 	});
 	test('Admin create new category', async () => {
 		const payload = {
@@ -128,7 +128,7 @@ describe('Normal Post Ban', () => {
 		};
 		const response = await request(app)
 			.post(`${postBaseURL}`)
-			.set('Authorization', `Bearer ${b1UserPayload.token}`)
+			.set('Authorization', `Bearer ${ReportBan1UserPayload.token}`)
 			.send(payload);
 		expect(response.status).toBe(201);
 		expect(response.body).toHaveProperty('message', 'Post created');
@@ -153,7 +153,7 @@ describe('Normal Post Ban', () => {
 		};
 		const response = await request(app)
 			.post(reportBaseURL)
-			.set('Authorization', `Bearer ${b2UserPayload.token}`)
+			.set('Authorization', `Bearer ${ReportBan2UserPayload.token}`)
 			.send(reportPayload);
 		expect(response.status).toBe(201);
 		expect(response.body).toHaveProperty('message', 'Report created');
@@ -230,7 +230,7 @@ describe('Normal Post Ban', () => {
 			related_report_id: createdReportId,
 		};
 
-		// If user_id is not available in b1UserPayload, you may need to fetch it from the report or user API
+		// If user_id is not available in ReportBan1UserPayload, you may need to fetch it from the report or user API
 		// For now, we assume it's available or you can adjust as needed
 
 		const response = await request(app)
@@ -260,7 +260,7 @@ describe('Normal Post Ban', () => {
 		// Try to get the banned/deleted post as b2
 		const response = await request(app)
 			.get(`${postBaseURL}/${createdPostId}`)
-			.set('Authorization', `Bearer ${b2UserPayload.token}`);
+			.set('Authorization', `Bearer ${ReportBan2UserPayload.token}`);
 		// Acceptable: 404 Not Found, 410 Gone, or custom error
 		expect([404, 410]).toContain(response.status);
 		expect(response.body).toHaveProperty('message');
@@ -274,7 +274,7 @@ describe('Normal Post Ban', () => {
 		};
 		const response = await request(app)
 			.post(`${postBaseURL}`)
-			.set('Authorization', `Bearer ${b1UserPayload.token}`)
+			.set('Authorization', `Bearer ${ReportBan1UserPayload.token}`)
 			.send(payload);
 		// Acceptable: 403 Forbidden, 401 Unauthorized, or custom error
 		expect([401, 403]).toContain(response.status);
@@ -654,8 +654,8 @@ describe('Test Suspend Ban', () => {
 
 describe('Test Shadow Ban', () => {
 	const UserAPayload = {
-		email: 'a@user.com',
-		password: 'Auser@1234',
+		email: 'ShadowBana@user.com',
+		password: 'ShadowBanAuser@1234',
 		token: '',
 	};
 	const UserBPayload = {
@@ -673,8 +673,8 @@ describe('Test Shadow Ban', () => {
 		const aSignupRes = await request(app).post('/api/v1/user/signup').send({
 			email: UserAPayload.email,
 			password: UserAPayload.password,
-			handle: 'auser',
-			display_name: 'A User',
+			handle: 'shadowban a user',
+			display_name: 'shadowban A User',
 		});
 		expect([200, 201]).toContain(aSignupRes.status);
 		const aLoginRes = await request(app).post('/api/v1/user/login').send({
@@ -707,8 +707,8 @@ describe('Test Shadow Ban', () => {
 		};
 		const categoryRes = await request(app)
 			.post(categoryBaseURL)
-			.send(categoryPayload)
-			.set('Authorization', `Bearer ${adminPayload.token}`);
+			.set('Authorization', `Bearer ${adminPayload.token}`)
+			.send(categoryPayload);
 		expect(categoryRes.status).toBe(201);
 		expect(categoryRes.body).toHaveProperty('category');
 		CategoryId = categoryRes.body.category.id;
