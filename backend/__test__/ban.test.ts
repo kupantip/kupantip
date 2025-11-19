@@ -14,18 +14,6 @@ const adminPayload = {
 	token: '',
 };
 
-const b1UserPayload = {
-	email: 'b1@user.com',
-	password: 'B1user@1234',
-	token: '',
-};
-
-const b2UserPayload = {
-	email: 'b2@user.com',
-	password: 'B2user@1234',
-	token: '',
-};
-
 export type Report = {
 	id: string;
 	target_type: string;
@@ -41,7 +29,32 @@ export type ReportResponse = {
 	report: Report;
 };
 
+export type Post = {
+	id: string;
+	title: string;
+	body_md: string;
+	url: string;
+	created_at: string;
+	updated_at: string;
+	author_name: string;
+	author_id: string;
+	category_label: string;
+	category_id: string;
+	attachments: any[];
+};
+
 describe('Normal Post Ban', () => {
+	const b1UserPayload = {
+		email: 'b1@user.com',
+		password: 'B1user@1234',
+		token: '',
+	};
+
+	const b2UserPayload = {
+		email: 'b2@user.com',
+		password: 'B2user@1234',
+		token: '',
+	};
 	beforeAll(async () => {
 		const loginResponse = await request(app)
 			.post('/api/v1/user/login')
@@ -167,7 +180,7 @@ describe('Normal Post Ban', () => {
 		// Debug print all reports
 		// console.log('All reports:', getReportsRes.body);
 		const report = getReportsRes.body.find(
-			(r: any) => r.target_id === createdPostId
+			(r: Report) => r.target_id === createdPostId
 		);
 		// console.log('Selected report:', report);
 		expect(report).toBeDefined();
@@ -203,7 +216,7 @@ describe('Normal Post Ban', () => {
 			.set('Authorization', `Bearer ${adminPayload.token}`);
 		expect(getReportsRes.status).toBe(200);
 		const report = getReportsRes.body.find(
-			(r: any) => r.id === createdReportId
+			(r: Report) => r.id === createdReportId
 		);
 		expect(report).toBeDefined();
 		const banPayload = {
@@ -396,7 +409,7 @@ describe('Test Comment Ban', () => {
 			.set('Authorization', `Bearer ${adminPayload.token}`);
 		expect(getReportsRes.status).toBe(200);
 		const report = getReportsRes.body.find(
-			(r: any) => r.id === createdCommentReportId
+			(r: Report) => r.id === createdCommentReportId
 		);
 		expect(report).toBeDefined();
 		const banPayload = {
@@ -568,7 +581,9 @@ describe('Test Suspend ban', () => {
 			.get(reportBaseURL)
 			.set('Authorization', `Bearer ${adminPayload.token}`);
 		expect(getReportsRes.status).toBe(200);
-		const report = getReportsRes.body.find((r: any) => r.id === ReportId);
+		const report = getReportsRes.body.find(
+			(r: Report) => r.id === ReportId
+		);
 		expect(report).toBeDefined();
 		const banPayload = {
 			user_id: report.reported_user_id || '',
@@ -756,7 +771,9 @@ describe('Test Shadow Ban', () => {
 			.get(reportBaseURL)
 			.set('Authorization', `Bearer ${adminPayload.token}`);
 		expect(getReportsRes.status).toBe(200);
-		const report = getReportsRes.body.find((r: any) => r.id === ReportId);
+		const report = getReportsRes.body.find(
+			(r: Report) => r.id === ReportId
+		);
 		expect(report).toBeDefined();
 		const banPayload = {
 			user_id: report.reported_user_id || '',
@@ -788,6 +805,7 @@ describe('Test Shadow Ban', () => {
 		expect(response.body).toHaveProperty('report_updated', true);
 	});
 
+	// TODO Still not working
 	test('E can post and see own post', async () => {
 		// E creates a new post after being shadow banned
 		const postPayload = {
@@ -823,11 +841,11 @@ describe('Test Shadow Ban', () => {
 			myPostsRes.status,
 			myPostsRes.body
 		);
-		if (Array.isArray(myPostsRes.body)) {
-			myPostsRes.body.forEach((p: any, idx: number) => {
-				console.log(`Post[${idx}]:`, p);
-			});
-		}
+		// if (Array.isArray(myPostsRes.body)) {
+		// 	myPostsRes.body.forEach((p: any, idx: number) => {
+		// 		console.log(`Post[${idx}]:`, p);
+		// 	});
+		// }
 		expect(myPostsRes.status).toBe(200);
 		// Check that the response body is a non-empty array
 		expect(Array.isArray(myPostsRes.body)).toBe(true);
@@ -842,7 +860,7 @@ describe('Test Shadow Ban', () => {
 			.set('Authorization', `Bearer ${bUserPayload.token}`);
 		expect(allPostsRes.status).toBe(200);
 		// None of the posts should belong to E
-		const ePosts = allPostsRes.body.filter((p: any) => p.id === PostIdNew);
+		const ePosts = allPostsRes.body.filter((p: Post) => p.id === PostIdNew);
 		expect(ePosts.length).toBe(0);
 	});
 });
