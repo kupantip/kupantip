@@ -38,6 +38,9 @@ export const signupSchema = z.object({
 	display_name: z.string().min(1, 'Display name is required'),
 	password: passwordSchema,
 	role: z.string().optional(),
+	bio: z.string().max(500, 'Bio must be at most 500 characters').optional(),
+	interests: z.string().optional(),
+	skills: z.string().optional(),
 });
 
 export const loginController = async (
@@ -158,13 +161,25 @@ export const signupController = async (
 ) => {
 	try {
 		signupSchema.parse(req.body);
-		const { email, handle, display_name, password, role } = req.body;
+		const {
+			email,
+			handle,
+			display_name,
+			password,
+			role,
+			bio,
+			interests,
+			skills,
+		} = req.body;
 		const result = await signup(
 			email,
 			handle,
 			display_name,
 			password,
-			role
+			role,
+			bio,
+			interests,
+			skills
 		);
 		if (
 			result &&
