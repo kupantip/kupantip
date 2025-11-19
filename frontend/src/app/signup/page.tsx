@@ -25,6 +25,8 @@ export default function SignUp() {
 		skills: '',
 	});
 
+	const [isLoading, setIsLoading] = useState(false);
+
 	const [previewData, setPreviewData] = useState({
         handle: '',
         display_name: ''
@@ -84,6 +86,7 @@ export default function SignUp() {
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+		setIsLoading(true);
 		try {
 			const result = await fetchSignupUser({
 				...formData,
@@ -346,9 +349,10 @@ export default function SignUp() {
 						<div className='max-w-md flex mt-10 ml-auto mr-auto'>
 							<Button
 								type='submit' 
-								className='bg-emerald-600 hover:bg-emerald-700 w-full cursor-pointer rounded-full py-6 text-lg'
+								className={`bg-emerald-600 hover:bg-emerald-700 w-full cursor-pointer rounded-full py-6 text-lg ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+								disabled={isLoading}
 							>
-								Sign Up
+								{isLoading ? 'Signing Up...' : 'Sign Up'}
 							</Button>
 						</div>
 					</form>
