@@ -10,7 +10,7 @@ const adminPayload = {
 	token: '',
 };
 
-const b1UserPayload = {
+const RequestCategoriesUserPayload = {
 	email: 'b1@user.com',
 	password: 'B1user@1234',
 	token: '',
@@ -45,8 +45,8 @@ describe('Reqest Categories Test', () => {
 		const b1signupResponse = await request(app)
 			.post('/api/v1/user/signup')
 			.send({
-				email: b1UserPayload.email,
-				password: b1UserPayload.password,
+				email: RequestCategoriesUserPayload.email,
+				password: RequestCategoriesUserPayload.password,
 				handle: 'b1user',
 				display_name: 'B1 User',
 			});
@@ -55,11 +55,11 @@ describe('Reqest Categories Test', () => {
 		const b1LoginResponse = await request(app)
 			.post('/api/v1/user/login')
 			.send({
-				email: b1UserPayload.email,
-				password: b1UserPayload.password,
+				email: RequestCategoriesUserPayload.email,
+				password: RequestCategoriesUserPayload.password,
 			});
 		expect(b1LoginResponse.status).toBe(200);
-		b1UserPayload.token = b1LoginResponse.body.token;
+		RequestCategoriesUserPayload.token = b1LoginResponse.body.token;
 	});
 
 	test('No user should not be able to get category requests', async () => {
@@ -88,7 +88,10 @@ describe('Reqest Categories Test', () => {
 		const response = await request(app)
 			.post(`${baseURL}`)
 			.send(newCategory)
-			.set('Authorization', `Bearer ${b1UserPayload.token}`);
+			.set(
+				'Authorization',
+				`Bearer ${RequestCategoriesUserPayload.token}`
+			);
 		expect(response.status).toBe(201);
 		expect(response.body).toHaveProperty(
 			'message',
@@ -110,7 +113,10 @@ describe('Reqest Categories Test', () => {
 		const response = await request(app)
 			.post(`${baseURL}`)
 			.send(newCategory)
-			.set('Authorization', `Bearer ${b1UserPayload.token}`);
+			.set(
+				'Authorization',
+				`Bearer ${RequestCategoriesUserPayload.token}`
+			);
 		expect(response.status).toBe(201);
 		expect(response.body).toHaveProperty(
 			'message',
@@ -150,7 +156,10 @@ describe('Reqest Categories Test', () => {
 		const response = await request(app)
 			.post(`${baseURL}`)
 			.send(newCategory)
-			.set('Authorization', `Bearer ${b1UserPayload.token}`);
+			.set(
+				'Authorization',
+				`Bearer ${RequestCategoriesUserPayload.token}`
+			);
 		expect(response.status).toBe(400);
 		expect(response.body).toHaveProperty(
 			'message',
@@ -174,7 +183,10 @@ describe('Reqest Categories Test', () => {
 				color_hex: '#123456',
 				detail: 'This category will be dismissed',
 			})
-			.set('Authorization', `Bearer ${b1UserPayload.token}`);
+			.set(
+				'Authorization',
+				`Bearer ${RequestCategoriesUserPayload.token}`
+			);
 		expect(requestResponse.status).toBe(201);
 		const requestId = requestResponse.body.data.id;
 
@@ -206,7 +218,10 @@ describe('Reqest Categories Test', () => {
 			.send({
 				status: 'dismissed',
 			})
-			.set('Authorization', `Bearer ${b1UserPayload.token}`);
+			.set(
+				'Authorization',
+				`Bearer ${RequestCategoriesUserPayload.token}`
+			);
 		expect(response.status).toBe(403);
 		expect(response.body).toHaveProperty(
 			'message',
