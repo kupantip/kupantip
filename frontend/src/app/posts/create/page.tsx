@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
-import { createPost } from '@/services/user/create-post_page';
+import { fetchCreatePost } from '@/services/post/post';
 import { useCategories } from '@/services/post/category';
 import { motion } from 'framer-motion';
 import AOS from 'aos';
@@ -70,18 +70,25 @@ export default function CreatePostPage() {
 	});
 
 	const handleSelectCategory = (value: string) => {
-		setFormData({ ...formData, category_id: value });
+		setFormData((prev) => ({ ...prev, category_id: value }));
 	};
+
+	const [categoryError, setCategoryError] = useState('');
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		setCategoryError('');
+		if (!formData.category_id) {
+			setCategoryError('Please select a category.');
+			return;
+		}
 		setLoading(true);
 
 		const postId = uuidv4();
 		const postUrl = `http://post/${postId}`;
 
 		try {
-			await createPost({ ...formData, url: postUrl });
+			await fetchCreatePost({ ...formData, url: postUrl });
 			router.push(`/posts/category/${formData.category_id}`);
 		} catch (err: unknown) {
 			console.error('Failed to create post: ', err);
@@ -161,24 +168,32 @@ export default function CreatePostPage() {
 						required
 					/>
 
-					<Select
-						onValueChange={handleSelectCategory}
-						value={formData.category_id}
-					>
-						<SelectTrigger className="border border-gray-300 rounded-xl p-5 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer">
-							<SelectValue placeholder="Select Category" />
-						</SelectTrigger>
-						<SelectContent>
-							{categories?.map((category) => (
-								<SelectItem
-									key={category.id}
-									value={category.id}
-								>
-									{category.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					<div>
+						<Select
+							onValueChange={handleSelectCategory}
+							value={formData.category_id}
+							required
+						>
+							<SelectTrigger className="border border-gray-300 rounded-xl p-5 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer">
+								<SelectValue placeholder="Select Category" />
+							</SelectTrigger>
+							<SelectContent>
+								{categories?.map((category) => (
+									<SelectItem
+										key={category.id}
+										value={category.id}
+									>
+										{category.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						{categoryError && (
+							<div className="text-red-600 text-sm mt-1">
+								{categoryError}
+							</div>
+						)}
+					</div>
 
 					{tab === 'text' ? (
 						<textarea
@@ -288,14 +303,14 @@ export default function CreatePostPage() {
 
 					<div className="flex justify-end gap-2">
 						<Link href={`/posts`}>
-							<Button className="bg-gray-200 text-black rounded-full hover:bg-gray-300 hover:shadow-md hover:scale-105 cursor-pointer">
+							<Button className="bg-gray-200 text-black rounded-lg hover:bg-gray-300 hover:shadow-md hover:scale-105 cursor-pointer">
 								Cancel
 							</Button>
 						</Link>
 						<Button
 							type="submit"
 							disabled={loading}
-							className="bg-emerald-700 hover:bg-emerald-800 hover:shadow-md hover:scale-105 rounded-full cursor-pointer"
+							className="bg-emerald-700 hover:bg-emerald-800 hover:shadow-md hover:scale-105 rounded-lg cursor-pointer"
 						>
 							{loading ? 'Posting...' : 'Post'}
 						</Button>

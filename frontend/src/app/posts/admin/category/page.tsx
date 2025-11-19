@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+const ROWS_PER_PAGE = 6;
 import CategoryCard from '@/components/admin/CategoryCard';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +32,7 @@ export default function AdminCategoryPage() {
 	const [status, setStatus] = useState<string>('');
 	const [recent, setRecent] = useState<string>('');
 	const [dialogId, setDialogId] = useState<string | null>(null);
+	const [page, setPage] = useState(1);
 
 	const {
 		data: requests,
@@ -71,6 +73,16 @@ export default function AdminCategoryPage() {
 			? requests.filter((req) => req.id.includes(searchId.trim()))
 			: requests;
 
+	// Pagination logic
+	const totalRows = filteredRequests ? filteredRequests.length : 0;
+	const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE);
+	const paginatedRequests = filteredRequests
+		? filteredRequests.slice(
+				(page - 1) * ROWS_PER_PAGE,
+				page * ROWS_PER_PAGE
+		  )
+		: [];
+
 	const handleRowClick = (id: string) => {
 		setDialogId(id);
 	};
@@ -86,12 +98,18 @@ export default function AdminCategoryPage() {
 					type="text"
 					placeholder="Search by ID..."
 					value={searchId}
-					onChange={(e) => setSearchId(e.target.value)}
+					onChange={(e) => {
+						setSearchId(e.target.value);
+						setPage(1);
+					}}
 					className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
 				/>
 				<Select
 					value={status || 'all'}
-					onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
+					onValueChange={(v) => {
+						setStatus(v === 'all' ? '' : v);
+						setPage(1);
+					}}
 				>
 					<SelectTrigger className="w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700">
 						<SelectValue placeholder="All Statuses" />
@@ -105,7 +123,10 @@ export default function AdminCategoryPage() {
 				</Select>
 				<Select
 					value={recent || 'all'}
-					onValueChange={(v) => setRecent(v === 'all' ? '' : v)}
+					onValueChange={(v) => {
+						setRecent(v === 'all' ? '' : v);
+						setPage(1);
+					}}
 				>
 					<SelectTrigger className="w-32 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700">
 						<SelectValue placeholder="All" />
@@ -139,9 +160,10 @@ export default function AdminCategoryPage() {
 								</TableHead>
 							</TableRow>
 						</TableHeader>
-						<TableBody>
-							{filteredRequests && filteredRequests.length > 0 ? (
-								filteredRequests.map((req) => (
+						<TableBody className="overflow-y-auto h-40vh">
+							{paginatedRequests &&
+							paginatedRequests.length > 0 ? (
+								paginatedRequests.map((req) => (
 									<TableRow
 										key={req.id}
 										className="cursor-pointer hover:bg-gray-100"
@@ -232,6 +254,34 @@ export default function AdminCategoryPage() {
 							)}
 						</TableBody>
 					</Table>
+					{/* Pagination Controls */}
+					{totalPages > 1 && (
+						<div className="flex items-center justify-end space-x-2 mt-4">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() =>
+									setPage((p) => Math.max(1, p - 1))
+								}
+								disabled={page === 1}
+							>
+								Previous
+							</Button>
+							<div className="text-sm text-muted-foreground">
+								Page {page} of {totalPages}
+							</div>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() =>
+									setPage((p) => Math.min(totalPages, p + 1))
+								}
+								disabled={page === totalPages}
+							>
+								Next
+							</Button>
+						</div>
+					)}
 					{/* CategoryCard Dialog Popup */}
 					{dialogId && filteredRequests && (
 						<CategoryCard

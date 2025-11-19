@@ -26,7 +26,7 @@ export type CreateCategoryResponse = {
 };
 
 const instance = axios.create({
-	baseURL: '/backend/categories',
+	baseURL: '/api/proxy/categories',
 	timeout: 5000,
 });
 
@@ -40,6 +40,7 @@ export async function fetchCategories(): Promise<Category[]> {
 
 		const response = await instance.get<Category[]>('/', {
 			headers: header,
+			params: { recent: false },
 		});
 		return response.data;
 	} catch (error: unknown) {
@@ -100,7 +101,6 @@ export async function createCategory(
 		);
 
 		return response.data;
-
 	} catch (error: unknown) {
 		if (axios.isAxiosError(error)) {
 			const errorMessage =
@@ -141,11 +141,7 @@ export const useCategoryById = (categoryId: string) => {
 };
 
 export function useCreateCategory() {
-	return useMutation<
-		CreateCategoryResponse,
-		Error,
-		CreateCategoryInput
-	>({
+	return useMutation<CreateCategoryResponse, Error, CreateCategoryInput>({
 		mutationFn: createCategory,
 	});
 }

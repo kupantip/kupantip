@@ -21,11 +21,14 @@ export const createCategory = async (
 	return result.recordset[0];
 };
 
-export const getCategories = async () => {
+export const getCategories = async (recent: boolean = true) => {
 	const pool = await getDbConnection();
+
+	const orderBy = recent ? 'ORDER BY id DESC' : 'ORDER BY id ASC';
 
 	const result = await pool.request().query(`
     SELECT id, label, color_hex, detail FROM [dbo].[category]
+    ${orderBy}
   `);
 
 	return result.recordset;
@@ -34,9 +37,7 @@ export const getCategories = async () => {
 export const getCategoryById = async (category_id: string) => {
 	const pool = await getDbConnection();
 
-	const result = await pool
-		.request()
-		.input('category_id', category_id)
+	const result = await pool.request().input('category_id', category_id)
 		.query(`
 			SELECT id, label, color_hex, detail 
 			FROM [dbo].[category]
@@ -49,10 +50,7 @@ export const getCategoryById = async (category_id: string) => {
 export const getCategoryByLabel = async (label: string) => {
 	const pool = await getDbConnection();
 
-	const result = await pool
-		.request()
-		.input('label', label)
-		.query(`
+	const result = await pool.request().input('label', label).query(`
 			SELECT id, label, color_hex, detail 
 			FROM [dbo].[category]
 			WHERE LOWER(label) = LOWER(@label)

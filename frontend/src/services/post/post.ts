@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { getSession } from 'next-auth/react';
+import { BanResponse } from '@/types/dashboard/user';
+import * as t from '@/types/dashboard/post';
 
 export type Attachment = {
 	id: string;
@@ -56,6 +58,14 @@ export type AdminPost = {
 	author_display_name: string;
 };
 
+export type CreatePostData = {
+	title: string;
+	body_md: string;
+	url: string;
+	category_id: string;
+	files: File[];
+};
+
 export type SummaryStat = {
 	category_id: string;
 	category_label: string;
@@ -66,10 +76,15 @@ export type SummaryStat = {
 	total_engagement: number;
 };
 
+type updatePostData = {
+	title: string;
+	body_md: string;
+	category_id?: string;
+	files: File[];
+};
 
 const instance = axios.create({
-	baseURL: '/backend/post',
-	timeout: 5000,
+	baseURL: '/api/proxy/post',
 });
 
 export async function fetchPosts(category_id: string | null): Promise<Post[]> {
@@ -256,12 +271,9 @@ export const fetchSummaryStats = async (): Promise<SummaryStat[]> => {
 			Authorization: `Bearer ${session?.user?.accessToken}`,
 		};
 
-		const response = await instance.get<SummaryStat[]>(
-			'/summarystats',
-			{
-				headers: header,
-			}
-		);
+		const response = await instance.get<SummaryStat[]>('/summarystats', {
+			headers: header,
+		});
 		return response.data;
 	} catch (error: unknown) {
 		if (axios.isAxiosError(error)) {
@@ -281,5 +293,142 @@ export function useSummaryStats() {
 		queryKey: ['summaryStats'],
 		queryFn: fetchSummaryStats,
 		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+}
+
+export async function fetchCreatePost(data: CreatePostData) {
+	const formData = new FormData();
+	formData.append('title', data.title);
+	formData.append('body_md', data.body_md);
+	formData.append('url', data.url);
+	if (data.category_id) {
+		formData.append('category_id', data.category_id);
+	}
+
+	data.files.forEach((file) => {
+		formData.append('files', file);
+	});
+
+	const session = await getSession();
+	const token = session?.user?.accessToken;
+
+	try {
+		const res = await instance.post('/', formData, {
+			headers: {
+				'Content-Type': 'multipart/form-data',
+				Authorization: token ? `Bearer ${token}` : '',
+			},
+		});
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			const errorData = error.response.data as BanResponse;
+			const err = new Error(
+				errorData?.message ?? 'Failed to post comment'
+			);
+			if (errorData) {
+				(err as Error & BanResponse).reason = errorData.reason;
+				(err as Error & BanResponse).end_at = errorData.end_at;
+				(err as Error & BanResponse).status = error.response.status;
+			}
+			throw err;
+		}
+		throw error;
+	}
+}
+
+export async function fetchDeletePost(postId: string) {
+	const session = await getSession();
+	const token = session?.user?.accessToken;
+
+	try {
+		const res = await instance.delete(`/${postId}`, {
+			headers: {
+				Authorization: token ? `Bearer ${token}` : '',
+			},
+		});
+		return res.data;
+	} catch (error) {
+		if (axios.isAxiosError(error) && error.response) {
+			const errorData = error.response.data as BanResponse;
+			const err = new Error(
+				errorData?.message ?? 'Failed to delete post'
+			);
+			if (errorData) {
+				(err as Error & BanResponse).reason = errorData.reason;
+				(err as Error & BanResponse).end_at = errorData.end_at;
+				(err as Error & BanResponse).status = error.response.status;
+			}
+			throw err;
+		}
+		throw error;
+	}
+}
+
+export async function fetchUpdatePost(data: updatePostData, postID: string) {
+	const formData = new FormData();
+	formData.append('title', data.title);
+	formData.append('body_md', data.body_md);
+	if (data.category_id) {
+		formData.append('category_id', data.category_id);
+	}
+
+	data.files.forEach((file) => {
+		formData.append('files', file);
+	});
+
+	const session = await getSession();
+	const token = session?.user?.accessToken;
+
+	const res = await instance.put(`/${postID}`, formData, {
+		headers: {
+			'Content-Type': 'multipart/form-data',
+			Authorization: token ? `Bearer ${token}` : '',
+		},
+	});
+
+	if (!res.status.toString().startsWith('2')) {
+		let errorData: BanResponse | null = null;
+		errorData = res.data as BanResponse;
+		const error = new Error(errorData?.message ?? 'Failed to post comment');
+		if (errorData) {
+			(error as Error & BanResponse).reason = errorData.reason;
+			(error as Error & BanResponse).end_at = errorData.end_at;
+			(error as Error & BanResponse).status = res.status;
+		}
+		throw error;
+	}
+
+	return res.data;
+}
+
+export async function fetchPostById(post_id: string): Promise<t.Post[]> {
+	try {
+		const session = await getSession();
+		const token = session?.user?.accessToken;
+
+		const response = await instance.get<t.Post[]>('/', {
+			headers: {
+				Authorization: token ? `Bearer ${token}` : '',
+			},
+			params: { post_id },
+		});
+
+		return response.data;
+	} catch (err: unknown) {
+		if (err instanceof Error) {
+			throw new Error(err.message);
+		} else {
+			throw new Error(String(err));
+		}
+	}
+}
+
+export function usePostById(post_id: string) {
+	return useQuery<t.Post[], Error>({
+		queryKey: ['post', post_id],
+		queryFn: () => fetchPostById(post_id),
+		staleTime: 5 * 60 * 1000,
+		enabled: !!post_id,
 	});
 }
