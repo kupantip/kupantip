@@ -1,5 +1,7 @@
 'use client';
 
+import Link from "next/link";
+
 export default function Page() {
 	return (
 		<div className="max-w-2xl mx-auto py-10 px-4">
@@ -19,9 +21,9 @@ export default function Page() {
 					<li>
 						<strong>How do I reset my password?</strong>
 						<p className="text-gray-500">
-							Go to your login page and click on "Forget
-							Password". Follow the instructions to reset your
-							password.
+							Go to your login page and click on &quot;Forget
+							Password&quot;. Follow the instructions to reset
+							your password.
 						</p>
 					</li>
 					{/* <li>
@@ -84,9 +86,9 @@ export default function Page() {
 					</li>
 
 					<li>
-						<a href="/" className="text-emerald-700 underline">
+						<Link href="/" className="text-emerald-700 underline">
 							Home
-						</a>
+						</Link>
 					</li>
 				</ul>
 			</section>
