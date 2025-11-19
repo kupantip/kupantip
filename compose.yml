@@ -52,13 +52,16 @@ services:
 
     command: >
       sh -c "
-        echo '--- [Backend] Database check complete. Running Prisma push...';
-        npm run db:push && npm start
+        echo '--- [Backend] Database check complete. Running Prisma migrations...';
+        npm run db:migrate && npm start
       "
 
   frontend:
     platform: "linux/amd64"
-    image: xeei/kupantip-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    # image: xeei/kupantip-backend
     container_name: kupantip-frontend
     environment:
       - PORT=3000
@@ -66,7 +69,7 @@ services:
       - path: .env
         required: true
     ports:
-      - "80:3000"
+      - "3000:3000"
     depends_on:
       - backend
 

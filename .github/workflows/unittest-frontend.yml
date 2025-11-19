@@ -1,0 +1,65 @@
+name: Playwright Tests
+on:
+  pull_request:
+    branches: [ main ]
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Create .env file
+      run: |
+        echo "SQL_PASSWORD=yourStrong(!)Password" > .env
+        echo "SQL_USER=sa" >> .env
+        echo "SQL_SERVER=db" >> .env
+        echo "SQL_NAME=kupantip" >> .env
+        echo "SQL_PORT=1433" >> .env
+        echo "PORT=8000" >> .env
+        echo "JWT_SECRET=your-super-secret" >> .env
+        echo "JWT_EXPIRES_IN=1d" >> .env
+        echo 'DATABASE_URL="sqlserver://db:1433;database=kupantip;user=sa;password=yourStrong(!)Password;encrypt=true;trustServerCertificate=true"' >> .env
+        echo "NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1" >> .env
+
+    - name: Start services
+      run: docker-compose up -d db backend
+
+    - name: Wait for backend to be ready
+      run: |
+        echo "Waiting for backend to be ready on port 8000..."
+        while ! nc -z localhost 8000; do
+          sleep 1
+        done
+        echo "Backend is ready!"
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Install Playwright Browsers
+      working-directory: ./frontend
+      run: npx playwright install --with-deps
+
+    - name: Build app
+      working-directory: ./frontend
+      run: npm run build
+
+    - name: Run Playwright tests
+      working-directory: ./frontend
+      run: npx playwright test
+
+    - name: Stop services
+      if: ${{ always() }}
+      run: docker-compose down
+
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: frontend/playwright-report/
+        retention-days: 30
