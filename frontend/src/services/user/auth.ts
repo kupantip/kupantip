@@ -18,6 +18,9 @@ type SignupData = {
 	handle: string;
 	display_name: string;
 	password: string;
+	bio?: string,
+	interests?: string,
+	skills?: string
 };
 
 const instance = axios.create({

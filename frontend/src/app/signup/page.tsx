@@ -11,11 +11,8 @@ import { SquarePen } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { fetchSignupUser } from '@/services/user/auth';
 import { toast } from 'sonner';
-import {
-	useProfileByUserId,
-	fetchUpdateProfile,
-	UpdateProfileInput,
-} from '@/services/user/profile';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 export default function SignUp() {
 	const [formData, setFormData] = useState({
@@ -88,7 +85,12 @@ export default function SignUp() {
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		try {
-			const result = await fetchSignupUser(formData);
+			const result = await fetchSignupUser({
+				...formData,
+				bio: formData.bio,
+				interests: interests.join(','),
+				skills: skills.join(','),
+			});
 			router.push('/login');
 			toast.success('Sign up Successfully!')
 			console.log('Sign up success:', result);
@@ -126,8 +128,16 @@ export default function SignUp() {
 		}
 	};
 
+	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
+
 	return (
-		<div className='min-h-screen bg-gray-100 p-6 flex justify-center items-center'>
+		<div data-aos='fade-up' className='min-h-screen bg-gray-100 p-6 flex justify-center items-center'>
 			<div className='bg-white max-w-3xl w-full rounded-lg shadow-lg p-8'>
 				<div className='flex'>
 					<h1 className="text-4xl font-bold py-2">Create Account</h1>
