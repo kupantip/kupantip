@@ -93,7 +93,7 @@ export default function MessageInput({
 				<Button
 					onClick={handleSend}
 					disabled={!message.trim() || disabled}
-					className="flex-shrink-0"
+					className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 px-2"
 					size="icon"
 				>
 					<Send className="w-5 h-5" />

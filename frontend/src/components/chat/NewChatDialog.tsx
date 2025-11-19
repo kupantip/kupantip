@@ -147,7 +147,7 @@ export default function NewChatDialog({ onChatCreated }: NewChatDialogProps) {
 								{selectedUsers.map((user) => (
 									<div
 										key={user.id}
-										className="flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+										className="flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3 py-1 rounded-lg text-sm"
 									>
 										<span>{user.display_name}</span>
 										<button
@@ -256,7 +256,7 @@ export default function NewChatDialog({ onChatCreated }: NewChatDialogProps) {
 							<Button
 								onClick={handleCreateChat}
 								disabled={creating}
-								className="flex-1"
+								className="flex-1 bg-emerald-600 hover:bg-emerald-700"
 							>
 								{creating
 									? 'Creating...'

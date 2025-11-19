@@ -14,6 +14,8 @@ import ProfileDropDown from '@/components/ProfileDropdown';
 import { Loader2 } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import { useTotalUnreadCount } from '@/hooks/useTotalUnreadCount';
+import { Tooltip, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipContent } from '@radix-ui/react-tooltip';
 
 export default function DashboardLayout({
 	children,
@@ -47,11 +49,9 @@ export default function DashboardLayout({
 								)}
 							</div>
 						</Link>
-						<div className="mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
-							<Bell className="w-5 h-5 text-white cursor-pointer" />
-						</div>
+
 						<Link href="/posts/create-category">
-							<Button className="mr-21group w-16 bg-transparent text-white rounded-lg hover:bg-transparent flex items-center gap-2 cursor-pointer hover:scale-105">
+							<Button className="mr-1 group w-16 bg-transparent text-white rounded-lg hover:bg-transparent flex items-center gap-2 cursor-pointer hover:scale-105">
 								<CirclePlus className="mt-[0.2em]" />
 								<div className="group-hover:underline">
 									Category

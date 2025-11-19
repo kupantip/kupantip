@@ -88,7 +88,7 @@ export default function ChatRoomList({
 				<button
 					key={room.id}
 					onClick={() => onSelectRoom(room)}
-					className={`w-full p-4 hover:bg-gray-50 transition-colors text-left ${
+					className={`w-full py-4 px-4 hover:bg-gray-50 transition-colors text-left ${
 						selectedRoomId === room.id
 							? 'bg-blue-50 border-l-4 border-blue-500'
 							: ''

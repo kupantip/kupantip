@@ -70,7 +70,11 @@ export default function EditRoomNameDialog({
 						>
 							Cancel
 						</Button>
-						<Button onClick={handleSave} disabled={saving || !roomName.trim()}>
+						<Button
+							onClick={handleSave}
+							disabled={saving || !roomName.trim()}
+							className="bg-emerald-600 hover:bg-emerald-700"
+						>
 							{saving ? 'Saving...' : 'Save'}
 						</Button>
 					</div>
