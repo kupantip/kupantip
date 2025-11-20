@@ -143,7 +143,7 @@ export default function SignUp() {
 
 	return (
 		<div data-aos='fade-up' className='min-h-screen bg-gray-100 p-6 flex justify-center items-center'>
-			<div className='bg-white max-w-3xl w-full rounded-lg shadow-lg p-8'>
+			<div className='bg-white max-w-4xl w-full rounded-lg shadow-lg p-8'>
 				<div className='flex'>
 					<h1 className="text-4xl font-bold py-2">Create Account</h1>
 				</div>
@@ -206,7 +206,17 @@ export default function SignUp() {
 							</div>
 
 							<div>
-								<label className="text-sm font-medium">Password</label>
+								{isPasswordError ? (
+									<div className='flex gap-3'>
+										<label className="text-sm font-medium">Password</label>
+										<p className='font-style: italic text-gray-500 text-sm'>example: #Parunyu123</p>
+									</div>
+								) : (
+									<div>
+										<label className="text-sm font-medium">Password</label>
+									</div>
+								)}
+								
 								<Input
 									type='password'
 									name='password'
@@ -289,7 +299,7 @@ export default function SignUp() {
 									{interests.map((interest, idx) => (
 										<Badge
 											key={idx}
-											className="flex items-center gap-1 pr-1 bg-orange-100 text-orange-800"
+											className="flex items-center gap-1 pr-1 bg-emerald-100 text-emerald-700"
 										>
 											{interest}
 											<button
@@ -333,7 +343,7 @@ export default function SignUp() {
 									{skills.map((skill, idx) => (
 										<Badge
 											key={idx}
-											className="flex items-center gap-1 pr-1 bg-blue-100 text-blue-800"
+											className="flex items-center gap-1 pr-1 bg-purple-100 text-purple-800"
 										>
 											{skill}
 											<button

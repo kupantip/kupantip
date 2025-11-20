@@ -171,7 +171,7 @@ export default function EditProfile({
 								type="button"
 								onClick={handleAddInterest}
 								disabled={!interestInput.trim()}
-								className='cursor-pointer bg-emerald-600 hover:bg-emerald-700'
+								className='cursor-pointer'
 							>
 								Add
 							</Button>
@@ -215,7 +215,7 @@ export default function EditProfile({
 								type="button"
 								onClick={handleAddSkill}
 								disabled={!skillInput.trim()}
-								className='cursor-pointer bg-emerald-600 hover:bg-emerald-700'
+								className='cursor-pointer'
 							>
 								Add
 							</Button>
