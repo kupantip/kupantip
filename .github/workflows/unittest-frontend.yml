@@ -19,6 +19,12 @@ jobs:
     - name: Check container
       run: docker ps
 
+    - name: Start backend
+      run: docker compose --env-file .ci.env -f ci.compose.yml up -d backend
+
+    - name: Check container
+      run: docker ps
+
     - name: Wait for backend to be ready
       run: |
         echo "Waiting for backend to be ready on port 8000..."
