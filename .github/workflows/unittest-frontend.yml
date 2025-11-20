@@ -14,13 +14,6 @@ jobs:
     - name: Start services
       run: docker compose --env-file .ci.env -f ci.compose.yml up -d db backend
 
-    - name: Check DB Logs on Failure
-      if: failure() || success() # Run this even if the previous step failed
-      run: docker compose -f ci.compose.yml logs
-
-    - name: Check container
-      run: docker ps
-
     - name: Wait for backend to be ready
       run: |
         echo "Waiting for backend to be ready on port 8000..."
@@ -43,10 +36,6 @@ jobs:
     - name: Install Playwright Browsers
       working-directory: ./frontend
       run: npx playwright install --with-deps
-
-    - name: Build app
-      working-directory: ./frontend
-      run: npm run build
 
     - name: Run Playwright tests
       working-directory: ./frontend
