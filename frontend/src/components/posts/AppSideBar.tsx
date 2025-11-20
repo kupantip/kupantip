@@ -210,7 +210,7 @@ export function AppSidebar({ isMobile = false, onNavigate }: AppSidebarProps) {
 						<li>
 							<button
 								onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-								className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white bg-transparent hover:bg-gray-400 transition hover:scale-103 w-full ${
+								className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white bg-transparent hover:bg-gray-400 transition hover:scale-103 w-full cursor-pointer ${
 									expanded ? 'justify-between' : 'justify-center'
 								}`}
 							>
