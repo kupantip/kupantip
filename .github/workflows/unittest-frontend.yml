@@ -12,7 +12,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Start services
-      run: docker compose -f ci.compose.yml up -d db backend
+      run: docker compose --env-file .ci.env -f ci.compose.yml up -d db backend
 
     - name: Wait for backend to be ready
       run: |
