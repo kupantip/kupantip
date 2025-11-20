@@ -1,5 +1,7 @@
 name: Playwright Tests
 on:
+  push: 
+    branches: [ unittest/frontend ]
   pull_request:
     branches: [ main ]
 jobs:
@@ -8,19 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-
-    - name: Create .env file
-      run: |
-        echo "SQL_PASSWORD=yourStrong(!)Password" > .env
-        echo "SQL_USER=sa" >> .env
-        echo "SQL_SERVER=db" >> .env
-        echo "SQL_NAME=kupantip" >> .env
-        echo "SQL_PORT=1433" >> .env
-        echo "PORT=8000" >> .env
-        echo "JWT_SECRET=your-super-secret" >> .env
-        echo "JWT_EXPIRES_IN=1d" >> .env
-        echo 'DATABASE_URL="sqlserver://db:1433;database=kupantip;user=sa;password=yourStrong(!)Password;encrypt=true;trustServerCertificate=true"' >> .env
-        echo "NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1" >> .env
 
     - name: Start services
       run: docker-compose up -d db backend

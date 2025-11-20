@@ -1,0 +1,93 @@
+services:
+  db:
+    platform: "linux/amd64"
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SQL_PASSWORD}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./mssql/data:/var/opt/mssql/data
+      - ./mssql/log:/var/opt/mssql/log
+      - ./mssql/secrets:/var/opt/mssql/secrets
+    env_file:
+      - path: .ci.env
+        required: true
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/opt/mssql-tools18/bin/sqlcmd",
+          "-S",
+          "localhost",
+          "-U",
+          "sa",
+          "-P",
+          "${SQL_PASSWORD}",
+          "-Q",
+          "'SELECT 1'",
+          "-C",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    platform: "linux/amd64"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    # image: xeei/kupantip-backend
+    container_name: kupantip-backend
+    ports:
+      - "${PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: .ci.env
+        required: true
+
+    command: >
+      sh -c "
+        echo '--- [Backend] Database check complete. Running Prisma migrations...';
+        npm run db:migrate && npm start
+      "
+
+  frontend:
+    platform: "linux/amd64"
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    # image: xeei/kupantip-backend
+    container_name: kupantip-frontend
+    environment:
+      - PORT=3000
+    env_file:
+      - path: .ci.env
+        required: true
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: kupantip-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=Asia/Bangkok
+      - N8N_BASIC_AUTH_ACTIVE=false
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+      - N8N_IMPORT_CONFIG_DIR=/home/node/workflows
+    volumes:
+      - ./n8n/data:/home/node/.n8n
+      - ./n8n/workflows:/home/node/workflows
+    restart: unless-stopped
