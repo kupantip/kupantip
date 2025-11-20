@@ -11,6 +11,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Check container
+      run: docker ps
+
     - name: Start services
       run: docker compose --env-file .ci.env -f ci.compose.yml up -d db backend
 
@@ -44,7 +47,7 @@ jobs:
 
     - name: Stop services
       if: ${{ always() }}
-      run: docker compose -f ci.compose.yml down
+      run: docker compose --env-file .ci.env -f ci.compose.yml down
 
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
