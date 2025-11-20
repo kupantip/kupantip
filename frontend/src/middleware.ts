@@ -25,6 +25,13 @@ function customMiddleware(request: NextRequest) {
 		return NextResponse.rewrite(newUrl);
 	}
 
+	// Block non-admin users from /posts/admin/*
+	if (request.nextUrl.pathname.startsWith('/posts/admin')) {
+		// The session is available on the token (from withAuth)
+		// We'll check for the role in the authorized callback below
+		// If this is reached, it means the user is authorized, so allow
+		// (actual blocking is handled in the authorized callback)
+	}
 	return NextResponse.next();
 }
 
@@ -50,6 +57,12 @@ export default withAuth(
 
 				if (pathname.startsWith('/create')) {
 					return !!token;
+				}
+
+				// Block non-admin users from /posts/admin/*
+				if (pathname.startsWith('/posts/admin')) {
+					// Only allow if token exists and role is admin
+					return !!token && token.role === 'admin';
 				}
 
 				return true;
