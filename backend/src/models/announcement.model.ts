@@ -123,3 +123,33 @@ export const deleteAnnouncement = async (
 
 	return result.rowsAffected[0] > 0;
 };
+
+export const getAllAnnouncementsOrderedByStartDate = async (): Promise<
+	AnnouncementRow[]
+> => {
+	const pool = await getDbConnection();
+	const request = pool.request();
+
+	const result = await request.query(`
+		SELECT 
+			a.id,
+			a.author_id,
+			a.title,
+			a.body_md,
+			a.create_at,
+			a.start_at,
+			a.end_at,
+			a.delete_at,
+			u.handle AS author_handle,
+			u.display_name AS author_display_name,
+			ur.role AS author_role,
+			DATEDIFF(MINUTE, a.start_at, GETDATE()) AS minutes_since_announced
+		FROM [dbo].[announcement] a
+		LEFT JOIN [dbo].[app_user] u ON a.author_id = u.id
+		LEFT JOIN [dbo].[user_role] ur ON u.id = ur.user_id
+		WHERE a.delete_at IS NULL
+		ORDER BY a.start_at ASC
+	`);
+
+	return result.recordset;
+};
