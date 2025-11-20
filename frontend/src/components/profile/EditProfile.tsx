@@ -179,7 +179,7 @@ export default function EditProfile({
 							{interests.map((interest, idx) => (
 								<Badge
 									key={idx}
-									className="flex items-center gap-1 pr-1"
+									className="flex items-center gap-1 pr-1 bg-emerald-100 text-emerald-700"
 								>
 									{interest}
 									<button
@@ -187,7 +187,7 @@ export default function EditProfile({
 										onClick={() =>
 											handleRemoveInterest(idx)
 										}
-										className="ml-1"
+										className="ml-1 hover:cursor-pointer"
 									>
 										<X className="w-3 h-3" />
 									</button>
@@ -222,13 +222,13 @@ export default function EditProfile({
 							{skills.map((skill, idx) => (
 								<Badge
 									key={idx}
-									className="flex items-center gap-1 pr-1 bg-blue-100 text-blue-800"
+									className="flex items-center gap-1 pr-1 bg-purple-100 text-purple-800"
 								>
 									{skill}
 									<button
 										type="button"
 										onClick={() => handleRemoveSkill(idx)}
-										className="ml-1"
+										className="ml-1 hover:cursor-pointer"
 									>
 										<X className="w-3 h-3" />
 									</button>

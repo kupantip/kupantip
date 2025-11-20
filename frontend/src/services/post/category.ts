@@ -40,6 +40,7 @@ export async function fetchCategories(): Promise<Category[]> {
 
 		const response = await instance.get<Category[]>('/', {
 			headers: header,
+			params: { recent: true },
 		});
 		return response.data;
 	} catch (error: unknown) {
@@ -100,7 +101,6 @@ export async function createCategory(
 		);
 
 		return response.data;
-
 	} catch (error: unknown) {
 		if (axios.isAxiosError(error)) {
 			const errorMessage =
@@ -123,8 +123,8 @@ export const useCategories = () => {
 		queryFn: fetchCategories,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		gcTime: 10 * 60 * 1000, // 10 minutes cache time (formerly cacheTime)
-		refetchOnMount: false, // Don't refetch when component mounts if data exists
-		refetchOnWindowFocus: false, // Don't refetch when window regains focus
+		refetchOnMount: true, // Don't refetch when component mounts if data exists
+		refetchOnWindowFocus: true, // Don't refetch when window regains focus
 	});
 };
 
@@ -141,11 +141,7 @@ export const useCategoryById = (categoryId: string) => {
 };
 
 export function useCreateCategory() {
-	return useMutation<
-		CreateCategoryResponse,
-		Error,
-		CreateCategoryInput
-	>({
+	return useMutation<CreateCategoryResponse, Error, CreateCategoryInput>({
 		mutationFn: createCategory,
 	});
 }

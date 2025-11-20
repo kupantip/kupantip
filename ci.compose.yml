@@ -7,10 +7,6 @@ services:
       MSSQL_SA_PASSWORD: "${SQL_PASSWORD}"
     ports:
       - "1433:1433"
-    volumes:
-      - ./mssql/data:/var/opt/mssql/data
-      - ./mssql/log:/var/opt/mssql/log
-      - ./mssql/secrets:/var/opt/mssql/secrets
     env_file:
       - path: .ci.env
         required: true
