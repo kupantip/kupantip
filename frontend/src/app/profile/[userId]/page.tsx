@@ -424,6 +424,7 @@ export default function MyProfilePage() {
 													<Badge
 														key={idx}
 														variant="secondary"
+														className='bg-emerald-100 text-emerald-600'
 													>
 														{interest.trim()}
 													</Badge>
@@ -441,7 +442,7 @@ export default function MyProfilePage() {
 												.map((skill, idx) => (
 													<Badge
 														key={idx}
-														className="bg-blue-100 text-blue-800"
+														className="bg-purple-100 text-purple-800"
 													>
 														{skill.trim()}
 													</Badge>
