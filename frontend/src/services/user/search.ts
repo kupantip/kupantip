@@ -1,12 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
 import { getSession } from 'next-auth/react';
 import axios from 'axios';
-import { SearchResponse } from '@/types/dashboard/user';
+import { SearchResponse, User } from '@/types/dashboard/user';
 
 const instance = axios.create({
     baseURL: '/api/proxy',
     timeout: 10000,
 });
+
+export const searchUsers = async (token: string, query: string): Promise<{ data: User[] }> => {
+    const response = await instance.get<SearchResponse>('/search', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { query, type: 'user' },
+    });
+    
+    return { data: response.data.users || [] };
+};
 
 export const searchAll = async (query: string): Promise<SearchResponse> => {
     if (!query) {

@@ -30,6 +30,8 @@ model app_user {
   requested_category_requester                          requested_category[] @relation("category_requester")
   requested_category_reviewer                           requested_category[] @relation("category_reviewer")
   user_profile                                          user_profile?
+  chat_messages                                         chat_message[]
+  chat_participants                                     chat_participant[]
 }
 
 model attachment {
@@ -218,4 +220,40 @@ model user_profile {
   created_at DateTime @default(now(), map: "DF__user_profile__created_at") @db.DateTime
   updated_at DateTime @default(now(), map: "DF__user_profile__updated_at") @db.DateTime
   app_user   app_user @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK__user_profile__user_id")
+}
+
+model chat_room {
+  id         String   @id(map: "PK__chat_room__3213E83F") @default(dbgenerated("newsequentialid()"), map: "DF__chat_room__id") @db.UniqueIdentifier
+  name       String?  @db.NVarChar(100)
+  is_group   Boolean  @default(false, map: "DF__chat_room__is_group")
+  created_at DateTime @default(now(), map: "DF__chat_room__created_at") @db.DateTime
+  updated_at DateTime @default(now(), map: "DF__chat_room__updated_at") @db.DateTime
+  
+  messages      chat_message[]
+  participants  chat_participant[]
+}
+
+model chat_participant {
+  room_id   String    @db.UniqueIdentifier
+  user_id   String    @db.UniqueIdentifier
+  joined_at DateTime  @default(now(), map: "DF__chat_participant__joined_at") @db.DateTime
+  last_read DateTime? @db.DateTime
+  
+  room     chat_room @relation(fields: [room_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK__chat_participant__room")
+  user     app_user  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK__chat_participant__user")
+  
+  @@id([room_id, user_id], map: "PK__chat_participant")
+}
+
+model chat_message {
+  id         String   @id(map: "PK__chat_message__3213E83F") @default(dbgenerated("newsequentialid()"), map: "DF__chat_message__id") @db.UniqueIdentifier
+  room_id    String   @db.UniqueIdentifier
+  sender_id  String   @db.UniqueIdentifier
+  content    String   @db.NVarChar(Max)
+  created_at DateTime @default(now(), map: "DF__chat_message__created_at") @db.DateTime
+  
+  room   chat_room @relation(fields: [room_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK__chat_message__room")
+  sender app_user  @relation(fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK__chat_message__sender")
+  
+  @@index([room_id, created_at], map: "chat_message_index_1")
 }

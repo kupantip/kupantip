@@ -19,6 +19,7 @@ import announcementRoute from './routes/announcement.route';
 import searchRoute from './routes/search.route';
 import n8nRoute from './routes/n8n.route';
 import userProfileRoutes from './routes/userProfile.routes';
+import chatRoutes from './routes/chat.route';
 import * as z from 'zod';
 
 const app = express();
@@ -52,6 +53,7 @@ apiV1.use('/announcement', announcementRoute);
 apiV1.use('/search', searchRoute);
 apiV1.use('/n8n', n8nRoute);
 apiV1.use('/profile', userProfileRoutes);
+apiV1.use('/chat', chatRoutes);
 
 app.use('/api/v1', apiV1);
 
