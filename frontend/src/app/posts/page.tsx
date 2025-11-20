@@ -33,6 +33,7 @@ import { useRouter } from 'next/navigation';
 import AnnouncementPreviewItem from '@/components/announcement/AnnouncementPreviewItem';
 import StackAnnoncement from '@/components/announcement/StackAnnouncement';
 import Link from 'next/link';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function HomePage() {
 	const {
@@ -104,7 +105,7 @@ export default function HomePage() {
 				</CardContent>
 			</Card>
 			{/* Announcements */}
-			<Card className="shadow-sm overflow-hidden rounded-lg">
+			<Card className="shadow-sm rounded-lg">
 				<CardHeader className="text-green-2 mb-[-20]">
 					<CardTitle className="text-lg font-semibold">
 						📢 Announcements
