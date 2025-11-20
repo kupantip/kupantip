@@ -29,6 +29,9 @@ jobs:
         done
         echo "Backend is ready!"
 
+    - name: Copy .ci.env to .env
+      run: cp .ci.env frontend/.env.local
+      
     - uses: actions/setup-node@v4
       with:
         node-version: 22
