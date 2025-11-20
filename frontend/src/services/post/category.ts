@@ -40,7 +40,7 @@ export async function fetchCategories(): Promise<Category[]> {
 
 		const response = await instance.get<Category[]>('/', {
 			headers: header,
-			params: { recent: false },
+			params: { recent: true },
 		});
 		return response.data;
 	} catch (error: unknown) {
@@ -123,8 +123,8 @@ export const useCategories = () => {
 		queryFn: fetchCategories,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		gcTime: 10 * 60 * 1000, // 10 minutes cache time (formerly cacheTime)
-		refetchOnMount: false, // Don't refetch when component mounts if data exists
-		refetchOnWindowFocus: false, // Don't refetch when window regains focus
+		refetchOnMount: true, // Don't refetch when component mounts if data exists
+		refetchOnWindowFocus: true, // Don't refetch when window regains focus
 	});
 };
 

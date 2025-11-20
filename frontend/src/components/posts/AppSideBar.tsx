@@ -11,6 +11,9 @@ import {
 	BriefcaseBusiness,
 	Megaphone,
 	Newspaper,
+	Circle,
+	PartyPopper,
+	FileUser,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -54,7 +57,8 @@ export function AppSidebar() {
 		Home: Home,
 		Announcement: Inbox,
 		Community: PersonStanding,
-		Recruitment: BriefcaseBusiness,
+		Recruit: FileUser,
+		Events: PartyPopper
 	};
 	const session = useSession();
 	const { data: categories, isLoading: isLoadingCategories } =
@@ -110,7 +114,7 @@ export function AppSidebar() {
 			</div>
 
 			<nav className="h-[calc(100%-3rem)] pb-6">
-				<ul className="space-y-1 px-4">
+				<ul className={`space-y-1 ${expanded ? ' px-4' : 'px-0'}`}>
 					<ScrollArea className="h-[30vh]">
 						<li>
 							<Link
@@ -153,7 +157,18 @@ export function AppSidebar() {
 													: undefined
 											}
 										>
-											<Icon className="h-5 w-5 shrink-0" />
+											{category.color_hex ? (
+												<Circle
+													className="h-5 w-5 shrink-0 rounded-full"
+													style={{
+														backgroundColor:
+															category.color_hex,
+													}}
+												/>
+											) : (
+												<Icon className="h-5 w-5 shrink-0" />
+											)}
+
 											{expanded && (
 												<span>{category.label}</span>
 											)}
