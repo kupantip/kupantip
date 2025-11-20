@@ -11,11 +11,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Check container
-      run: docker ps
+
 
     - name: Start services
-      run: docker compose --env-file .ci.env -f ci.compose.yml up -d db backend
+      run: docker compose --env-file .ci.env -f ci.compose.yml up -d db
+
+    - name: Check container
+      run: docker ps
 
     - name: Wait for backend to be ready
       run: |
