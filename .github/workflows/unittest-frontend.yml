@@ -16,6 +16,10 @@ jobs:
     - name: Start services
       run: docker compose --env-file .ci.env -f ci.compose.yml up -d db
 
+    - name: Check DB Logs on Failure
+      if: failure() || success() # Run this even if the previous step failed
+      run: docker logs kupantip-db-1
+      
     - name: Check container
       run: docker ps
 
