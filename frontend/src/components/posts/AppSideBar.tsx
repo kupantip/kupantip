@@ -16,12 +16,15 @@ import {
 	FileUser,
 	MessageCircle,
 	CirclePlus,
+	ChevronDown,
+	ChevronRight,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { motion, AnimatePresence } from 'motion/react';
 
 const topicItems = [
 	{ title: 'Important Post', url: '/posts/priority', icon: '📌' },
@@ -59,6 +62,7 @@ interface AppSidebarProps {
 export function AppSidebar({ isMobile = false, onNavigate }: AppSidebarProps) {
 	const { open, toggleSidebar } = useSidebar();
 	const [hovered, setHovered] = useState(false);
+	const [isCategoryOpen, setIsCategoryOpen] = useState(true);
 	const hoverTimer = useRef<number | null>(null);
 	const iconMenu: Record<string, React.ElementType> = {
 		Home: Home,
@@ -203,50 +207,86 @@ export function AppSidebar({ isMobile = false, onNavigate }: AppSidebarProps) {
 								{expanded && <span>News</span>}
 							</Link>
 						</li>
-						{!isLoadingCategories &&
-							categories?.map((category) => {
-								const Icon = iconMenu[category.label] || Home;
+						<li>
+							<button
+								onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+								className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white bg-transparent hover:bg-gray-400 transition hover:scale-103 w-full ${
+									expanded ? 'justify-between' : 'justify-center'
+								}`}
+							>
+								<div className="flex items-center gap-2">
+									<span className="text-base">
+										<BriefcaseBusiness className="h-5 w-5 shrink-0" />
+									</span>
+									{expanded && <span>Categories</span>}
+								</div>
+								{expanded && (
+									<motion.span
+										animate={{ rotate: isCategoryOpen ? 180 : 0 }}
+										transition={{ duration: 0.2 }}
+										className="text-xs flex items-center"
+									>
+										<ChevronDown className="h-4 w-4" />
+									</motion.span>
+								)}
+							</button>
+						</li>
 
-								return (
-									<li key={category.id}>
-										<Link
-											href={`/posts/category/${category.id}`}
-											onClick={handleLinkClick}
-											className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
-												expanded
-													? 'justify-start'
-													: 'justify-center'
-											}`}
-											aria-label={
-												expanded
-													? undefined
-													: category.label
-											}
-											title={
-												!expanded
-													? category.label
-													: undefined
-											}
-										>
-											{category.color_hex ? (
-												<Circle
-													className="h-5 w-5 shrink-0 rounded-full"
-													style={{
-														backgroundColor:
-															category.color_hex,
-													}}
-												/>
-											) : (
-												<Icon className="h-5 w-5 shrink-0" />
-											)}
+						<AnimatePresence initial={false}>
+							{isCategoryOpen && !isLoadingCategories && (
+								<motion.ul
+									initial={{ height: 0, opacity: 0 }}
+									animate={{ height: 'auto', opacity: 1 }}
+									exit={{ height: 0, opacity: 0 }}
+									transition={{ duration: 0.2, ease: 'easeInOut' }}
+									className="overflow-hidden"
+								>
+									{categories?.map((category) => {
+										const Icon = iconMenu[category.label] || Home;
 
-											{expanded && (
-												<span>{category.label}</span>
-											)}
-										</Link>
-									</li>
-								);
-							})}
+										return (
+											<li key={category.id}>
+												<Link
+													href={`/posts/category/${category.id}`}
+													onClick={handleLinkClick}
+													className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white hover:bg-gray-400 transition hover:scale-103 ${
+														expanded
+															? 'justify-start pl-8'
+															: 'justify-center'
+													}`}
+													aria-label={
+														expanded
+															? undefined
+															: category.label
+													}
+													title={
+														!expanded
+															? category.label
+															: undefined
+													}
+												>
+													{category.color_hex ? (
+														<Circle
+															className="h-5 w-5 shrink-0 rounded-full"
+															style={{
+																backgroundColor:
+																	category.color_hex,
+															}}
+														/>
+													) : (
+														<Icon className="h-5 w-5 shrink-0" />
+													)}
+
+													{expanded && (
+														<span>{category.label}</span>
+													)}
+												</Link>
+											</li>
+										);
+									})}
+								</motion.ul>
+							)}
+						</AnimatePresence>
 
 						{expanded && (
 							<li className="pt-2">
