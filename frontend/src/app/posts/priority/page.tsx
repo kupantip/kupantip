@@ -111,61 +111,63 @@ export default function PriorityPostsPage() {
 						posts.map((post) => (
 							<div
 								key={post.id}
-								className="group py-4 px-6 flex justify-between items-center bg-white dark:bg-gray-900 
+								className="group py-4 px-6 flex flex-row justify-between items-start md:items-center bg-white dark:bg-gray-900 
                                     hover:bg-gray-100 dark:hover:bg-gray-800 
                                     rounded-lg 
                                     transition-all duration-300 ease-in-out 
-                                    hover:shadow-md cursor-pointer"
+                                    hover:shadow-md cursor-pointer gap-4 md:gap-0"
 								onClick={() => handlePostClick(post.id)}
 							>
-								<div className="group-hover:pl-2 transition-all duration-300 ease-in-out">
-									<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline">
+								<div className="group-hover:pl-2 transition-all duration-300 ease-in-out flex-1 min-w-0 pr-2">
+									<h3 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:underline text-base md:text-lg break-words">
 										{post.title}
 									</h3>
-									<p className="text-sm text-gray-500">
-										<Badge
-											variant="secondary"
-											className="mr-2 bg-green-100 text-green-800"
-										>
-											{post.category_label || 'Priority'}
-										</Badge>
-										{post.author_name} •{' '}
-										{post.minutes_since_posted < 60
-											? `${post.minutes_since_posted}m ago`
-											: post.minutes_since_posted < 1440
-											? `${Math.floor(
-													post.minutes_since_posted /
-														60
-											  )}h ago`
-											: `${Math.floor(
-													post.minutes_since_posted /
-														1440
-											  )}d ago`}
-									</p>
+									<div className="flex flex-col mt-1 md:mt-0">
+										<div className="flex items-center gap-2 mb-1">
+											<Badge
+												variant="secondary"
+												className="bg-green-100 text-green-800 hover:bg-green-200"
+											>
+												{post.category_label || 'Priority'}
+											</Badge>
+											<span className="text-gray-600 font-medium">{post.author_name}</span>
+										</div>
+										<span className="text-gray-400 text-xs">
+											{post.minutes_since_posted < 60
+												? `${post.minutes_since_posted}m ago`
+												: post.minutes_since_posted < 1440
+												? `${Math.floor(
+														post.minutes_since_posted /
+															60
+												  )}h ago`
+												: `${Math.floor(
+														post.minutes_since_posted /
+															1440
+												  )}d ago`}
+										</span>
+									</div>
 								</div>
-								<div className="flex flex-wrap gap-x-2">
-									<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
+								<div className="flex flex-col md:flex-row gap-2 shrink-0 items-end">
+									<Button className="group cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105 h-8 md:h-10 w-14 md:w-16 text-xs md:text-sm p-0">
 										<Heart
 											className={`${
 												post.liked_by_requesting_user
 													? 'text-red-500'
 													: 'text-gray-400'
-											}`}
+											} w-4 h-4 md:w-5 md:h-5`}
 											fill={
 												post.liked_by_requesting_user
 													? 'currentColor'
 													: 'none'
 											}
 										/>
-										<span className="ml-1 text-sm text-black">
+										<span className="ml-1 text-black">
 											{post.like_count}
 										</span>
 									</Button>
-									<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105">
-										<MessageSquare className="w-4 h-4" />
-										<span className="ml-1 text-sm">
-											{post.comment_count}
-										</span>
+									<Button className="flex items-center text-blank cursor-pointer bg-grey-3 hover:bg-grey-2 hover:scale-105 h-8 md:h-10 w-14 md:w-16 text-xs md:text-sm p-0">
+										<MessageSquare className="w-4 h-4 md:w-5 md:h-5" />
+										<span className="ml-1">{post.comment_count}</span>
 									</Button>
 								</div>
 							</div>
