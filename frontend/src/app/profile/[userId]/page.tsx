@@ -120,7 +120,7 @@ export default function MyProfilePage() {
 	return (
 		<div
 			data-aos="fade-up"
-			className="min-h-screen px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
+			className="min-h-screen px-4 py-4 md:px-10 md:py-8 space-y-4 md:space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
 		>
 			<Breadcrumb>
 				<BreadcrumbList>
