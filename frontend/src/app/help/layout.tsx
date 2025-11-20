@@ -30,7 +30,7 @@ export default function DashboardLayout({
 	return (
 		<SidebarProvider>
 			<header className="fixed top-0 left-0 w-full h-16 bg-green-2 shadow flex items-center px-4 md:px-6 z-50">
-				<div className="flex justify-between items-center w-full">
+				<div className="relative flex justify-between items-center w-full">
 					<div className="flex items-center gap-2">
 						<Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
 							<SheetTrigger asChild>
@@ -50,7 +50,7 @@ export default function DashboardLayout({
 						</h4>
 					</div>
 
-					<div className="flex-1 max-w-md mx-4">
+					<div className="flex-1 max-w-md mx-4 md:flex-none md:mx-0 md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full">
 						<Suspense fallback={<p className="text-white text-sm">Loading...</p>}>
 							<SearchBar
 								setIsRedirectLoading={setIsRedirectLoading}
