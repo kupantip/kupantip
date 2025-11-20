@@ -1,78 +1,120 @@
-# KU Pantip
+# **KU Pantip**
 
-A full-stack web application, likely a forum or discussion platform, built with a modern technology stack.
+A brief description of what KU Pantip is (e.g., "A community forum for KU students," or "A feedback system for university services").
 
-## Tech Stack
+## **📖 Table of Contents**
 
-  * **Frontend:** [TypeScript](https://www.google.com/search?q=https.www.typescriptlang.org/), [Node.js](https://nodejs.org/) (based on `npm run dev` command)
-  * **Backend:** [TypeScript](https://www.google.com/search?q=https.www.typescriptlang.org/)
-  * **Database:** [TSQL](https://en.wikipedia.org/wiki/Transact-SQL) (e.g., Microsoft SQL Server)
-  * **Workflow Automation:** [n8n](https://n8n.io/)
-  * **Containerization:** [Docker](https://www.docker.com/)
+- [About the Project](#-about-the-project)  
+- [Tech Stack](#-tech-stack)  
+- [Project Architecture](#-project-architecture)  
+- [Getting Started](#-getting-started)  
+  - [Prerequisites](#prerequisites)  
+  - [Environment Setup](#environment-setup)  
+  - [Installation](#installation--running)    
+- [Resources](#-resources)
+- [Contributors](#-contributors)
 
-## Project Structure
+## **🔭 About the Project**
 
-The repository is organized into the following main directories:
+**KU Pantip** University students often face problems in finding information about courses, professors, dormitories, campus life, or events in the university. Nowadays, students use many different apps to share and ask questions so the information is spread out and very hard to find.
 
-  * `/frontend`: Contains the client-side application code.
-  * `/backend`: Contains the server-side application logic and API.
-  * `/n8n`: Holds configuration or custom nodes for the n8n workflow automation.
-  * `compose.yml`: The Docker Compose file for orchestrating the application services.
+### **Key Features**
 
-## Getting Started
+- **Community Boards:** Posting and commenting.  
+- **AI Summary:** Integration with n8n for ai summary tasks.  
+- **User Authentication:** Secure login and profile management.  
+- **Admin System**: Monitor system and manage report  
 
-Follow these instructions to get a local copy of the project up and running for development.
+## **🛠 Tech Stack**
 
-### Prerequisites
+| Component | Technology |
+| ----- | ----- |
+| **Frontend** | React / Next.js |
+| **Backend** | Node.js / Express |
+| **Database** | MIcrosoft SQL Server |
+| **Automation** | Github Action |
+| **DevOps** | Docker, Docker Compose, Github Action |
 
-  * [Docker](https://www.docker.com/get-started) and [Docker Compose](https://docs.docker.com/compose/install/)
-  * [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/get-npm) (for local frontend development)
+## **🏗 Project Architecture**
 
-### Installation & Running
+The project is organized as a monorepo with the following structure:
 
-1.  **Clone the repository:**
+```sh
+kupantip/  
+├── backend/        # Server-side application logic  
+├── frontend/       # Client-side application  
+├── n8n/            # Workflow automation configurations  
+├── compose.yml     # Docker composition for orchestration  
+└── README.md       # This documentation
+```
 
-    ```sh
-    git clone https://github.com/kupantip/kupantip.git
-    cd kupantip
-    ```
+## **🚀 Getting Started**
 
-2.  **Set up environment variables:**
-    Create a `.env` file from the example.
+### **Prerequisites**
 
-    ```sh
-    cp .env.example .env
-    ```
+Ensure you have the following installed on your local machine:
 
-    *You will need to edit the `.env` file and add your specific configuration values (e.g., database credentials, API keys).*
+* [Docker Desktop](https://www.docker.com/products/docker-desktop)  
+* [Node.js](https://nodejs.org/) (v22+) & npm
 
-3.  **Build and start the backend and database:**
-    This command will build the Docker images and start the `db` and `backend` services in detached mode.
+### **Environment Setup**
 
-    ```sh
-    docker compose up -d --build db backend
-    ```
+**Clone the repository**  
+```bash
+git clone https://github.com/kupantip/kupantip.git
+cd kupantip
+```
 
-4.  **Start the frontend:**
-    In a separate terminal, navigate to the `frontend` directory, install dependencies, and start the development server.
+1. **Configure Environment Variables** Copy the example configuration file and update the values.  
+```bash
+cp .env.example .env
+```
 
-    ```sh
-    cd frontend
-    npm install
-    npm run dev
-    ```
 
-The frontend application should now be running, typically at `http://localhost:3000` or a similar address.
+2. ⚠️ **Note:** Ensure database credentials in `.env` match those in `compose.yml`.
 
-## Resources
+| **Section**  | **Variable**             | **Value**                                                                                                                                             |
+| ------------ | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Database** | SQL_USER                 | sa                                                                                                                                                    |
+|              | SQL_SERVER               | db                                                                                                                                                    |
+|              | SQL_PASSWORD             | Kup@ntip123!                                                                                                                                          |
+|              | SQL_NAME                 | pantip_db                                                                                                                                             |
+|              | SQL_PORT                 | 1433                                                                                                                                                  |
+| **Auth**     | JWT_SECRET               | "jesusloveme"                                                                                                                                         |
+|              | JWT_EXPIRES_IN           | "7d"                                                                                                                                                  |
+|              | PORT                     | 8000                                                                                                                                                  |
+|              | ADMIN_EMAIL              | admin@admin.com |
+|              | ADMIN_PASSWORD           | Admin@1234 |
+|              | ADMIN_HANDLE             | Admin |
+| **Prisma**   | DATABASE_URL             | `"sqlserver://${SQL_SERVER}:${SQL_PORT};database=${SQL_NAME};user={${SQL_USER}};password={${SQL_PASSWORD}};encrypt=true;trustServerCertificate=true"` |
+| **Frontend** | NEXTAUTH_SECRET          | SECRET_KY                                                                                                                      |
+|              | NEXTAUTH_URL             | [http://localhost](http://localhost)                                                                                                                  |
+|              | BACKEND_URL              | [http://backend:8000/api/v1](http://backend:8000/api/v1)                                                                                              |
+|              | NEXT_PUBLIC_BACKEND_HOST | [http://localhost:8000/api/v1](http://localhost:8000/api/v1)                                                                                          |
 
-  * **Project Document:** [View Google Doc](https://docs.google.com/document/d/1-2ALlc2GsVo7hijVkuJV1LBGhA6anqSawGLpEJQzIPU/edit?usp=sharing)
-  * **YouTube Demos:**
-      * [Iteration 1](https://youtu.be/Fp7zLkk3KoM)
-      * [Iteration 2](https://youtu.be/i49ESSFxvBE)
-      * [Iteration 3](https://youtu.be/YOvjb6aMCSg)
+### **Installation & Running**
 
-## Contributors
+You can run the project in : **Fully Dockerized**
+
+#### **Full Docker (Recommended)**
+
+Run the entire stack (Db, Backend, Frontend, n8n) in containers.
+```sh
+docker compose up -d --build
+```
+
+## **📚 Resources**
+
+* **Documentation:** [Google Doc Link](https://docs.google.com/document/d/1-2ALlc2GsVo7hijVkuJV1LBGhA6anqSawGLpEJQzIPU/edit?usp=sharing)  
+* **Demo Videos:**  
+  * [Iteration 1](https://youtu.be/Fp7zLkk3KoM)  
+  * [Iteration 2](https://youtu.be/i49ESSFxvBE)  
+  * [Iteration 3](https://youtu.be/YOvjb6aMCSg)
+  * [Iteration 4](https://youtu.be/Vjn3ohDk0OU)
+  * [Iteration 5](https://youtu.be/DHXBX4fWi0A)
+
+
+## **👥 Contributors**
 
   * [Xeei](https://github.com/Xeei)
   * [BossPattadon](https://github.com/BossPattadon)
