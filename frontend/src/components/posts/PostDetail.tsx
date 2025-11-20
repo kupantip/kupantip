@@ -1,19 +1,18 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
 	MessageSquare,
-	ArrowUp,
-	ArrowDown,
 	Ellipsis,
 	ArrowLeft,
 	Sparkles,
 	Loader2,
 	ChevronDown,
+	ArrowBigDown,
+	ArrowBigUp
 } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
@@ -220,22 +219,22 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 					)}
 					{!isEditing && (
 						<div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
-							<div className="flex items-center gap-1 px-2 py-1">
-								<ArrowUp
-									className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+							<div className="flex items-center gap-1 py-1">
+								<ArrowBigUp
+									className={`w-6 h-6 p-1 cursor-pointer hover:bg-gray-100 rounded-full
 									${
 										comment.liked_by_requesting_user
-											? 'bg-green-400 text-black'
+											? 'text-emerald-500 fill-emerald-500'
 											: 'hover:bg-gray-200'
 									}`}
 									onClick={handleUpVote}
 								/>
 								<span>{comment.vote_score}</span>
-								<ArrowDown
-									className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+								<ArrowBigDown
+									className={`w-6 h-6 p-1 cursor-pointer hover:bg-gray-100 rounded-full
 									${
 										comment.disliked_by_requesting_user
-											? 'bg-red-400 text-black'
+											? 'text-red-500 fill-red-500'
 											: 'hover:bg-gray-200'
 									}`}
 									onClick={handleDownVote}
@@ -518,6 +517,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			router.back();
 		}
 	};
+
 	const handleAISummary = async () => {
 		setIsLoadingAI(true);
 		try {
@@ -779,21 +779,21 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					{/* Post Actions */}
 					<div className="flex items-center gap-6 text-gray-600">
 						<div className="flex items-center gap-2">
-							<ArrowUp
-								className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+							<ArrowBigUp
+								className={`w-7 h-7 p-1 cursor-pointer hover:bg-gray-100 rounded-full 
 								${
 									post.liked_by_requesting_user
-										? 'bg-green-400 text-black'
+										? 'text-emerald-500 fill-emerald-500'
 										: 'hover:bg-gray-200'
 								}`}
 								onClick={handleUpVote}
 							/>
 							<span>{post.vote_score}</span>
-							<ArrowDown
-								className={`w-5 h-5 cursor-pointer p-1 hover:bg-gray-100 rounded-full
+							<ArrowBigDown
+								className={`w-7 h-7 p-1 cursor-pointer hover:bg-gray-100 rounded-full
 								${
 									post.disliked_by_requesting_user
-										? 'bg-red-400 text-black'
+										? 'text-red-500 fill-red-500'
 										: 'hover:bg-gray-200'
 								}`}
 								onClick={handleDownVote}

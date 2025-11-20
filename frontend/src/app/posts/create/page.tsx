@@ -70,11 +70,18 @@ export default function CreatePostPage() {
 	});
 
 	const handleSelectCategory = (value: string) => {
-		setFormData({ ...formData, category_id: value });
+		setFormData((prev) => ({ ...prev, category_id: value }));
 	};
+
+	const [categoryError, setCategoryError] = useState('');
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		setCategoryError('');
+		if (!formData.category_id) {
+			setCategoryError('Please select a category.');
+			return;
+		}
 		setLoading(true);
 
 		const postId = uuidv4();
@@ -161,24 +168,32 @@ export default function CreatePostPage() {
 						required
 					/>
 
-					<Select
-						onValueChange={handleSelectCategory}
-						value={formData.category_id}
-					>
-						<SelectTrigger className="border border-gray-300 rounded-xl p-5 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer">
-							<SelectValue placeholder="Select Category" />
-						</SelectTrigger>
-						<SelectContent>
-							{categories?.map((category) => (
-								<SelectItem
-									key={category.id}
-									value={category.id}
-								>
-									{category.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					<div>
+						<Select
+							onValueChange={handleSelectCategory}
+							value={formData.category_id}
+							required
+						>
+							<SelectTrigger className="border border-gray-300 rounded-xl p-5 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer">
+								<SelectValue placeholder="Select Category" />
+							</SelectTrigger>
+							<SelectContent>
+								{categories?.map((category) => (
+									<SelectItem
+										key={category.id}
+										value={category.id}
+									>
+										{category.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						{categoryError && (
+							<div className="text-red-600 text-sm mt-1">
+								{categoryError}
+							</div>
+						)}
+					</div>
 
 					{tab === 'text' ? (
 						<textarea

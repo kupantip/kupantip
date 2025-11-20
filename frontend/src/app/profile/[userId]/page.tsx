@@ -33,14 +33,9 @@ import {
 } from 'lucide-react';
 import { usePostByUserId } from '@/services/post/post';
 import { useUserStats } from '@/services/user/user';
+import { useProfileByUserId } from '@/services/user/profile';
 import Link from 'next/link';
-
-type UserPayload = {
-	user_id: string;
-	email: string;
-	username: string;
-	role: string;
-};
+import EditProfile from '@/components/profile/EditProfile';
 
 const formatTime = (minutes: number) => {
 	if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
@@ -59,6 +54,13 @@ export default function MyProfilePage() {
 	const params = useParams();
 	const userId = params.userId as string;
 
+	const {
+		data: profile,
+		isLoading: isLoadingProfile,
+		refetch: refetchProfile,
+	} = useProfileByUserId(userId);
+
+	const [editOpen, setEditOpen] = useState(false);
 	const [copied, setCopied] = useState(false);
 
 	const copyCurrentUrl = async () => {
@@ -193,13 +195,25 @@ export default function MyProfilePage() {
 								</div>
 							</div>{' '}
 							<div className="flex gap-2 pt-2">
-								{session?.user.id === userId && (
-									<Button className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer">
-										<Edit className="w-4 h-4 mr-2" />
-										Edit Profile
-									</Button>
+								{session?.user.user_id === userId && (
+									<>
+										<Button
+											className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
+											onClick={() => setEditOpen(true)}
+										>
+											<Edit className="w-4 h-4 mr-2" />
+											Edit Profile
+										</Button>
+										<EditProfile
+											open={editOpen}
+											onOpenChange={setEditOpen}
+											userId={userId}
+											onSuccess={() => {
+												refetchProfile();
+											}}
+										/>
+									</>
 								)}
-
 								<Button
 									variant="outline"
 									className="cursor-pointer"
@@ -381,53 +395,68 @@ export default function MyProfilePage() {
 							<CardTitle>About Me</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-4">
-							<div>
-								<h3 className="font-semibold mb-2">Bio</h3>
-								<p className="text-gray-600 dark:text-gray-400">
-									Student at XYZ University, passionate about
-									technology and learning. Active member of
-									the community, always ready to help fellow
-									students.
-								</p>
-							</div>
-							<Separator />
-							<div>
-								<h3 className="font-semibold mb-2">
-									Interests
-								</h3>
-								<div className="flex flex-wrap gap-2">
-									<Badge variant="secondary">
-										Programming
-									</Badge>
-									<Badge variant="secondary">
-										Web Development
-									</Badge>
-									<Badge variant="secondary">
-										Data Science
-									</Badge>
-									<Badge variant="secondary">
-										UI/UX Design
-									</Badge>
+							{isLoadingProfile ? (
+								<div className="text-center py-8">
+									<Loader2 className="animate-spin w-8 h-8 mx-auto text-green-1" />
+									<p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+										Loading profile...
+									</p>
 								</div>
-							</div>
-							<Separator />
-							<div>
-								<h3 className="font-semibold mb-2">Skills</h3>
-								<div className="flex flex-wrap gap-2">
-									<Badge className="bg-blue-100 text-blue-800">
-										TypeScript
-									</Badge>
-									<Badge className="bg-green-100 text-green-800">
-										React
-									</Badge>
-									<Badge className="bg-purple-100 text-purple-800">
-										Next.js
-									</Badge>
-									<Badge className="bg-orange-100 text-orange-800">
-										Python
-									</Badge>
+							) : profile ? (
+								<>
+									<div>
+										<h3 className="font-semibold mb-2">
+											Bio
+										</h3>
+										<p className="text-gray-600 dark:text-gray-400">
+											{profile.bio}
+										</p>
+									</div>
+									<Separator />
+									<div>
+										<h3 className="font-semibold mb-2">
+											Interests
+										</h3>
+										<div className="flex flex-wrap gap-2">
+											{profile.interests
+												.split(',')
+												.map((interest, idx) => (
+													<Badge
+														key={idx}
+														variant="secondary"
+														className='bg-emerald-100 text-emerald-600'
+													>
+														{interest.trim()}
+													</Badge>
+												))}
+										</div>
+									</div>
+									<Separator />
+									<div>
+										<h3 className="font-semibold mb-2">
+											Skills
+										</h3>
+										<div className="flex flex-wrap gap-2">
+											{profile.skills
+												.split(',')
+												.map((skill, idx) => (
+													<Badge
+														key={idx}
+														className="bg-purple-100 text-purple-800"
+													>
+														{skill.trim()}
+													</Badge>
+												))}
+										</div>
+									</div>
+								</>
+							) : (
+								<div className="text-center py-8">
+									<p className="text-gray-500 text-sm italic">
+										No profile data found.
+									</p>
 								</div>
-							</div>
+							)}
 						</CardContent>
 					</Card>
 				</TabsContent>

@@ -26,6 +26,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function AdminCategoryPage() {
 	const [searchId, setSearchId] = useState('');
@@ -33,6 +34,9 @@ export default function AdminCategoryPage() {
 	const [recent, setRecent] = useState<string>('');
 	const [dialogId, setDialogId] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
+
+	const queryClient = useQueryClient();
+	const patchStatus = usePatchRequestedCategoryStatus();
 
 	const {
 		data: requests,
@@ -44,12 +48,16 @@ export default function AdminCategoryPage() {
 		status: status as 'open' | 'dismissed' | 'actioned' | undefined,
 		recent: recent === '' ? undefined : recent === 'true',
 	});
-	const patchStatus = usePatchRequestedCategoryStatus();
 
 	const handleApprove = (id: string) => {
 		patchStatus.mutate(
 			{ id, input: { status: 'actioned' } },
-			{ onSuccess: () => refetch() }
+			{
+				onSuccess: () => {
+					refetch();
+					queryClient.invalidateQueries({ queryKey: ['categories'] });
+				},
+			}
 		);
 	};
 

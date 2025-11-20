@@ -48,7 +48,7 @@ export default function LoginPage() {
 	return (
 		<div
 			data-aos="fade-up"
-			className="min-h-screen bg-white relative flex items-center justify-center"
+			className="min-h-screen bg-gray-100 relative flex items-center justify-center"
 		>
 			{/* Background image */}
 			{/* <div className="absolute inset-0 bg-[url('/login/loginbg.jpg')] bg-[length:120%] bg-center"></div> */}
@@ -58,7 +58,7 @@ export default function LoginPage() {
 			{/* Form */}
 			<form
 				onSubmit={handleSubmit}
-				className="relative z-10 p-6 bg-grey-3 shadow-md rounded-lg w-96"
+				className="relative z-10 p-6 bg-white shadow-md rounded-lg w-96"
 			>
 				<div className="text-green-2 text-3xl text-center font-semibold mb-5">
 					KU PANTIP
@@ -122,15 +122,13 @@ export default function LoginPage() {
 
 				<Link
 					href="/posts"
-					className="text-center block text-blue-600 hover:underline"
+					className="group flex items-center justify-center gap-2 w-full text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors duration-200"
 					onClick={(e) => {
 						e.preventDefault();
 						router.push('/posts');
 					}}
 				>
-					<Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg flex items-center justify-center cursor-pointer">
-						Continue to KU Pantip
-					</Button>
+					Continue without signing in
 				</Link>
 			</form>
 

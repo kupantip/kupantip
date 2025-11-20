@@ -1,17 +1,21 @@
 'use client';
 
-import { useEffect } from 'react';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import { useState, Suspense } from 'react';
+
 import { useSession } from 'next-auth/react';
 
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/posts/AppSideBar';
 import { Button } from '@/components/ui/button';
-import { CirclePlus } from 'lucide-react';
+import { CirclePlus, Bell, MessageCircle } from 'lucide-react';
 
 import Link from 'next/link';
 import ProfileDropDown from '@/components/ProfileDropdown';
+import { Loader2 } from 'lucide-react';
+import SearchBar from '@/components/SearchBar';
+import { useTotalUnreadCount } from '@/hooks/useTotalUnreadCount';
+import { Tooltip, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipContent } from '@radix-ui/react-tooltip';
 
 export default function DashboardLayout({
 	children,
@@ -19,12 +23,8 @@ export default function DashboardLayout({
 	children: React.ReactNode;
 }) {
 	const { data: session, status } = useSession();
-
-	useEffect(() => {
-		window.history.scrollRestoration = 'manual';
-		window.scrollTo({ top: 0 });
-		AOS.init({ duration: 800, once: true, offset: 100 });
-	}, []);
+	const [isRedirectLoading, setIsRedirectLoading] = useState(false);
+	const totalUnread = useTotalUnreadCount();
 
 	return (
 		<SidebarProvider>
@@ -33,13 +33,25 @@ export default function DashboardLayout({
 					<h4 className="text-white text-base font-semibold">
 						KU Pantip
 					</h4>
-
+					<Suspense fallback={<p>Loading search...</p>}>
+						<SearchBar
+							setIsRedirectLoading={setIsRedirectLoading}
+						/>
+					</Suspense>
 					<div className="flex flex-wrap items-center gap-x-3">
-						{/* <div className="mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
-							<Bell className="w-5 h-5 text-white cursor-pointer" />
-						</div> */}
+						<Link href="/chat">
+							<div className="relative mr-3 w-7 h-7 bg-transparent rounded-full flex items-center justify-center hover:bg-grey-1 hover:scale-105">
+								<MessageCircle className="w-5 h-5 text-white cursor-pointer" />
+								{totalUnread > 0 && (
+									<span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 min-w-4 flex items-center justify-center px-1">
+										{totalUnread > 99 ? '99+' : totalUnread}
+									</span>
+								)}
+							</div>
+						</Link>
+
 						<Link href="/posts/create-category">
-							<Button className="mr-21group w-16 bg-transparent text-white rounded-lg hover:bg-transparent flex items-center gap-2 cursor-pointer hover:scale-105">
+							<Button className="mr-1 group w-16 bg-transparent text-white rounded-lg hover:bg-transparent flex items-center gap-2 cursor-pointer hover:scale-105">
 								<CirclePlus className="mt-[0.2em]" />
 								<div className="group-hover:underline">
 									Category
@@ -63,26 +75,25 @@ export default function DashboardLayout({
 								</Button>
 							</Link>
 						)}
-						{/* <Button
-							variant="ghost"
-							className="p-0 bg-transparent hover:bg-transparent focus-visible:ring-0 cursor-pointer hover:scale-105"
-						>
-							<div className="w-9 h-9 bg-white rounded-full flex items-center justify-center hover:bg-grey-1">
-								<UserPen className="w-5 h-5 text-green-700" />
-							</div>
-						</Button> */}
 						<ProfileDropDown />
 					</div>
 				</div>
 			</header>
 
 			<div className="flex pt-16 w-full">
-				<div className="sticky top-16 h-[calc(100vh-4rem)] shrink-0 overflow-hidden">
+				<div className="sticky top-16 h-[calc(100vh-4rem)] shrink-0">
 					<AppSidebar />
 				</div>
 
 				<main className="flex-1 min-h-[calc(100vh-4rem)]">
-					{children}
+					{isRedirectLoading ? (
+						<div className="flex flex-col justify-center items-center h-[60vh]">
+							<Loader2 className="h-8 w-8 animate-spin" />
+							Searching
+						</div>
+					) : (
+						children
+					)}
 				</main>
 			</div>
 		</SidebarProvider>
