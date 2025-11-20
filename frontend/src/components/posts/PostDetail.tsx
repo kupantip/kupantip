@@ -548,7 +548,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 				<Button
 					variant="ghost"
 					onClick={handleBackButton}
-					className="mb-3 md:mb-5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 pl-0 md:pl-4"
+					className="mb-3 md:mb-5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 pl-0 md:pl-4 cursor-pointer"
 				>
 					<ArrowLeft className="w-4 h-4 mr-2" />
 					{result ? `Back to ${result}` : 'Back to Posts'}
