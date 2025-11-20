@@ -90,3 +90,23 @@ describe('Create Post test', () => {
 		);
 	});
 });
+
+describe('Attachment route', () => {
+	test('Should return the image if it exists', async () => {
+		const response = await request(app).get(
+			`${baseURL}/attachments/test-image.png`
+		);
+		expect(response.status).toBe(200);
+		expect(response.headers['content-type']).toMatch(/image\/png/);
+		// Optionally, check that the response body is not empty
+		expect(response.body.length).toBeGreaterThan(0);
+	});
+
+	test('Should return 404 for non-existent file', async () => {
+		const response = await request(app).get(
+			`${baseURL}/attachments/nonexistent.png`
+		);
+		expect(response.status).toBe(404);
+		expect(response.text).toMatch(/File not found/);
+	});
+});
