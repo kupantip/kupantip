@@ -89,12 +89,12 @@ export default function AnnouncementTimeline(){
 
   return (
     <TooltipProvider>
-        <div className="flex flex-col min-h-screen w-full bg-white text-sm text-gray-700 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+        <div className="flex flex-col h-[calc(100vh-100px)] min-h-[500px] w-full bg-white text-sm text-gray-700 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
         
         {/* --- Header Section --- */}
         <div className="flex border-b border-gray-300 bg-gray-50">
             {/* Sidebar Header */}
-            <div className="w-[300px] shrink-0 p-3 font-bold border-r border-gray-300 flex items-center text-gray-600">
+            <div className="w-[140px] md:w-[220px] lg:w-[300px] shrink-0 p-3 font-bold border-r border-gray-300 flex items-center text-gray-600 transition-all duration-300">
             Announcement Title
             </div>
 
@@ -116,10 +116,14 @@ export default function AnnouncementTimeline(){
         </div>
 
         {/* --- Body Section --- */}
-        <div className="flex flex-1 overflow-y-auto">
+        <div
+            ref={bodyRef}
+            onScroll={handleScroll}  
+            className="flex flex-1 overflow-auto relative"
+        >
             
             {/* Left Sidebar: Item List */}
-            <div className="w-[300px] shrink-0 border-r border-gray-300 bg-white z-40 shadow-sm">
+            <div className="sticky left-0 w-[140px] md:w-[220px] lg:w-[300px] shrink-0 border-r border-gray-300 bg-white z-40 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] transition-all duration-300">
             <div 
                 className="h-10 flex items-center px-3 py-2 bg-gray-50 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -127,7 +131,9 @@ export default function AnnouncementTimeline(){
                 <button className="mr-1 text-gray-500">
                     {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                 </button>
-                <div className="font-semibold text-xs uppercase tracking-wider text-gray-500">All Announcements</div>
+                <div className="font-semibold text-xs uppercase tracking-wider text-gray-500 truncate">
+                    <span className="hidden md:inline">All </span>Announcements
+                </div>
             </div>
 
             {isExpanded && announcements?.map((item) => (
@@ -137,10 +143,10 @@ export default function AnnouncementTimeline(){
                     </div>
                     <div className="flex flex-col overflow-hidden">
                         <span className="truncate font-medium text-gray-700 group-hover:text-blue-600">
-                        {item.title}
+                            {item.title}
                         </span>
-                        <span className="text-[10px] text-gray-400 truncate">
-                        {new Date(item.start_at).toLocaleDateString()} - {new Date(item.end_at).toLocaleDateString()}
+                        <span className="text-[10px] text-gray-400 truncate hidden md:block">
+                            {new Date(item.start_at).toLocaleDateString()} - {new Date(item.end_at).toLocaleDateString()}
                         </span>
                     </div>
                 </Link>
@@ -149,9 +155,7 @@ export default function AnnouncementTimeline(){
 
             {/* Right Timeline: Bars Area */}
             <div
-                ref={bodyRef}
-                onScroll={handleScroll} 
-                className="flex-1 relative overflow-x-auto bg-white"
+                className="flex-1 relative bg-white"
             >
             
             <div className='relative min-h-full'>
