@@ -131,7 +131,7 @@ export default function AnnouncementTimeline(){
             </div>
 
             {isExpanded && announcements?.map((item) => (
-                <Link key={item.id} href={`/posts/annoucement/${item.id}`} className="flex items-center px-4 py-2 h-12 border-b border-gray-100 hover:bg-blue-50 transition-colors group cursor-pointer">
+                <Link key={item.id} href={`/posts/annoucement/${item.id}?r=Announcement Timeline`} className="flex items-center px-4 py-2 h-12 border-b border-gray-100 hover:bg-blue-50 transition-colors group cursor-pointer">
                     <div className="mr-2 text-emerald-600 shrink-0">
                         <Megaphone size={16} fill="currentColor" />
                     </div>
