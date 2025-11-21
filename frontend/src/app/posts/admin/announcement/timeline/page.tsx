@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useMemo, useRef } from 'react';
-import { ChevronRight, ChevronDown, Megaphone } from 'lucide-react';import {
+import { ChevronRight, ChevronDown, Megaphone, Loader2 } from 'lucide-react';
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAnnouncement } from '@/services/announcement/announcement';
+import Link from 'next/link';
 
 const getDaysDiff = (start: string | Date, end: string | Date) => {
     const date1 = new Date(start);
@@ -27,7 +29,7 @@ const getDaysFromStart = (baseDate: Date, targetDate: string) => {
 
 const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
+    return date.toLocaleString('en-GB', {
         day: 'numeric',
         month: 'short',
         hour: '2-digit',
@@ -77,7 +79,12 @@ export default function(){
         });
     }, [timelineMeta]);
 
-    if (isLoading) return <div className="p-10 text-center">Loading Timeline...</div>;
+    if (isLoading) return (
+            <div className="flex flex-col justify-center items-center h-64 gap-2">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className='text-center'>Loading Timeline...</span>
+            </div>
+    );
     if (error) return <div className="p-10 text-center text-red-500">Error loading data</div>;
 
   return (
@@ -124,19 +131,19 @@ export default function(){
             </div>
 
             {isExpanded && announcements?.map((item) => (
-                <div key={item.id} className="flex items-center px-4 py-2 h-12 border-b border-gray-100 hover:bg-blue-50 transition-colors group">
-                <div className="mr-2 text-emerald-600 shrink-0">
-                    <Megaphone size={16} fill="currentColor" />
-                </div>
-                <div className="flex flex-col overflow-hidden">
-                    <span className="truncate font-medium text-gray-700 group-hover:text-blue-600">
-                    {item.title}
-                    </span>
-                    <span className="text-[10px] text-gray-400 truncate">
-                    {new Date(item.start_at).toLocaleDateString()} - {new Date(item.end_at).toLocaleDateString()}
-                    </span>
-                </div>
-                </div>
+                <Link key={item.id} href={`/posts/annoucement/${item.id}`} className="flex items-center px-4 py-2 h-12 border-b border-gray-100 hover:bg-blue-50 transition-colors group cursor-pointer">
+                    <div className="mr-2 text-emerald-600 shrink-0">
+                        <Megaphone size={16} fill="currentColor" />
+                    </div>
+                    <div className="flex flex-col overflow-hidden">
+                        <span className="truncate font-medium text-gray-700 group-hover:text-blue-600">
+                        {item.title}
+                        </span>
+                        <span className="text-[10px] text-gray-400 truncate">
+                        {new Date(item.start_at).toLocaleDateString()} - {new Date(item.end_at).toLocaleDateString()}
+                        </span>
+                    </div>
+                </Link>
             ))}
             </div>
 
