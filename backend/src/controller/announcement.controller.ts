@@ -5,6 +5,7 @@ import {
 	getActiveAnnouncements,
 	getAnnouncementById,
 	deleteAnnouncement,
+	getAllAnnouncementsOrderedByStartDate,
 } from '../models/announcement.model';
 
 const createAnnouncementSchema = z.object({
@@ -147,6 +148,34 @@ export const deleteAnnouncementController = async (
 		return res.status(200).json({
 			message: 'Announcement deleted successfully',
 		});
+	} catch (err) {
+		next(err);
+	}
+};
+
+export const getAllAnnouncementsTimelineController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		// Check authentication
+		if (!req.user) {
+			return res.status(401).json({ message: 'Unauthorized' });
+		}
+
+		// Check role (only admin)
+		const { role } = req.user;
+		if (role !== 'admin') {
+			return res.status(403).json({
+				message: 'Forbidden: Only admin can view announcement timeline',
+			});
+		}
+
+		// Get all announcements ordered by start_at
+		const announcements = await getAllAnnouncementsOrderedByStartDate();
+
+		return res.status(200).json(announcements);
 	} catch (err) {
 		next(err);
 	}
