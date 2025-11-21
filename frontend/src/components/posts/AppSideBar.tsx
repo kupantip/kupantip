@@ -14,6 +14,7 @@ import {
 	Circle,
 	PartyPopper,
 	FileUser,
+	ChartGantt,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -46,6 +47,13 @@ const adminLinks = [
 		label: 'Announcement Panel',
 		aria: 'Announcement Panel',
 		title: 'Announcement Panel',
+	},
+	{
+		href: '/posts/admin/announcement/timeline',
+		icon: ChartGantt,
+		label: 'Announcement Timeline',
+		aria: 'Announcement Timeline',
+		title: 'Announcement Timeline',
 	},
 ];
 
