@@ -35,7 +35,7 @@ A brief description of what KU Pantip is (e.g., "A community forum for KU studen
 | **Database** | Microsoft SQL Server |
 | **Workflow Automation** | n8n + Google Gemini AI |
 | **Automation** | Github Action |
-| **DevOps** | Docker, Docker Compose, Github Actions |
+| **DevOps** | Docker, Docker Compose, Github Action |
 
 ## **🏗 Project Architecture**
 
