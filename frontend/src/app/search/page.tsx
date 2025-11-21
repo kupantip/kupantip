@@ -297,12 +297,12 @@ function SearchPageComponent() {
     return (
         <div className="w-full max-w-5xl mx-auto">
             <Tabs defaultValue="all" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger value="all">All ({(total || 0)})</TabsTrigger>
-                    <TabsTrigger value="categories">Categories ({data?.categories?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="posts">Posts ({data?.posts?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="comments">Comments ({data?.comments?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="users">Users ({data?.users?.length || 0})</TabsTrigger>                 
+                <TabsList className="flex w-full overflow-x-auto md:grid md:grid-cols-5 no-scrollbar">
+                    <TabsTrigger value="all" className="flex-shrink-0">All ({(total || 0)})</TabsTrigger>
+                    <TabsTrigger value="categories" className="flex-shrink-0">Categories ({data?.categories?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="posts" className="flex-shrink-0">Posts ({data?.posts?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="comments" className="flex-shrink-0">Comments ({data?.comments?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="users" className="flex-shrink-0">Users ({data?.users?.length || 0})</TabsTrigger>                 
                 </TabsList>
 
                 <TabsContent value="all" className="mt-4">

@@ -40,7 +40,7 @@ export async function fetchCategories(): Promise<Category[]> {
 
 		const response = await instance.get<Category[]>('/', {
 			headers: header,
-			params: { recent: true },
+			params: { recent: false },
 		});
 		return response.data;
 	} catch (error: unknown) {

@@ -326,14 +326,14 @@ export function ReportDataTable({ data }: ReportDataTableProps) {
             </div>
 
             {/* Table */}
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead key={header.id}>
+                                        <TableHead key={header.id} className="whitespace-nowrap">
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(
@@ -357,7 +357,7 @@ export function ReportDataTable({ data }: ReportDataTableProps) {
                                     }
                                 >
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id} className='hover:scale-101'>
+                                        <TableCell key={cell.id} className='hover:scale-101 whitespace-nowrap'>
                                             {flexRender(
                                                 cell.column.columnDef.cell,
                                                 cell.getContext()

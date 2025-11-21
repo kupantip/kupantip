@@ -404,7 +404,7 @@ function AnnouncementFormContent({
 				)}
 
 				{/* Submit Button */}
-				<Button type="submit" disabled={isLoading} className="w-full bg-green-1">
+				<Button type="submit" disabled={isLoading} className="w-full bg-emerald-600 hover:bg-emerald-700 cursor-pointer"> 
 					{isLoading
 						? 'Creating Announcement...'
 						: 'Create Announcement'}

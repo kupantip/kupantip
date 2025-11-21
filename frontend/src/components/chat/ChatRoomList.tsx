@@ -83,7 +83,7 @@ export default function ChatRoomList({
 	}
 
 	return (
-		<div className="divide-y divide-gray-200 overflow-y-auto">
+		<div className="divide-y divide-gray-200 overflow-y-auto h-full">
 			{rooms.map((room) => (
 				<button
 					key={room.id}

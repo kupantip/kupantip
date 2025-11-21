@@ -148,7 +148,7 @@ export default function SignUp() {
 					<h1 className="text-4xl font-bold py-2">Create Account</h1>
 				</div>
 				<div className='flex flex-col gap-8 py-6'>
-					<div className="flex items-center gap-3">
+					<div className="flex flex-col md:flex-row items-center gap-3 md:gap-6">
 						<Avatar className="w-24 h-24 border-3 border-emerald-600 dark:border-emerald-700">
 							<AvatarImage
 								src={`https://api.dicebear.com/7.x/initials/svg?seed=${previewData.display_name}`}
@@ -157,7 +157,7 @@ export default function SignUp() {
 								{(previewData.display_name || '').charAt(0).toUpperCase()}
 							</AvatarFallback>
 						</Avatar>
-						<div className="ml-4 flex-1 flex flex-col">
+						<div className="mt-2 md:mt-0 md:ml-4 flex-1 flex flex-col items-center md:items-start text-center md:text-left">
 							<span className="font-semibold truncate max-w-[200px] text-2xl">
 								{previewData.display_name}
 							</span>
@@ -167,7 +167,7 @@ export default function SignUp() {
 						</div>
 					</div>
 					<form onSubmit={handleSubmit} className=''>
-						<div className='grid grid-cols-2 gap-6'>
+						<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
 							<div>
 								<label className="text-sm font-medium">Email</label>
 								<Input
