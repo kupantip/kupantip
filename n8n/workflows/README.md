@@ -20,15 +20,47 @@ docker exec kupantip-n8n n8n import:workflow --input=/home/node/workflows/ai-sum
 
 The workflow file `ai-summary-workflow.json` is already configured for AI post summarization using Google Gemini.
 
-**Important:** After n8n imports the workflow, you must:
+After the containers are running, you need to configure n8n for AI summarization features:
 
-1. Open n8n at http://localhost:5678
-2. Go to **Credentials** settings
-3. Create a new **Google Gemini API** credential
-4. Add your Gemini api key to credential
-5. Open the imported workflow
-6. Connect the Google Gemini Chat Model node to your credential
-7. Activate the workflow
+1. **Configure Google Gemini API:**
+   - Generate **Google Gemini API** from https://aistudio.google.com/app/api-keys
+   - Open n8n at http://localhost:5678
+   - Go to **Credentials** settings
+   - Create a new **Google Gemini(PaLM) Api** credential
+   - Add your Gemini API key
+
+2. **Activate the workflow:**
+   - Open the imported "AI Post Summary" workflow
+   - Connect the Google Gemini Chat Model node to your credential
+   - Click "Activate" to enable the workflow
+
+3. **Test the AI summary feature:**
+   ```bash
+   GET http://localhost:8000/api/v1/n8n/post/:post_id
+   ```
+
+**What to do if workflow not working:**
+
+- **Method 1:**
+
+    1. Move any node a little bit in workflow
+    2. Click save button
+    3. Make sure that ‘Active’ button is activated
+
+    - Youtube instruction: https://youtu.be/iuA1Dqk9mZM
+
+- **Method 2:**
+
+    Do Method 2 if Method 1 not work:
+
+    1. Click Ellipsis Menu Icon button (...)
+    2. Click ‘Import from File…’
+    3. Click ‘Google Gemini Chat Model’ node and connect credential
+    4. Click ‘Save’ button’ on top right corner to save workflow
+    5. Active workflow
+    6. Make sure that ‘Active’ button is activated
+
+    - Youtube instruction: https://youtu.be/SOWSFVOAt54
 
 ### 2. Webhook Configuration
 
@@ -68,7 +100,6 @@ The backend will:
 3. N8n processes with Google Gemini AI
 4. Return the AI-generated summary
 
-
 ## Resetting n8n for Testing
 
 To completely reset n8n and test fresh installation:
@@ -94,7 +125,6 @@ After reset, you need to:
 2. Connect credential to the workflow
 3. Activate the workflow
 
-
 ## Troubleshooting
 
 **Workflow not importing:**
@@ -113,3 +143,5 @@ After reset, you need to:
 
 - Credentials must be created manually in n8n UI
 - Cannot be auto-seeded due to security reasons
+
+
