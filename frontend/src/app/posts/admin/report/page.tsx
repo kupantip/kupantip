@@ -54,7 +54,7 @@ export default function AdminPage() {
 
 	return (
 		<div data-aos="fade-up" className="space-y-4 bg-gray-100 p-5 rounded-lg">
-			<div className="grid grid-cols-4 gap-4">
+			<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 				<ReportCard
 					num={statsData?.users.new_today || 0}
 					iCon={<UserRoundPlus />}
@@ -84,7 +84,7 @@ export default function AdminPage() {
 					date={statsData?.reports.last_updated || ''}
 				/>
 			</div>
-			<div className="grid grid-cols-2 gap-2">
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-2">
 				{!isLoadingDailyPosts && dailyPostsData && (
 					<AdminLineChart
 						title="Daily Post Activity"

@@ -21,9 +21,10 @@ A brief description of what KU Pantip is (e.g., "A community forum for KU studen
 ### **Key Features**
 
 - **Community Boards:** Posting and commenting.  
-- **AI Summary:** Integration with n8n for ai summary tasks.  
+- **AI Summary:** Integration with n8n and Google Gemini for AI post summarization.  
 - **User Authentication:** Secure login and profile management.  
-- **Admin System**: Monitor system and manage report  
+- **Admin System:** Monitor system and manage reports.  
+- **Real-time Chat:** WebSocket-based messaging system.  
 
 ## **🛠 Tech Stack**
 
@@ -31,7 +32,8 @@ A brief description of what KU Pantip is (e.g., "A community forum for KU studen
 | ----- | ----- |
 | **Frontend** | React / Next.js |
 | **Backend** | Node.js / Express |
-| **Database** | MIcrosoft SQL Server |
+| **Database** | Microsoft SQL Server |
+| **Workflow Automation** | n8n + Google Gemini AI |
 | **Automation** | Github Action |
 | **DevOps** | Docker, Docker Compose, Github Action |
 
@@ -91,6 +93,7 @@ cp .env.example .env
 |              | NEXTAUTH_URL             | [http://localhost](http://localhost)                                                                                                                  |
 |              | BACKEND_URL              | [http://backend:8000/api/v1](http://backend:8000/api/v1)                                                                                              |
 |              | NEXT_PUBLIC_BACKEND_HOST | [http://localhost:8000/api/v1](http://localhost:8000/api/v1)                                                                                          |
+| **n8n**      | N8N_HOST                 | [http://localhost:5678](http://localhost:5678)                                                                                               |
 
 ### **Installation & Running**
 
@@ -102,6 +105,34 @@ Run the entire stack (Db, Backend, Frontend, n8n) in containers.
 ```sh
 docker compose up -d --build
 ```
+
+#### **n8n Workflow Setup**
+
+After the containers are running, you need to configure n8n for AI summarization features:
+
+1. **Import the workflow** (one-time setup):
+   ```bash
+   docker exec kupantip-n8n n8n import:workflow --input=/home/node/workflows/ai-summary-workflow.json
+   ```
+
+2. **Configure Google Gemini API:**
+   - Generate **Google Gemini API** from https://aistudio.google.com/app/api-keys
+   - Open n8n at http://localhost:5678
+   - Go to **Credentials** settings
+   - Create a new **Google Gemini(PaLM) Api** credential
+   - Add your Gemini API key
+
+3. **Activate the workflow:**
+   - Open the imported "AI Post Summary" workflow
+   - Connect the Google Gemini Chat Model node to your credential
+   - Click "Activate" to enable the workflow
+
+4. **Test the AI summary feature:**
+   ```bash
+   GET http://localhost:8000/api/v1/n8n/post/:post_id
+   ```
+
+> 📖 **Detailed n8n setup guide:** See [n8n/workflows/README.md](n8n/workflows/README.md) for troubleshooting and advanced configuration.
 
 ## **📚 Resources**
 

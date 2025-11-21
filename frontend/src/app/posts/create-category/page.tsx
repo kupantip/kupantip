@@ -130,19 +130,25 @@ export default function CreateCategoryPage() {
 						maxLength={100}
 					/>
 					<div className="flex items-center gap-3">
-						<input
-							type="color"
-							value={formData.color_hex}
-							onChange={(e) =>
-								setFormData({
-									...formData,
-									color_hex: e.target.value,
-								})
-							}
-							className="w-8 h-8 p-0 border-2 border-gray-200 rounded-full cursor-pointer"
+						<div
+							className="relative w-8 h-8 border-2 border-gray-200 rounded-full overflow-hidden cursor-pointer shadow-sm"
+							style={{ backgroundColor: formData.color_hex }}
 							title="Pick a color for this category"
-							required
-						/>
+						>
+							<input
+								type="color"
+								value={formData.color_hex}
+								onChange={(e) =>
+									setFormData({
+										...formData,
+										color_hex: e.target.value,
+									})
+								}
+								className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+								required
+							/>
+						</div>
+
 						<span className="text-gray-700 font-medium">
 							Pick a color
 						</span>

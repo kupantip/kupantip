@@ -542,38 +542,38 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	};
 
 	return (
-		<div className="h-full px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
+		<div className="h-full px-4 md:px-10 py-4 md:py-8 space-y-4 md:space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
 			<div className="relative w-full max-w-4xl mx-auto">
 				{/* Back Button */}
 				<Button
 					variant="ghost"
 					onClick={handleBackButton}
-					className="mb-5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer"
+					className="mb-3 md:mb-5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 pl-0 md:pl-4 cursor-pointer"
 				>
 					<ArrowLeft className="w-4 h-4 mr-2" />
 					{result ? `Back to ${result}` : 'Back to Posts'}
 				</Button>
 				{/* Post Card */}
-				<div className="w-full bg-white dark:bg-gray-9 rounded-lg shadow-md p-6 space-y-4">
+				<div className="w-full bg-white dark:bg-gray-9 rounded-lg shadow-md p-4 md:p-6 space-y-4">
 					{/* Header */}
-					<div className="flex items-center gap-3">
+					<div className="flex items-start md:items-center gap-3">
 						<Link href={`/profile/${post.author_id}`}>
-							<Avatar className="w-10 h-10 border-3 border-emerald-600 dark:border-emerald-700">
+							<Avatar className="w-8 h-8 md:w-10 md:h-10 border-3 border-emerald-600 dark:border-emerald-700">
 								<AvatarImage
 									src={`https://api.dicebear.com/7.x/initials/svg?seed=${post.author_name}`}
 									className="transition duration-200 hover:brightness-75"
 								/>
-								<AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-xl">
+								<AvatarFallback className="bg-emerald-100 text-emerald-700 font-bold text-lg md:text-xl">
 									{post.author_name.charAt(0).toUpperCase()}
 								</AvatarFallback>
 							</Avatar>
 						</Link>
 
 						<div className="flex-1 flex flex-col text-sm">
-							<span className="font-semibold">
+							<span className="font-semibold text-base md:text-sm">
 								{post.author_name}
 							</span>
-							<span className="text-gray-400">
+							<span className="text-xs md:text-sm text-gray-400">
 								{formatTime(post.minutes_since_posted)}
 							</span>
 						</div>

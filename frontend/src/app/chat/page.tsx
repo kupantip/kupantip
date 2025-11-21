@@ -17,7 +17,8 @@ import MessageInput from '@/components/chat/MessageInput';
 import NewChatDialog from '@/components/chat/NewChatDialog';
 import EditRoomNameDialog from '@/components/chat/EditRoomNameDialog';
 import GroupMembersDialog from '@/components/chat/GroupMembersDialog';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function ChatPage() {
 	const { data: session, status } = useSession();
@@ -192,7 +193,7 @@ export default function ChatPage() {
 	return (
 		<div className="flex h-[calc(100vh-4rem)] bg-gray-100">
 			{/* Sidebar - Chat Room List */}
-			<div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+			<div className={`${selectedRoom ? 'hidden md:flex' : 'flex'} w-full md:w-80 bg-white border-r border-gray-200 flex-col`}>
 				<div className="p-4 border-b border-gray-200">
 					<h1 className="text-xl font-bold text-gray-900 mb-3">
 						Messages
@@ -221,34 +222,44 @@ export default function ChatPage() {
 			</div>
 
 			{/* Main Chat Area */}
-			<div className="flex-1 flex flex-col">
+			<div className={`${!selectedRoom ? 'hidden md:flex' : 'flex'} flex-1 flex-col w-full`}>
 				{selectedRoom ? (
 					<>
 						{/* Chat Header */}
 						<div className="bg-white border-b border-gray-200 p-4">
 							<div className="flex items-center justify-between">
-								<div className="flex-1">
-									<h2 className="text-lg font-semibold text-gray-900">
-										{selectedRoom.name ||
-											selectedRoom.participants
-												?.filter(
-													(p) =>
-														p.user_id !==
-														session.user.user_id
-												)
-												.map((p) => p.display_name)
-												.join(', ') ||
-											'Chat'}
-									</h2>
-									{typingUsers.size > 0 && (
-										<p className="text-sm text-gray-600 mt-1">
-											{Array.from(typingUsers).join(', ')}{' '}
-											{typingUsers.size === 1
-												? 'is'
-												: 'are'}{' '}
-											typing...
-										</p>
-									)}
+								<div className="flex items-center gap-3 flex-1">
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="md:hidden -ml-2"
+                                        onClick={() => setSelectedRoom(null)}
+                                    >
+                                        <ArrowLeft className="h-5 w-5" />
+                                    </Button>
+									<div className='flex-1'>
+                                        <h2 className="text-lg font-semibold text-gray-900 line-clamp-1">
+                                            {selectedRoom.name ||
+                                                selectedRoom.participants
+                                                    ?.filter(
+                                                        (p) =>
+                                                            p.user_id !==
+                                                            session.user.user_id
+                                                    )
+                                                    .map((p) => p.display_name)
+                                                    .join(', ') ||
+                                                'Chat'}
+                                        </h2>
+                                        {typingUsers.size > 0 && (
+                                            <p className="text-sm text-gray-600 mt-1">
+                                                {Array.from(typingUsers).join(', ')}{' '}
+                                                {typingUsers.size === 1
+                                                    ? 'is'
+                                                    : 'are'}{' '}
+                                                typing...
+                                            </p>
+                                        )}
+                                    </div>
 								</div>
 								<div className="flex items-center gap-2">
 									{selectedRoom.is_group &&
