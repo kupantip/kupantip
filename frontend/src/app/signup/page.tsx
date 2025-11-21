@@ -11,6 +11,7 @@ import { SquarePen } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { fetchSignupUser } from '@/services/user/auth';
 import { toast } from 'sonner';
+import Link from 'next/link';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -358,7 +359,7 @@ export default function SignUp() {
 								</div>
 							</div>
 						</div>
-						<div className='max-w-md flex mt-10 ml-auto mr-auto'>
+						<div className='max-w-md flex mt-12 ml-auto mr-auto'>
 							<Button
 								type='submit' 
 								className={`bg-emerald-600 hover:bg-emerald-700 w-full cursor-pointer rounded-full py-6 text-lg ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
@@ -369,6 +370,15 @@ export default function SignUp() {
 						</div>
 					</form>
 				</div>
+				<p className="text-lg text-center mt-4">
+					Already have an account?{' '}
+					<Link
+						href="/login"
+						className="text-blue-500 hover:underline "
+					>
+						Log In
+					</Link>
+				</p>
 			</div>
 		</div>
 	);
