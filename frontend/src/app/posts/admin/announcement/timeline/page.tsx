@@ -41,7 +41,7 @@ const formatDateTime = (dateString: string) => {
 const PIXELS_PER_DAY = 60;
 const VIEW_BUFFER_DAYS = 2;
 
-export default function(){
+export default function AnnouncementTimeline(){
     const { data: announcements, isLoading, error } = useAnnouncement();
     const [isExpanded, setIsExpanded] = useState(true);
 
