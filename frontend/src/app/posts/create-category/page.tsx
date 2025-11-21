@@ -132,7 +132,7 @@ export default function CreateCategoryPage() {
 					<div className="flex items-center gap-3">
 						<div
 							className="relative w-8 h-8 border-2 border-gray-200 rounded-full overflow-hidden cursor-pointer shadow-sm"
-							style={{ backgroundColor: formData.color_hex }} // แสดงสีที่เลือกตรงนี้
+							style={{ backgroundColor: formData.color_hex }}
 							title="Pick a color for this category"
 						>
 							<input
