@@ -73,6 +73,10 @@ export default function MyProfilePage() {
 		}
 	};
 
+	const { data: userStats, isLoading: isLoadingStats } = useUserStats(userId);
+	const { data: post, isLoading: isLoadingPost } = usePostByUserId(userId);
+	const firstThreePost = post?.slice(0, 3) || [];
+
 	useEffect(() => {
 		AOS.init({
 			duration: 500,
@@ -86,10 +90,6 @@ export default function MyProfilePage() {
 			router.push('/login');
 		}
 	}, [status, router]);
-
-	const { data: userStats, isLoading: isLoadingStats } = useUserStats(userId);
-	const { data: post, isLoading: isLoadingPost } = usePostByUserId(userId);
-	const firstThreePost = post?.slice(0, 3) || [];
 
 	if (status === 'unauthenticated') {
 		return null; // Will redirect in useEffect
@@ -424,7 +424,7 @@ export default function MyProfilePage() {
 													<Badge
 														key={idx}
 														variant="secondary"
-														className='bg-emerald-100 text-emerald-600'
+														className="bg-emerald-100 text-emerald-600"
 													>
 														{interest.trim()}
 													</Badge>
