@@ -139,35 +139,6 @@ export default function ReportModal({
 					</form>
 				</DialogContent>
 			</Dialog>
-
-			<AlertDialog open={status === 'unauthenticated'}>
-                <AlertDialogContent className={isSidebarOpen ? 'ml-32' : 'ml-6'}>
-                    <AlertDialogHeader>
-                        <div className="flex gap-2 text-red-500 items-center">
-                            <LogIn className="w-5 h-5" />
-                            <AlertDialogTitle>Authentication Required</AlertDialogTitle>
-                        </div>
-                        <AlertDialogDescription>
-                            You need to act as a member to create a new post. <br/>
-                            Please log in to continue.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel 
-                             onClick={() => router.back()}
-                             className="cursor-pointer"
-                        >
-                            Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction 
-                             onClick={() => router.push('/signup')}
-                             className="bg-emerald-700 hover:bg-emerald-800 cursor-pointer"
-                        >
-                            Log in / Sign up
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
 		</div>
 
 	);

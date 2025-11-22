@@ -215,7 +215,7 @@ export default function CreateCategoryPage() {
                             <AlertDialogTitle>Authentication Required</AlertDialogTitle>
                         </div>
                         <AlertDialogDescription>
-                            You need to act as a member to create a new post. <br/>
+                            You need to act as a member to request a category. <br/>
                             Please log in to continue.
                         </AlertDialogDescription>
                     </AlertDialogHeader>

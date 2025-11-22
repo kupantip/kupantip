@@ -31,9 +31,7 @@ import {
 } from '@/services/post/vote';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
-import { Trash2 } from 'lucide-react';
-import { Pen } from 'lucide-react';
-import { Flag } from 'lucide-react';
+import { Trash2, Pen, Flag, LogIn } from 'lucide-react';
 import ReportModal from './ReportModal';
 import {
 	AlertDialog,
@@ -50,6 +48,7 @@ import { useSidebar } from '../ui/sidebar';
 import { Button } from '../ui/button';
 import Link from 'next/link';
 import { getAISummary } from '@/services/n8n/aiSummary';
+import { stat } from 'fs';
 
 type PostDetailProps = {
 	post: t.Post;
@@ -86,46 +85,59 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 
 	const menuRef = useRef<HTMLDivElement>(null);
 
-	const { data: session } = useSession();
+	const { data: session, status } = useSession();
 	const currentUserId = session?.user.user_id;
 
 	const [reportingComment, setReportingComment] = useState<t.Comment | null>(
 		null
 	);
 
+	const router = useRouter();
+	const [isAuthenAlert, setIsAuthenAlert] = useState(false);
+
 	const handleUpVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Upvote on', comment.id);
-		try {
-			if (!comment.liked_by_requesting_user) {
-				await fetchVoteComment({ commentId: comment.id, value: 1 });
-				console.log('Upvote Comment Success');
-			} else {
-				await fetchDeletevoteComment(comment.id);
-				console.log('Delete Upvote Success');
+
+		if (status === 'unauthenticated') {
+			setIsAuthenAlert(true);
+		} else {
+			try {
+				if (!comment.liked_by_requesting_user) {
+					await fetchVoteComment({ commentId: comment.id, value: 1 });
+					console.log('Upvote Comment Success');
+				} else {
+					await fetchDeletevoteComment(comment.id);
+					console.log('Delete Upvote Success');
+				}
+			} catch (err: unknown) {
+				console.error('Upvote failed:', err);
+			} finally {
+				refreshComments();
 			}
-		} catch (err: unknown) {
-			console.error('Upvote failed:', err);
-		} finally {
-			refreshComments();
 		}
 	};
 
 	const handleDownVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Downvote on', comment.id);
-		try {
-			if (!comment.disliked_by_requesting_user) {
-				await fetchVoteComment({ commentId: comment.id, value: -1 });
-				console.log('Downvote Comment Success');
-			} else {
-				await fetchDeletevoteComment(comment.id);
-				console.log('Delete Downvote Success');
+
+		if (status === 'unauthenticated') {
+			setIsAuthenAlert(true);
+		} else {
+			try {
+				if (!comment.disliked_by_requesting_user) {
+					await fetchVoteComment({ commentId: comment.id, value: -1 });
+					console.log('Downvote Comment Success');
+				} else {
+					await fetchDeletevoteComment(comment.id);
+					console.log('Delete Downvote Success');
+				}
+			} catch (err: unknown) {
+				console.error('Downvote failed:', err);
+			} finally {
+				refreshComments();
 			}
-		} catch (err: unknown) {
-			console.error('Downvote failed:', err);
-		} finally {
-			refreshComments();
 		}
 	};
 
@@ -152,8 +164,14 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 
 	const handleReportComment = async (e: React.MouseEvent) => {
 		e.stopPropagation();
-		console.log('Report Comment on', comment.id);
 		setMenuOpen(false);
+
+		if (status === 'unauthenticated') {
+			setIsAuthenAlert(true);
+			return;
+		}
+		
+		console.log('Report Comment on', comment.id);
 		setReportingComment(comment);
 		setShowReportCommentDialog(true);
 	};
@@ -394,6 +412,33 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 					onOpenChange={setShowReportCommentDialog}
 				></ReportModal>
 			)}
+			<AlertDialog open={isAuthenAlert} onOpenChange={setIsAuthenAlert}>
+                <AlertDialogContent className={isSidebarOpen ? 'ml-32' : 'ml-6'}>
+                    <AlertDialogHeader>
+                        <div className="flex gap-2 text-red-500 items-center">
+                            <LogIn className="w-5 h-5" />
+                            <AlertDialogTitle>Authentication Required</AlertDialogTitle>
+                        </div>
+                        <AlertDialogDescription>
+                            You need to act as a member to take an action on comment. <br/>
+                            Please log in to continue.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel 
+                             className="cursor-pointer"
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction 
+                             onClick={() => router.push('/signup')}
+                             className="bg-emerald-700 hover:bg-emerald-800 cursor-pointer"
+                        >
+                            Log in / Sign up
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 		</div>
 	);
 };
@@ -406,10 +451,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const result = searchParams.get('r');
 	const [copied, setCopied] = useState(false);
 
-	const { data: session } = useSession();
-	// const tokenPayload = session?.accessToken
-	// 	? jwtDecode<User>(session.accessToken)
-	// 	: null;
+	const { data: session, status } = useSession();
 	const currentUserId = session?.user.user_id;
 
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -422,6 +464,8 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const [isLoadingAI, setIsLoadingAI] = useState(false);
 	const [showAISummary, setShowAISummary] = useState(false);
 
+	const [isAuthenAlert, setIsAuthenAlert] = useState(false);
+
 	const {
 		data: commentsData,
 		isLoading: loadingComments,
@@ -431,34 +475,44 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const handleUpVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Upvote on');
-		try {
-			if (!post.liked_by_requesting_user) {
-				await fetchUpvotePost(post.id);
-				console.log('Upvote Post Success');
-			} else {
-				await fetchDeletevotePost(post.id);
-				console.log('Delete Upvote Success');
+		if (status === 'unauthenticated') {
+			setIsAuthenAlert(true);
+		} else {
+			try {
+				if (!post.liked_by_requesting_user) {
+					await fetchUpvotePost(post.id);
+					console.log('Upvote Post Success');
+				} else {
+					await fetchDeletevotePost(post.id);
+					console.log('Delete Upvote Success');
+				}
+			} catch (err) {
+				console.log(err);
+			} finally {
+				refresh();
 			}
-		} catch {
-		} finally {
-			refresh();
 		}
 	};
 
 	const handleDownVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Downvote on');
-		try {
-			if (!post.disliked_by_requesting_user) {
-				await fetchDownvotePost(post.id);
-				console.log('Downvote Post Success');
-			} else {
-				await fetchDeletevotePost(post.id);
-				console.log('Delete Downvote Success');
+		if (status === 'unauthenticated') {
+			setIsAuthenAlert(true)
+		} else {
+			try {
+				if (!post.disliked_by_requesting_user) {
+					await fetchDownvotePost(post.id);
+					console.log('Downvote Post Success');
+				} else {
+					await fetchDeletevotePost(post.id);
+					console.log('Delete Downvote Success');
+				}
+			} catch (err) {
+				console.log(err);
+			} finally {
+				refresh();
 			}
-		} catch {
-		} finally {
-			refresh();
 		}
 	};
 
@@ -485,8 +539,14 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 
 	const handleReportPost = async (e: React.MouseEvent) => {
 		e.stopPropagation();
-		console.log('Report on', post.id);
 		setMenuOpen(false);
+
+		if (status === 'unauthenticated') {
+			setIsAuthenAlert(true);
+			return;
+		}
+
+		console.log('Report on', post.id);
 		setReportingPost(post);
 		setShowReportPostDialog(true);
 	};
@@ -897,6 +957,34 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			<AlertDialog open={isAuthenAlert} onOpenChange={setIsAuthenAlert}>
+                <AlertDialogContent className={isSidebarOpen ? 'ml-32' : 'ml-6'}>
+                    <AlertDialogHeader>
+                        <div className="flex gap-2 text-red-500 items-center">
+                            <LogIn className="w-5 h-5" />
+                            <AlertDialogTitle>Authentication Required</AlertDialogTitle>
+                        </div>
+                        <AlertDialogDescription>
+                            You need to act as a member to take an action on post. <br/>
+                            Please log in to continue.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel 
+                             className="cursor-pointer"
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction 
+                             onClick={() => router.push('/signup')}
+                             className="bg-emerald-700 hover:bg-emerald-800 cursor-pointer"
+                        >
+                            Log in / Sign up
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 		</div>
 	);
 }
