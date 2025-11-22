@@ -18,9 +18,9 @@ type SignupData = {
 	handle: string;
 	display_name: string;
 	password: string;
-	bio?: string,
-	interests?: string,
-	skills?: string
+	bio?: string;
+	interests?: string;
+	skills?: string;
 };
 
 const instance = axios.create({
@@ -47,5 +47,20 @@ export async function fetchSignupUser(data: SignupData) {
 		if (axios.isAxiosError(err)) {
 			throw err.response?.data;
 		}
+	}
+}
+
+export async function fetchProfile(token: string) {
+	try {
+		const baseURL = process.env.BACKEND_URL || '';
+		const res = await axios.get(baseURL + '/user/profile', {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+		return res.data;
+	} catch (error) {
+		console.log(error);
+		throw error;
 	}
 }

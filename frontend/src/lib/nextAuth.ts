@@ -1,6 +1,6 @@
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { login } from '@/services/user/auth';
+import { fetchProfile, login } from '@/services/user/auth';
 import { cookies } from 'next/headers';
 import axios from 'axios';
 
@@ -65,17 +65,9 @@ export const authOptions: NextAuthOptions = {
 		},
 		async session({ session, token }) {
 			session.accessToken = token.accessToken;
+			const data = await fetchProfile(token?.accessToken || '');
 
-			const res = await axios.get(
-				'http://localhost:8000/api/v1/user/profile',
-				{
-					headers: {
-						Authorization: `Bearer ${token.accessToken}`,
-					},
-				}
-			);
-
-			session.user = res.data.user;
+			session.user = data.user;
 
 			return session;
 		},
