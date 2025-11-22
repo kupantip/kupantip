@@ -7,12 +7,8 @@ services:
       MSSQL_SA_PASSWORD: "${SQL_PASSWORD}"
     ports:
       - "1433:1433"
-    volumes:
-      - ./mssql/data:/var/opt/mssql/data
-      - ./mssql/log:/var/opt/mssql/log
-      - ./mssql/secrets:/var/opt/mssql/secrets
     env_file:
-      - path: .env
+      - path: .ci.env
         required: true
     healthcheck:
       test:
@@ -47,13 +43,13 @@ services:
       db:
         condition: service_healthy
     env_file:
-      - path: .env
+      - path: .ci.env
         required: true
 
     command: >
       sh -c "
         echo '--- [Backend] Database check complete. Running Prisma migrations...';
-        npm run db:migrate && npm start
+        npm run db:migrate && npx prisma db seed && npm start
       "
 
   frontend:
@@ -66,7 +62,7 @@ services:
     environment:
       - PORT=3000
     env_file:
-      - path: .env
+      - path: .ci.env
         required: true
     ports:
       - "3000:3000"
