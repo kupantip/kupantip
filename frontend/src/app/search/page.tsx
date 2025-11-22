@@ -7,15 +7,16 @@ import { Post, Comment, Category } from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
 import { 
     PersonStanding, 
-    BriefcaseBusiness,
     House,
+    PartyPopper,
+    FileUser,
 } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Circle } from 'lucide-react';
 
 const formatTime = (minutes: number) => {
 	if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
@@ -30,7 +31,9 @@ const formatTime = (minutes: number) => {
 
 const categoryIcons: Record<string, React.ReactNode> = {
     "Community": <PersonStanding/>,
-    "Recruitment": <BriefcaseBusiness/>,
+    "Recruit": <FileUser/>,
+    "Events": <PartyPopper/>,
+    "General": <House/>
 };
 
 function SearchResultCard({ item, type }: { item: Post | Comment | User | Category, type: 'post' | 'comment' | 'user' | 'category'}) {
@@ -80,7 +83,7 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User | Catego
     }
 
     return (
-        <Link href={href} className="">
+        <Link href={href}>
             <Card className="hover:bg-gray-100 py-4">
                 <CardHeader>
                         {type === 'user' && (
@@ -193,9 +196,22 @@ function SearchResultCard({ item, type }: { item: Post | Comment | User | Catego
                         )}
                         {type === 'category' && (
                             <div className="flex mt-1 gap-3">
-                                {categoryIcons[(item as Category).label] ?? (
-                                    <House/>
+
+                                {(item as Category).color_hex ? (
+                                    <Circle
+                                        className="ml-1 mt-1 h-5 w-5 shrink-0 rounded-full text-white"
+                                        style={{
+                                            backgroundColor: (item as Category).color_hex ?? undefined,
+                                        }}
+                                    />
+                                ) : (
+                                    <div>
+                                        {categoryIcons[(item as Category).label] ?? (
+                                            <House/>
+                                        )}
+                                    </div>
                                 )}
+
                                 <span className="font-semibold">
                                     {title}
                                 </span>
@@ -295,7 +311,7 @@ function SearchPageComponent() {
         (data?.categories?.length || 0);
 
     return (
-        <div className="w-full max-w-5xl mx-auto">
+        <div className="w-full max-w-5xl mx-auto mt-10">
             <Tabs defaultValue="all" className="w-full">
                 <TabsList className="flex w-full overflow-x-auto md:grid md:grid-cols-5 no-scrollbar">
                     <TabsTrigger value="all" className="flex-shrink-0">All ({(total || 0)})</TabsTrigger>

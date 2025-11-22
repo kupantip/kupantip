@@ -4,17 +4,20 @@ import { Loader2 } from 'lucide-react';
 
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search } from "lucide-react"
+import { Search, Circle } from "lucide-react"
 import { SearchResponse } from '@/types/dashboard/user';
 import { 
     PersonStanding, 
-    BriefcaseBusiness,
     House,
+    PartyPopper,
+    FileUser,
 } from 'lucide-react';
 
 const categoryIcons: Record<string, React.ReactNode> = {
-    "Community": <PersonStanding/>,
-    "Recruitment": <BriefcaseBusiness/>,
+    "Community": <PersonStanding className='h-5 w-5 shrink-0'/>,
+    "Recruit": <FileUser className='h-5 w-5 shrink-0'/>,
+    "Events": <PartyPopper className='h-5 w-5 shrink-0'/>,
+    "General": <House className='h-5 w-5 shrink-0'/>
 };
 
 export default function InstantSearchDropdown ({
@@ -127,8 +130,18 @@ export default function InstantSearchDropdown ({
                                             onClick={onResultClick}
                                             className="flex items-start gap-3 w-full text-left p-3 rounded-md hover:bg-gray-100"
                                         >	
-                                            {categoryIcons[category.label] ?? (
-                                                <House/>
+                                            {category.color_hex ? (
+                                                <Circle
+                                                    className="mt-1 h-5 w-5 shrink-0 rounded-full text-white"
+                                                    style={{
+                                                        backgroundColor:
+                                                            category.color_hex,
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className='mt-1'>
+                                                    {categoryIcons[category.label] ?? <House />}
+                                                </div>
                                             )}
 											<div>
 												<p className="font-medium text-black">{category.label}</p>
