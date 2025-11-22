@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
 import { fetchCreatePost } from '@/services/post/post';
 import { useCategories } from '@/services/post/category';
@@ -395,7 +394,6 @@ export default function CreatePostPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
 		</div>
 	);
 }

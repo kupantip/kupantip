@@ -1,5 +1,6 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import { useCreateRequestedCategory } from '@/services/admin/category';
 import { motion } from 'framer-motion';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, LogIn } from 'lucide-react';
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -16,9 +17,14 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
+	AlertDialogAction
 } from '@/components/ui/alert-dialog';
+import { useSidebar } from '@/components/ui/sidebar';
 
 export default function CreateCategoryPage() {
+	const { status } = useSession();
+	const { open: isSidebarOpen } = useSidebar();
+
 	const [formData, setFormData] = useState({
 		label: '',
 		color_hex: '#10b981', // default to emerald
@@ -200,6 +206,35 @@ export default function CreateCategoryPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			<AlertDialog open={status === 'unauthenticated'}>
+                <AlertDialogContent className={isSidebarOpen ? 'ml-32' : 'ml-6'}>
+                    <AlertDialogHeader>
+                        <div className="flex gap-2 text-red-500 items-center">
+                            <LogIn className="w-5 h-5" />
+                            <AlertDialogTitle>Authentication Required</AlertDialogTitle>
+                        </div>
+                        <AlertDialogDescription>
+                            You need to act as a member to create a new post. <br/>
+                            Please log in to continue.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel 
+                             onClick={() => router.back()}
+                             className="cursor-pointer"
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction 
+                             onClick={() => router.push('/signup')}
+                             className="bg-emerald-700 hover:bg-emerald-800 cursor-pointer"
+                        >
+                            Log in / Sign up
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 		</div>
 	);
 }
