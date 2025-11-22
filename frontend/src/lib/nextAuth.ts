@@ -66,16 +66,6 @@ export const authOptions: NextAuthOptions = {
 		async session({ session, token }) {
 			session.accessToken = token.accessToken;
 
-			// Set token in httpOnly cookie
-			const cookieStore = await cookies();
-			cookieStore.set('token', token.accessToken || '', {
-				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'lax',
-				maxAge: 60 * 60 * 24 * 7, // 7 days
-				path: '/',
-			});
-
 			const res = await axios.get(
 				'http://localhost:8000/api/v1/user/profile',
 				{

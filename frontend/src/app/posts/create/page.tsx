@@ -19,7 +19,6 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import Image from 'next/image';
-import { Upload } from 'lucide-react';
 import { X } from 'lucide-react';
 import {
 	AlertDialog,
@@ -31,7 +30,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogAction
 } from '@/components/ui/alert-dialog';
-import { AlertTriangle, LogIn } from 'lucide-react';
+import { AlertTriangle, LogIn, Upload } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 
 export default function CreatePostPage() {

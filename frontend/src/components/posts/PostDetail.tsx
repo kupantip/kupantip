@@ -16,7 +16,6 @@ import {
 	Share2,
 } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
-import { User } from '@/types/dashboard/user';
 import { useCommentsByPostId } from '@/services/comment/comment';
 import CommentBox from './CommentBox';
 import { fetchDeletePost } from '@/services/post/post';
@@ -30,7 +29,6 @@ import {
 	fetchUpvotePost,
 	fetchDownvotePost,
 } from '@/services/post/vote';
-import { jwtDecode } from 'jwt-decode';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { Trash2 } from 'lucide-react';
@@ -89,10 +87,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 	const menuRef = useRef<HTMLDivElement>(null);
 
 	const { data: session } = useSession();
-	const tokenPayload = session?.accessToken
-		? jwtDecode<User>(session.accessToken)
-		: null;
-	const currentUserId = tokenPayload?.user_id;
+	const currentUserId = session?.user.user_id;
 
 	const [reportingComment, setReportingComment] = useState<t.Comment | null>(
 		null
@@ -412,10 +407,10 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const [copied, setCopied] = useState(false);
 
 	const { data: session } = useSession();
-	const tokenPayload = session?.accessToken
-		? jwtDecode<User>(session.accessToken)
-		: null;
-	const currentUserId = tokenPayload?.user_id;
+	// const tokenPayload = session?.accessToken
+	// 	? jwtDecode<User>(session.accessToken)
+	// 	: null;
+	const currentUserId = session?.user.user_id;
 
 	const [menuOpen, setMenuOpen] = useState(false);
 	const router = useRouter();
