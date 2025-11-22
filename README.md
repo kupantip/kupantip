@@ -160,6 +160,9 @@ After the containers are running, you need to configure n8n for AI summarization
   * [Iteration 4](https://youtu.be/Vjn3ohDk0OU)
   * [Iteration 5](https://youtu.be/DHXBX4fWi0A)
 
+* **Video presentation:** 
+  * [Video for Software Demonstration](https://youtu.be/BIQ5QRSTGPQ?si=SRKy3f1EpfbxrDSL)
+  * [Video for Software Development](https://youtu.be/BEBIV-jrzAQ?si=QO98chq0NkJL-SJO)
 
 ## **👥 Contributors**
 
