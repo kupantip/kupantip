@@ -754,7 +754,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					<div className="w-full bg-gray-200 rounded-xl overflow-hidden border border-gray-800 my-4 relative group">
 						<Carousel className="w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] [&>div]:h-full">
 							<CarouselContent className="h-full ml-0">
-								{post.attachments.map((attachment: any, index: number) => (
+								{post.attachments.map((attachment, index: number) => (
 									<CarouselItem 
 										key={attachment.id} 
 										className="relative h-full w-full flex items-center justify-center p-0 pl-0"
