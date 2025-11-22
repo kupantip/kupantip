@@ -76,14 +76,14 @@ export const authOptions: NextAuthOptions = {
 				path: '/',
 			});
 
-			const res = await axios.get(
-				'http://localhost:8000/api/v1/user/profile',
-				{
-					headers: {
-						Authorization: `Bearer ${token.accessToken}`,
-					},
-				}
-			);
+			const backendUrl =
+				process.env.BACKEND_URL || 'http://localhost:8000';
+			const url = `${backendUrl}/user/profile`;
+			const res = await axios.get(url, {
+				headers: {
+					Authorization: `Bearer ${token.accessToken}`,
+				},
+			});
 
 			session.user = res.data.user;
 

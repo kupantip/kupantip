@@ -17,10 +17,9 @@ function customMiddleware(request: NextRequest) {
 			);
 		}
 
-		const path = request.nextUrl.pathname.replace('/api/proxy', '/api/v1');
+		const path = request.nextUrl.pathname.replace('/api/proxy', '');
 
-		const newUrl = new URL(path, backendUrl);
-		newUrl.search = request.nextUrl.search;
+		const newUrl = backendUrl + path;
 
 		return NextResponse.rewrite(newUrl);
 	}
