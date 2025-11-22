@@ -18,17 +18,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useSidebar } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import {
-	AlertDialog,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogAction
-} from '@/components/ui/alert-dialog';
-import { AlertTriangle, LogIn, Upload } from 'lucide-react';
 
 interface ReportModalProps {
 	targetType: 'post' | 'comment';

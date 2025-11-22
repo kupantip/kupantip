@@ -207,34 +207,38 @@ export default function CreateCategoryPage() {
 				</AlertDialogContent>
 			</AlertDialog>
 
+
 			<AlertDialog open={status === 'unauthenticated'}>
-                <AlertDialogContent className={isSidebarOpen ? 'ml-32' : 'ml-6'}>
-                    <AlertDialogHeader>
-                        <div className="flex gap-2 text-red-500 items-center">
-                            <LogIn className="w-5 h-5" />
-                            <AlertDialogTitle>Authentication Required</AlertDialogTitle>
-                        </div>
-                        <AlertDialogDescription>
-                            You need to act as a member to request a category. <br/>
-                            Please log in to continue.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel 
-                             onClick={() => router.back()}
-                             className="cursor-pointer"
-                        >
-                            Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction 
-                             onClick={() => router.push('/signup')}
-                             className="bg-emerald-700 hover:bg-emerald-800 cursor-pointer"
-                        >
-                            Log in / Sign up
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+				<AlertDialogContent 
+					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-sm translate-x-[-50%] translate-y-[-50%] 
+					gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900 md:w-full"
+				>
+					<AlertDialogHeader>
+						<div className="flex gap-2 text-red-500 items-center">
+							<LogIn className="w-5 h-5" />
+							<AlertDialogTitle>Authentication Required</AlertDialogTitle>
+						</div>
+						<AlertDialogDescription>
+							You need to act as a member to request a category. <br/>
+							Please log in to continue.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter className="flex flex-row items-center justify-end gap-3 mt-2 sm:mt-0">
+						<AlertDialogCancel
+							onClick={() => router.back()} 
+							className="mt-0 flex-1 sm:flex-none cursor-pointer border-gray-200 hover:bg-gray-100"
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction 
+							onClick={() => router.push('/signup')}
+							className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer border-0"
+						>
+							Log in / Sign up
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

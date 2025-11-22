@@ -364,7 +364,7 @@ export default function EditPostPage() {
 			</div>
 			<AlertDialog open={!!banInfo} onOpenChange={() => setBanInfo}>
 				<AlertDialogContent
-					className={isSidebarOpen ? 'ml-32' : 'ml-6'}
+					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900"
 				>
 					<AlertDialogHeader>
 						<div className="flex gap-2 text-red-500 items-center">

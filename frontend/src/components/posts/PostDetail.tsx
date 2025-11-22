@@ -351,7 +351,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 
 					<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
 						<AlertDialogContent
-							className={isSidebarOpen ? 'ml-32' : 'ml-6'}
+							className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900"
 						>
 							<AlertDialogHeader>
 								<AlertDialogTitle>
@@ -413,32 +413,35 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 				></ReportModal>
 			)}
 			<AlertDialog open={isAuthenAlert} onOpenChange={setIsAuthenAlert}>
-                <AlertDialogContent className={isSidebarOpen ? 'ml-32' : 'ml-6'}>
-                    <AlertDialogHeader>
-                        <div className="flex gap-2 text-red-500 items-center">
-                            <LogIn className="w-5 h-5" />
-                            <AlertDialogTitle>Authentication Required</AlertDialogTitle>
-                        </div>
-                        <AlertDialogDescription>
-                            You need to act as a member to take an action on comment. <br/>
-                            Please log in to continue.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel 
-                             className="cursor-pointer"
-                        >
-                            Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction 
-                             onClick={() => router.push('/signup')}
-                             className="bg-emerald-700 hover:bg-emerald-800 cursor-pointer"
-                        >
-                            Log in / Sign up
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+				<AlertDialogContent 
+					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-sm translate-x-[-50%] translate-y-[-50%] 
+					gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900 md:w-full"
+				>
+					<AlertDialogHeader>
+						<div className="flex gap-2 text-red-500 items-center">
+							<LogIn className="w-5 h-5" />
+							<AlertDialogTitle>Authentication Required</AlertDialogTitle>
+						</div>
+						<AlertDialogDescription>
+							You need to act as a member to take action on comment. <br/>
+							Please log in to continue.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter className="flex flex-row items-center justify-end gap-3 mt-2 sm:mt-0">
+						<AlertDialogCancel
+							className="mt-0 flex-1 sm:flex-none cursor-pointer border-gray-200 hover:bg-gray-100"
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction 
+							onClick={() => router.push('/signup')}
+							className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer border-0"
+						>
+							Log in / Sign up
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 };
@@ -930,7 +933,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			)}
 			<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
 				<AlertDialogContent
-					className={isSidebarOpen ? 'ml-32' : 'ml-6'}
+					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900"
 				>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete post?</AlertDialogTitle>
@@ -959,32 +962,35 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			</AlertDialog>
 
 			<AlertDialog open={isAuthenAlert} onOpenChange={setIsAuthenAlert}>
-                <AlertDialogContent className={isSidebarOpen ? 'ml-32' : 'ml-6'}>
-                    <AlertDialogHeader>
-                        <div className="flex gap-2 text-red-500 items-center">
-                            <LogIn className="w-5 h-5" />
-                            <AlertDialogTitle>Authentication Required</AlertDialogTitle>
-                        </div>
-                        <AlertDialogDescription>
-                            You need to act as a member to take an action on post. <br/>
-                            Please log in to continue.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel 
-                             className="cursor-pointer"
-                        >
-                            Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction 
-                             onClick={() => router.push('/signup')}
-                             className="bg-emerald-700 hover:bg-emerald-800 cursor-pointer"
-                        >
-                            Log in / Sign up
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+				<AlertDialogContent 
+					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-sm translate-x-[-50%] translate-y-[-50%] 
+					gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900 md:w-full"
+				>
+					<AlertDialogHeader>
+						<div className="flex gap-2 text-red-500 items-center">
+							<LogIn className="w-5 h-5" />
+							<AlertDialogTitle>Authentication Required</AlertDialogTitle>
+						</div>
+						<AlertDialogDescription>
+							You need to act as a member to take action on post. <br/>
+							Please log in to continue.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter className="flex flex-row items-center justify-end gap-3 mt-2 sm:mt-0">
+						<AlertDialogCancel
+							className="mt-0 flex-1 sm:flex-none cursor-pointer border-gray-200 hover:bg-gray-100"
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction 
+							onClick={() => router.push('/signup')}
+							className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer border-0"
+						>
+							Log in / Sign up
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
