@@ -752,7 +752,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					{/* Post Content */}
 					<h2 className="text-lg font-medium">{post.title}</h2>
 					<div className="w-full bg-gray-200 rounded-xl overflow-hidden border border-gray-800 my-4 relative group">
-						<Carousel className="w-full h-[500px] md:h-[600px] [&>div]:h-full">
+						<Carousel className="w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] [&>div]:h-full">
 							<CarouselContent className="h-full ml-0">
 								{post.attachments.map((attachment: any, index: number) => (
 									<CarouselItem 
@@ -767,8 +767,8 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 												)}
 												alt={`Attachment ${index + 1}`}
 												fill
-												className="object-contain" // รูปจะไม่โดนตัด
-												sizes="(max-width: 768px) 100vw, 800px"
+												className="object-contain"
+												sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 1200px"
 												priority={index === 0}
 											/>
 										</div>
