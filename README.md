@@ -68,12 +68,24 @@ cd kupantip
 ```
 
 1. **Configure Environment Variables** Copy the example configuration file and update the values.  
+- MacOS/Linux
 ```bash
 cp .env.example .env
 ```
+- Windows
+```bash
+copy .env.example .env
+```
+2. **Get password app for gmail** 
+   - Go to your Google Account settings.
+   - Navigate to **Security**.
+   - Under "Signing in to Google," select **2-Step Verification** and follow the instructions to turn it on.
+   - Go back to the Security page and select **App passwords**.
+   - Select **Mail** as the app and **Other (Custom name)** as the device.
+   - Enter a name (e.g., "Kupantip") and click **Generate**.
+   - Copy the 16-character password and use it for `SMTP_PASS` in your `.env` file.
 
-
-2. ⚠️ **Note:** Ensure database credentials in `.env` match those in `compose.yml`.
+3. ⚠️ **Note:** Ensure database credentials in `.env` match those in `compose.yml`.
 
 | **Section**  | **Variable**             | **Value**                                                                                                                                             |
 | ------------ | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -89,11 +101,15 @@ cp .env.example .env
 |              | ADMIN_PASSWORD           | Admin@1234 |
 |              | ADMIN_HANDLE             | Admin |
 | **Prisma**   | DATABASE_URL             | `"sqlserver://${SQL_SERVER}:${SQL_PORT};database=${SQL_NAME};user={${SQL_USER}};password={${SQL_PASSWORD}};encrypt=true;trustServerCertificate=true"` |
-| **Frontend** | NEXTAUTH_SECRET          | SECRET_KY                                                                                                                      |
-|              | NEXTAUTH_URL             | [http://localhost](http://localhost)                                                                                                                  |
-|              | BACKEND_URL              | [http://backend:8000/api/v1](http://backend:8000/api/v1)                                                                                              |
-|              | NEXT_PUBLIC_BACKEND_HOST | [http://localhost:8000/api/v1](http://localhost:8000/api/v1)                                                                                          |
-| **n8n**      | N8N_HOST                 | [http://localhost:5678](http://localhost:5678)                                                                                               |
+| **mailer**   | SMTP_USER                | example@gmail.com |
+|              | SMTP_PASS            | password |
+| **n8n**      | N8N_HOST                 | [http://localhost:5678](http://localhost:5678)|
+| **Frontend** | NEXTAUTH_SECRET          | SECRET_KEY |
+|              | NEXTAUTH_URL             | [http://localhost](http://localhost)|
+|              | BACKEND_URL              | [http://backend:8000/api/v1](http://backend:8000/api/v1)|
+|              | NEXT_PUBLIC_BACKEND_HOST | [http://localhost:8000/api/v1](http://localhost:8000/api/v1)|
+
+
 
 ### **Installation & Running**
 
@@ -143,7 +159,10 @@ After the containers are running, you need to configure n8n for AI summarization
   * [Iteration 3](https://youtu.be/YOvjb6aMCSg)
   * [Iteration 4](https://youtu.be/Vjn3ohDk0OU)
   * [Iteration 5](https://youtu.be/DHXBX4fWi0A)
-
+    
+* **Video presentation:** 
+  * [Video for Software Demonstration](https://youtu.be/BIQ5QRSTGPQ?si=SRKy3f1EpfbxrDSL)
+  * [Video for Software Development](https://youtu.be/BEBIV-jrzAQ?si=QO98chq0NkJL-SJO)
 
 ## **👥 Contributors**
 
