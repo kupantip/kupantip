@@ -68,8 +68,13 @@ cd kupantip
 ```
 
 1. **Configure Environment Variables** Copy the example configuration file and update the values.  
+- MacOS/Linux
 ```bash
 cp .env.example .env
+```
+- Windows
+```bash
+copy .env.example .env
 ```
 2. **Get password app for gmail** 
    - Go to your Google Account settings.
