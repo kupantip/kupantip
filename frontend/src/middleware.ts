@@ -1,8 +1,9 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-function customMiddleware(request: NextRequest) {
+async function customMiddleware(request: NextRequest) {
 	if (request.nextUrl.pathname.startsWith('/api/proxy/')) {
 		const backendUrl = process.env.BACKEND_URL;
 		if (!backendUrl) {
@@ -17,12 +18,25 @@ function customMiddleware(request: NextRequest) {
 			);
 		}
 
+		const token = await getToken({ req: request });
+
 		const path = request.nextUrl.pathname.replace('/api/proxy', '/api/v1');
 
 		const newUrl = new URL(path, backendUrl);
-		newUrl.search = request.nextUrl.search;
+		request.nextUrl.searchParams.forEach((value, key) => {
+			newUrl.searchParams.append(key, value);
+		});
 
-		return NextResponse.rewrite(newUrl);
+		const headers = new Headers(request.headers);
+		if (token?.accessToken) {
+			headers.set('Authorization', `Bearer ${token.accessToken}`);
+		}
+
+		return NextResponse.rewrite(newUrl, {
+			request: {
+				headers,
+			},
+		});
 	}
 
 	// Block non-admin users from /posts/admin/*
