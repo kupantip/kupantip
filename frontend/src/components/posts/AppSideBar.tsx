@@ -14,6 +14,7 @@ import {
 	Circle,
 	PartyPopper,
 	FileUser,
+	ChartGantt,
 	MessageCircle,
 	CirclePlus,
 	ChevronDown,
@@ -51,6 +52,13 @@ const adminLinks = [
 		label: 'Announcement Panel',
 		aria: 'Announcement Panel',
 		title: 'Announcement Panel',
+	},
+	{
+		href: '/posts/admin/announcement/timeline',
+		icon: ChartGantt,
+		label: 'Announcement Timeline',
+		aria: 'Announcement Timeline',
+		title: 'Announcement Timeline',
 	},
 ];
 

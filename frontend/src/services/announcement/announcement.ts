@@ -199,3 +199,39 @@ export function useDeleteAnnouncement() {
 		mutationFn: deleteAnnouncement,
 	});
 }
+
+export async function fetchAllAnnouncements(): Promise<Announcement[]> {
+	try {
+		const session = await getSession();
+
+		const header = {
+			Authorization: `Bearer ${session?.user?.accessToken}`,
+		};
+
+		const response = await instance.get<Announcement[]>(
+			`/all`,
+			{
+				headers: header,
+			}
+		);
+		return response.data;
+	} catch (error: unknown) {
+		if (axios.isAxiosError(error)) {
+			throw new Error(
+				`Failed to fetch all announcement: ${error.response?.status} ${error.response?.statusText}`
+			);
+		} else if (error instanceof Error) {
+			throw new Error(error.message);
+		} else {
+			throw new Error(String(error));
+		}
+	}
+}
+
+export function useAllAnnouncements() {
+    return useQuery<Announcement[], Error>({
+        queryKey: ['allAnnouncements'],
+        queryFn: () => fetchAllAnnouncements(),
+		refetchOnMount: 'always',
+    });
+}

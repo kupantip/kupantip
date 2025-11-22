@@ -14,6 +14,7 @@ import { formatDistanceToNow, parseISO } from 'date-fns';
 import { Announcement } from '@/services/announcement/announcement';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 type Props = {
 	announcement: Announcement;
@@ -21,16 +22,26 @@ type Props = {
 
 export default function AnnouncementItem({ announcement }: Props) {
 	const router = useRouter();
+	const searchParams = useSearchParams();
+	const result = searchParams.get('r');
+
+	const handleBackButton = async () => {
+		if (!result) {
+			router.push('/posts');
+		} else {
+			router.back();
+		}
+	};
 
 	return (
 		<div>
 			<Button
 				variant="ghost"
-				onClick={() => router.back()}
+				onClick={handleBackButton}
 				className="mb-5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer"
 			>
 				<ArrowLeft className="w-4 h-4 mr-2" />
-				Back to Posts
+				{result ? `Back to ${result}` : 'Back to Posts'}
 			</Button>
 			<Card
 				key={announcement.id}

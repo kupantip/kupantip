@@ -5,11 +5,13 @@ import {
 	getAnnouncementsController,
 	getAnnouncementByIdController,
 	deleteAnnouncementController,
+	getAllAnnouncementsTimelineController,
 } from '../controller/announcement.controller';
 
 const router = Router();
 
 router.get('/', getAnnouncementsController);
+router.get('/all', authMiddleware, getAllAnnouncementsTimelineController);
 router.get('/:announcement_id', getAnnouncementByIdController);
 router.post('/', authMiddleware, createAnnouncementController);
 router.delete(
