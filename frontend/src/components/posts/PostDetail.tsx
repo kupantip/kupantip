@@ -48,7 +48,13 @@ import { useSidebar } from '../ui/sidebar';
 import { Button } from '../ui/button';
 import Link from 'next/link';
 import { getAISummary } from '@/services/n8n/aiSummary';
-import { stat } from 'fs';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 
 type PostDetailProps = {
 	post: t.Post;
@@ -468,6 +474,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const [showAISummary, setShowAISummary] = useState(false);
 
 	const [isAuthenAlert, setIsAuthenAlert] = useState(false);
+	const hasMultipleImages = post.attachments.length > 1;
 
 	const {
 		data: commentsData,
@@ -744,20 +751,45 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					</div>
 					{/* Post Content */}
 					<h2 className="text-lg font-medium">{post.title}</h2>
-					{post.attachments.length > 0 &&
-						post.attachments.map((attachment) => (
-							<Image
-								key={attachment.id}
-								src={attachment.url.replace(
-									'/uploads/',
-									'/api/proxy/post/attachments/'
-								)}
-								alt="Post attachment"
-								width={300}
-								height={200}
-								className="w-full h-auto object-cover rounded-lg mb-4"
-							/>
-						))}
+					<div className="w-full bg-gray-200 rounded-xl overflow-hidden border border-gray-800 my-4 relative group">
+						<Carousel className="w-full h-[500px] md:h-[600px] [&>div]:h-full">
+							<CarouselContent className="h-full ml-0">
+								{post.attachments.map((attachment: any, index: number) => (
+									<CarouselItem 
+										key={attachment.id} 
+										className="relative h-full w-full flex items-center justify-center p-0 pl-0"
+									>
+										<div className="relative w-full h-full">
+											<Image
+												src={attachment.url.replace(
+													'/uploads/',
+													'/api/proxy/post/attachments/'
+												)}
+												alt={`Attachment ${index + 1}`}
+												fill
+												className="object-contain" // รูปจะไม่โดนตัด
+												sizes="(max-width: 768px) 100vw, 800px"
+												priority={index === 0}
+											/>
+										</div>
+									</CarouselItem>
+								))}
+							</CarouselContent>
+
+							{hasMultipleImages && (
+								<>
+									<CarouselPrevious 
+										className="left-4 h-10 w-10 bg-black/50 border-none text-white hover:bg-black/80 cursor-pointer
+												opacity-0 group-hover:opacity-100 transition-opacity duration-200 sm:flex hidden z-20" 
+									/>
+									<CarouselNext 
+										className="right-4 h-10 w-10 bg-black/50 border-none text-white hover:bg-black/80 cursor-pointer
+												opacity-0 group-hover:opacity-100 transition-opacity duration-200 sm:flex hidden z-20" 
+									/>
+								</>
+							)}
+						</Carousel>
+					</div>
 					<div>{post.body_md}</div>
 					{/* AI Summary Section */}
 					<div className="mt-4">
