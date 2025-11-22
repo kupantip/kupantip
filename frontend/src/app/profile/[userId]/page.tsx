@@ -120,7 +120,7 @@ export default function MyProfilePage() {
 	return (
 		<div
 			data-aos="fade-up"
-			className="min-h-screen px-10 py-8 space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
+			className="min-h-screen px-4 py-4 md:px-10 md:py-8 space-y-4 md:space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900"
 		>
 			<Breadcrumb>
 				<BreadcrumbList>
@@ -424,6 +424,7 @@ export default function MyProfilePage() {
 													<Badge
 														key={idx}
 														variant="secondary"
+														className='bg-emerald-100 text-emerald-600'
 													>
 														{interest.trim()}
 													</Badge>
@@ -441,7 +442,7 @@ export default function MyProfilePage() {
 												.map((skill, idx) => (
 													<Badge
 														key={idx}
-														className="bg-blue-100 text-blue-800"
+														className="bg-purple-100 text-purple-800"
 													>
 														{skill.trim()}
 													</Badge>

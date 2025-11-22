@@ -18,6 +18,9 @@ type SignupData = {
 	handle: string;
 	display_name: string;
 	password: string;
+	bio?: string,
+	interests?: string,
+	skills?: string
 };
 
 const instance = axios.create({
@@ -41,6 +44,8 @@ export async function fetchSignupUser(data: SignupData) {
 		const res = await instance.post('/signup', data);
 		return res.data;
 	} catch (err) {
-		throw err;
+		if (axios.isAxiosError(err)) {
+			throw err.response?.data;
+		}
 	}
 }

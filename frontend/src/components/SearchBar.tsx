@@ -89,7 +89,7 @@ export default function SearchBar({ setIsRedirectLoading }: SearchBarProps) {
         <form 
             onSubmit={handleSearch}
             ref={searchRef} 
-            className="relative w-full max-w-xl ml-54"
+            className="relative w-full max-w-xl"
         >
             <InputGroup className='bg-white'>
                 <InputGroupInput 

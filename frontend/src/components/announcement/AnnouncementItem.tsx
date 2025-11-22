@@ -27,7 +27,7 @@ export default function AnnouncementItem({ announcement }: Props) {
 			<Button
 				variant="ghost"
 				onClick={() => router.back()}
-				className="mb-5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800"
+				className="mb-5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer"
 			>
 				<ArrowLeft className="w-4 h-4 mr-2" />
 				Back to Posts
