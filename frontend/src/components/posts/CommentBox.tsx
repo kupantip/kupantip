@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { usePostComment } from '@/services/comment/comment';
 import { fetchUpdateComment } from '@/services/comment/comment';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, LogIn } from 'lucide-react';
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -17,8 +17,10 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
+	AlertDialogAction
 } from '@/components/ui/alert-dialog';
 import { useSidebar } from '../ui/sidebar';
+import { useRouter } from 'next/navigation';
 
 interface CommentBoxProps {
 	className?: string;
@@ -69,6 +71,9 @@ export default function CommentBox({
 		parentId = '';
 	}
 
+	const [isAuthenAlert, setIsAuthenAlert] = useState(false);
+	const router = useRouter();
+
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		if (!comment.trim()) {
@@ -76,6 +81,11 @@ export default function CommentBox({
 		}
 
 		setIsSubmitting(true);
+
+		if (!isLoggedIn) {
+			setIsAuthenAlert(true);
+			return;
+		}
 
 		try {
 			if (isEditing) {
@@ -133,8 +143,6 @@ export default function CommentBox({
 
 			if (isEditing) {
 				toast.error('Failed to update comment. Please try again.');
-			} else if (!isLoggedIn) {
-				toast.error('Please login first to comment.');
 			} else {
 				toast.error('Failed to post comment. Please try again.');
 			}
@@ -152,110 +160,144 @@ export default function CommentBox({
 	};
 
 	return (
-		<form
-			onSubmit={handleSubmit}
-			className={cn(
-				'w-full rounded-3xl border px-4 py-2 shadow-sm bg-white',
-				isEditing && 'border-emerald-600',
-				className
-			)}
-		>
-			<Textarea
-				placeholder={
-					isEditing ? 'Editing comment...' : 'Write a comment...'
-				}
-				value={comment}
-				onChange={(e) => setComment(e.target.value)}
-				onFocus={() => {
-					if (isEditing) {
-						return;
+		<div>
+			<form
+				onSubmit={handleSubmit}
+				className={cn(
+					'w-full rounded-3xl border px-4 py-2 shadow-sm bg-white',
+					isEditing && 'border-emerald-600',
+					className
+				)}
+			>
+				<Textarea
+					placeholder={
+						isEditing ? 'Editing comment...' : 'Write a comment...'
 					}
-					setShowActions(true);
-				}}
-				className="resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-				rows={1}
-				disabled={isSubmitting}
-			/>
+					value={comment}
+					onChange={(e) => setComment(e.target.value)}
+					onFocus={() => {
+						if (isEditing) {
+							return;
+						}
+						setShowActions(true);
+					}}
+					className="resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+					rows={1}
+					disabled={isSubmitting}
+				/>
 
-			<div className="mt-3 flex items-center justify-between">
-				{/* Left action icons */}
-				<div className="flex gap-3 text-gray-500">
-					{/* <ImageIcon size={16} className="cursor-pointer" /> */}
-					{/* <Film size={16} className="cursor-pointer" />
-                    <Type size={16} className="cursor-pointer" /> */}
+				<div className="mt-3 flex items-center justify-between">
+					{/* Left action icons */}
+					<div className="flex gap-3 text-gray-500">
+						{/* <ImageIcon size={16} className="cursor-pointer" /> */}
+						{/* <Film size={16} className="cursor-pointer" />
+						<Type size={16} className="cursor-pointer" /> */}
+					</div>
+
+					{/* Right buttons */}
+					{showActions && (
+						<div className="flex gap-2">
+							<Button
+								variant="ghost"
+								onClick={handleCancel}
+								className="cursor-pointer text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+								size="sm"
+								disabled={isSubmitting}
+							>
+								Cancel
+							</Button>
+							<Button
+								type="submit"
+								disabled={!comment.trim() || isSubmitting}
+								className="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+								size="sm"
+							>
+								{isSubmitting
+									? isEditing
+										? 'Saving...'
+										: 'Posting...'
+									: isEditing
+									? 'Save'
+									: 'Comment'}
+							</Button>
+						</div>
+					)}
 				</div>
 
-				{/* Right buttons */}
-				{showActions && (
-					<div className="flex gap-2">
-						<Button
-							variant="ghost"
-							onClick={handleCancel}
-							className="cursor-pointer text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-							size="sm"
-							disabled={isSubmitting}
-						>
-							Cancel
-						</Button>
-						<Button
-							type="submit"
-							disabled={!comment.trim() || isSubmitting}
-							className="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
-							size="sm"
-						>
-							{isSubmitting
-								? isEditing
-									? 'Saving...'
-									: 'Posting...'
-								: isEditing
-								? 'Save'
-								: 'Comment'}
-						</Button>
-					</div>
-				)}
-			</div>
+				<AlertDialog open={!!banInfo} onOpenChange={() => setBanInfo}>
+					<AlertDialogContent
+						className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900"
+					>
+						<AlertDialogHeader>
+							<div className="flex gap-2 text-red-500 items-center">
+								<AlertTriangle className="w-5 h-5" />
+								<AlertDialogTitle>
+									You&apos;ve been banned from commenting.
+								</AlertDialogTitle>
+							</div>
+							<AlertDialogDescription>
+								<strong className="text-black/75">Reason:</strong>{' '}
+								{banInfo?.reason}
+							</AlertDialogDescription>
+							<AlertDialogDescription>
+								<strong className="text-black/75">
+									Ban expires on:
+								</strong>{' '}
+								{banInfo?.end_at
+									? new Date(banInfo.end_at).toLocaleString(
+											'en-En',
+											{
+												dateStyle: 'long',
+												timeStyle: 'short',
+											}
+									)
+									: '-'}
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel
+								type="button"
+								onClick={() => setBanInfo(null)}
+								className="cursor-pointer w-full"
+							>
+								Close
+							</AlertDialogCancel>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
+			</form>
 
-			<AlertDialog open={!!banInfo} onOpenChange={() => setBanInfo}>
-				<AlertDialogContent
-					className={isSidebarOpen ? 'ml-32' : 'ml-6'}
+			<AlertDialog open={isAuthenAlert} onOpenChange={setIsAuthenAlert}>
+				<AlertDialogContent 
+					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-sm translate-x-[-50%] translate-y-[-50%] 
+					gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900 md:w-full"
 				>
 					<AlertDialogHeader>
 						<div className="flex gap-2 text-red-500 items-center">
-							<AlertTriangle className="w-5 h-5" />
-							<AlertDialogTitle>
-								You&apos;ve been banned from commenting.
-							</AlertDialogTitle>
+							<LogIn className="w-5 h-5" />
+							<AlertDialogTitle>Authentication Required</AlertDialogTitle>
 						</div>
 						<AlertDialogDescription>
-							<strong className="text-black/75">Reason:</strong>{' '}
-							{banInfo?.reason}
-						</AlertDialogDescription>
-						<AlertDialogDescription>
-							<strong className="text-black/75">
-								Ban expires on:
-							</strong>{' '}
-							{banInfo?.end_at
-								? new Date(banInfo.end_at).toLocaleString(
-										'en-En',
-										{
-											dateStyle: 'long',
-											timeStyle: 'short',
-										}
-								  )
-								: '-'}
+							You need to act as a member to comment. <br/>
+							Please log in to continue.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
-					<AlertDialogFooter>
+					<AlertDialogFooter className="flex flex-row items-center justify-end gap-3 mt-2 sm:mt-0">
 						<AlertDialogCancel
-							type="button"
-							onClick={() => setBanInfo(null)}
-							className="cursor-pointer w-full"
+							onClick={() => setIsSubmitting(false)} 
+							className="mt-0 flex-1 sm:flex-none cursor-pointer border-gray-200 hover:bg-gray-100"
 						>
-							Close
+							Cancel
 						</AlertDialogCancel>
+						<AlertDialogAction 
+							onClick={() => router.push('/signup')}
+							className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer border-0"
+						>
+							Log in / Sign up
+						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</form>
+		</div>
 	);
 }

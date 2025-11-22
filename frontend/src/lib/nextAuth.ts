@@ -66,24 +66,14 @@ export const authOptions: NextAuthOptions = {
 		async session({ session, token }) {
 			session.accessToken = token.accessToken;
 
-			// Set token in httpOnly cookie
-			const cookieStore = await cookies();
-			cookieStore.set('token', token.accessToken || '', {
-				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'lax',
-				maxAge: 60 * 60 * 24 * 7, // 7 days
-				path: '/',
-			});
-
-			const backendUrl =
-				process.env.BACKEND_URL || 'http://localhost:8000';
-			const url = `${backendUrl}/user/profile`;
-			const res = await axios.get(url, {
-				headers: {
-					Authorization: `Bearer ${token.accessToken}`,
-				},
-			});
+			const res = await axios.get(
+				'http://localhost:8000/api/v1/user/profile',
+				{
+					headers: {
+						Authorization: `Bearer ${token.accessToken}`,
+					},
+				}
+			);
 
 			session.user = res.data.user;
 

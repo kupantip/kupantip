@@ -1,5 +1,6 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import { useCreateRequestedCategory } from '@/services/admin/category';
 import { motion } from 'framer-motion';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, LogIn } from 'lucide-react';
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -16,9 +17,14 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
+	AlertDialogAction
 } from '@/components/ui/alert-dialog';
+import { useSidebar } from '@/components/ui/sidebar';
 
 export default function CreateCategoryPage() {
+	const { status } = useSession();
+	const { open: isSidebarOpen } = useSidebar();
+
 	const [formData, setFormData] = useState({
 		label: '',
 		color_hex: '#10b981', // default to emerald
@@ -197,6 +203,39 @@ export default function CreateCategoryPage() {
 						<AlertDialogCancel className="cursor-pointer w-full">
 							Close
 						</AlertDialogCancel>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+
+
+			<AlertDialog open={status === 'unauthenticated'}>
+				<AlertDialogContent 
+					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-sm translate-x-[-50%] translate-y-[-50%] 
+					gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900 md:w-full"
+				>
+					<AlertDialogHeader>
+						<div className="flex gap-2 text-red-500 items-center">
+							<LogIn className="w-5 h-5" />
+							<AlertDialogTitle>Authentication Required</AlertDialogTitle>
+						</div>
+						<AlertDialogDescription>
+							You need to act as a member to request a category. <br/>
+							Please log in to continue.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter className="flex flex-row items-center justify-end gap-3 mt-2 sm:mt-0">
+						<AlertDialogCancel
+							onClick={() => router.back()} 
+							className="mt-0 flex-1 sm:flex-none cursor-pointer border-gray-200 hover:bg-gray-100"
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction 
+							onClick={() => router.push('/signup')}
+							className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer border-0"
+						>
+							Log in / Sign up
+						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>

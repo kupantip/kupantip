@@ -172,3 +172,6 @@
   }
 }
 
+* ::-webkit-scrollbar {
+  display: none;
+}

@@ -16,7 +16,6 @@ import {
 	Share2,
 } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
-import { User } from '@/types/dashboard/user';
 import { useCommentsByPostId } from '@/services/comment/comment';
 import CommentBox from './CommentBox';
 import { fetchDeletePost } from '@/services/post/post';
@@ -30,12 +29,9 @@ import {
 	fetchUpvotePost,
 	fetchDownvotePost,
 } from '@/services/post/vote';
-import { jwtDecode } from 'jwt-decode';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
-import { Trash2 } from 'lucide-react';
-import { Pen } from 'lucide-react';
-import { Flag } from 'lucide-react';
+import { Trash2, Pen, Flag, LogIn } from 'lucide-react';
 import ReportModal from './ReportModal';
 import {
 	AlertDialog,
@@ -52,6 +48,7 @@ import { useSidebar } from '../ui/sidebar';
 import { Button } from '../ui/button';
 import Link from 'next/link';
 import { getAISummary } from '@/services/n8n/aiSummary';
+import { stat } from 'fs';
 
 type PostDetailProps = {
 	post: t.Post;
@@ -88,49 +85,59 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 
 	const menuRef = useRef<HTMLDivElement>(null);
 
-	const { data: session } = useSession();
-	const tokenPayload = session?.accessToken
-		? jwtDecode<User>(session.accessToken)
-		: null;
-	const currentUserId = tokenPayload?.user_id;
+	const { data: session, status } = useSession();
+	const currentUserId = session?.user.user_id;
 
 	const [reportingComment, setReportingComment] = useState<t.Comment | null>(
 		null
 	);
 
+	const router = useRouter();
+	const [isAuthenAlert, setIsAuthenAlert] = useState(false);
+
 	const handleUpVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Upvote on', comment.id);
-		try {
-			if (!comment.liked_by_requesting_user) {
-				await fetchVoteComment({ commentId: comment.id, value: 1 });
-				console.log('Upvote Comment Success');
-			} else {
-				await fetchDeletevoteComment(comment.id);
-				console.log('Delete Upvote Success');
+
+		if (status === 'unauthenticated') {
+			setIsAuthenAlert(true);
+		} else {
+			try {
+				if (!comment.liked_by_requesting_user) {
+					await fetchVoteComment({ commentId: comment.id, value: 1 });
+					console.log('Upvote Comment Success');
+				} else {
+					await fetchDeletevoteComment(comment.id);
+					console.log('Delete Upvote Success');
+				}
+			} catch (err: unknown) {
+				console.error('Upvote failed:', err);
+			} finally {
+				refreshComments();
 			}
-		} catch (err: unknown) {
-			console.error('Upvote failed:', err);
-		} finally {
-			refreshComments();
 		}
 	};
 
 	const handleDownVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Downvote on', comment.id);
-		try {
-			if (!comment.disliked_by_requesting_user) {
-				await fetchVoteComment({ commentId: comment.id, value: -1 });
-				console.log('Downvote Comment Success');
-			} else {
-				await fetchDeletevoteComment(comment.id);
-				console.log('Delete Downvote Success');
+
+		if (status === 'unauthenticated') {
+			setIsAuthenAlert(true);
+		} else {
+			try {
+				if (!comment.disliked_by_requesting_user) {
+					await fetchVoteComment({ commentId: comment.id, value: -1 });
+					console.log('Downvote Comment Success');
+				} else {
+					await fetchDeletevoteComment(comment.id);
+					console.log('Delete Downvote Success');
+				}
+			} catch (err: unknown) {
+				console.error('Downvote failed:', err);
+			} finally {
+				refreshComments();
 			}
-		} catch (err: unknown) {
-			console.error('Downvote failed:', err);
-		} finally {
-			refreshComments();
 		}
 	};
 
@@ -157,8 +164,14 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 
 	const handleReportComment = async (e: React.MouseEvent) => {
 		e.stopPropagation();
-		console.log('Report Comment on', comment.id);
 		setMenuOpen(false);
+
+		if (status === 'unauthenticated') {
+			setIsAuthenAlert(true);
+			return;
+		}
+		
+		console.log('Report Comment on', comment.id);
 		setReportingComment(comment);
 		setShowReportCommentDialog(true);
 	};
@@ -338,7 +351,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 
 					<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
 						<AlertDialogContent
-							className={isSidebarOpen ? 'ml-32' : 'ml-6'}
+							className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900"
 						>
 							<AlertDialogHeader>
 								<AlertDialogTitle>
@@ -399,6 +412,36 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 					onOpenChange={setShowReportCommentDialog}
 				></ReportModal>
 			)}
+			<AlertDialog open={isAuthenAlert} onOpenChange={setIsAuthenAlert}>
+				<AlertDialogContent 
+					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-sm translate-x-[-50%] translate-y-[-50%] 
+					gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900 md:w-full"
+				>
+					<AlertDialogHeader>
+						<div className="flex gap-2 text-red-500 items-center">
+							<LogIn className="w-5 h-5" />
+							<AlertDialogTitle>Authentication Required</AlertDialogTitle>
+						</div>
+						<AlertDialogDescription>
+							You need to act as a member to take action on comment. <br/>
+							Please log in to continue.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter className="flex flex-row items-center justify-end gap-3 mt-2 sm:mt-0">
+						<AlertDialogCancel
+							className="mt-0 flex-1 sm:flex-none cursor-pointer border-gray-200 hover:bg-gray-100"
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction 
+							onClick={() => router.push('/signup')}
+							className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer border-0"
+						>
+							Log in / Sign up
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 };
@@ -411,11 +454,8 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const result = searchParams.get('r');
 	const [copied, setCopied] = useState(false);
 
-	const { data: session } = useSession();
-	const tokenPayload = session?.accessToken
-		? jwtDecode<User>(session.accessToken)
-		: null;
-	const currentUserId = tokenPayload?.user_id;
+	const { data: session, status } = useSession();
+	const currentUserId = session?.user.user_id;
 
 	const [menuOpen, setMenuOpen] = useState(false);
 	const router = useRouter();
@@ -427,6 +467,8 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const [isLoadingAI, setIsLoadingAI] = useState(false);
 	const [showAISummary, setShowAISummary] = useState(false);
 
+	const [isAuthenAlert, setIsAuthenAlert] = useState(false);
+
 	const {
 		data: commentsData,
 		isLoading: loadingComments,
@@ -436,34 +478,44 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 	const handleUpVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Upvote on');
-		try {
-			if (!post.liked_by_requesting_user) {
-				await fetchUpvotePost(post.id);
-				console.log('Upvote Post Success');
-			} else {
-				await fetchDeletevotePost(post.id);
-				console.log('Delete Upvote Success');
+		if (status === 'unauthenticated') {
+			setIsAuthenAlert(true);
+		} else {
+			try {
+				if (!post.liked_by_requesting_user) {
+					await fetchUpvotePost(post.id);
+					console.log('Upvote Post Success');
+				} else {
+					await fetchDeletevotePost(post.id);
+					console.log('Delete Upvote Success');
+				}
+			} catch (err) {
+				console.log(err);
+			} finally {
+				refresh();
 			}
-		} catch {
-		} finally {
-			refresh();
 		}
 	};
 
 	const handleDownVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		console.log('Downvote on');
-		try {
-			if (!post.disliked_by_requesting_user) {
-				await fetchDownvotePost(post.id);
-				console.log('Downvote Post Success');
-			} else {
-				await fetchDeletevotePost(post.id);
-				console.log('Delete Downvote Success');
+		if (status === 'unauthenticated') {
+			setIsAuthenAlert(true)
+		} else {
+			try {
+				if (!post.disliked_by_requesting_user) {
+					await fetchDownvotePost(post.id);
+					console.log('Downvote Post Success');
+				} else {
+					await fetchDeletevotePost(post.id);
+					console.log('Delete Downvote Success');
+				}
+			} catch (err) {
+				console.log(err);
+			} finally {
+				refresh();
 			}
-		} catch {
-		} finally {
-			refresh();
 		}
 	};
 
@@ -490,8 +542,14 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 
 	const handleReportPost = async (e: React.MouseEvent) => {
 		e.stopPropagation();
-		console.log('Report on', post.id);
 		setMenuOpen(false);
+
+		if (status === 'unauthenticated') {
+			setIsAuthenAlert(true);
+			return;
+		}
+
+		console.log('Report on', post.id);
 		setReportingPost(post);
 		setShowReportPostDialog(true);
 	};
@@ -875,7 +933,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 			)}
 			<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
 				<AlertDialogContent
-					className={isSidebarOpen ? 'ml-32' : 'ml-6'}
+					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900"
 				>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete post?</AlertDialogTitle>
@@ -898,6 +956,37 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 							className="cursor-pointer hover:bg-red-700 bg-red-600"
 						>
 							Delete
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+
+			<AlertDialog open={isAuthenAlert} onOpenChange={setIsAuthenAlert}>
+				<AlertDialogContent 
+					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-sm translate-x-[-50%] translate-y-[-50%] 
+					gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900 md:w-full"
+				>
+					<AlertDialogHeader>
+						<div className="flex gap-2 text-red-500 items-center">
+							<LogIn className="w-5 h-5" />
+							<AlertDialogTitle>Authentication Required</AlertDialogTitle>
+						</div>
+						<AlertDialogDescription>
+							You need to act as a member to take action on post. <br/>
+							Please log in to continue.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter className="flex flex-row items-center justify-end gap-3 mt-2 sm:mt-0">
+						<AlertDialogCancel
+							className="mt-0 flex-1 sm:flex-none cursor-pointer border-gray-200 hover:bg-gray-100"
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction 
+							onClick={() => router.push('/signup')}
+							className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer border-0"
+						>
+							Log in / Sign up
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
