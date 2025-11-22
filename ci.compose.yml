@@ -49,7 +49,7 @@ services:
     command: >
       sh -c "
         echo '--- [Backend] Database check complete. Running Prisma migrations...';
-        npm run db:migrate && npm start
+        npm run db:migrate && npx prisma db seed && npm start
       "
 
   frontend:
