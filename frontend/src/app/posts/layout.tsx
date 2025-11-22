@@ -14,7 +14,12 @@ import ProfileDropDown from '@/components/ProfileDropdown';
 import { Loader2 } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import { useTotalUnreadCount } from '@/hooks/useTotalUnreadCount';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import {
+	Sheet,
+	SheetContent,
+	SheetTrigger,
+	SheetTitle,
+} from '@/components/ui/sheet';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 export default function DashboardLayout({
@@ -32,17 +37,32 @@ export default function DashboardLayout({
 			<header className="fixed top-0 left-0 w-full h-16 bg-green-2 shadow flex items-center px-4 md:px-6 z-50">
 				<div className="relative flex justify-between items-center w-full">
 					<div className="flex items-center gap-2">
-						<Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+						<Sheet
+							open={isMobileMenuOpen}
+							onOpenChange={setIsMobileMenuOpen}
+						>
 							<SheetTrigger asChild>
-								<Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-green-700">
+								<Button
+									variant="ghost"
+									size="icon"
+									className="md:hidden text-white hover:bg-green-700"
+								>
 									<Menu className="h-6 w-6" />
 								</Button>
 							</SheetTrigger>
-							<SheetContent side="left" className="p-0 w-64 border-r-0 bg-grey-1 text-white">
+							<SheetContent
+								side="left"
+								className="p-0 w-64 border-r-0 bg-grey-1 text-white"
+							>
 								<VisuallyHidden>
 									<SheetTitle>Menu</SheetTitle>
 								</VisuallyHidden>
-								<AppSidebar isMobile={true} onNavigate={() => setIsMobileMenuOpen(false)} />
+								<AppSidebar
+									isMobile={true}
+									onNavigate={() =>
+										setIsMobileMenuOpen(false)
+									}
+								/>
 							</SheetContent>
 						</Sheet>
 						<h4 className="hidden md:block text-white text-base font-semibold whitespace-nowrap">
@@ -51,7 +71,11 @@ export default function DashboardLayout({
 					</div>
 
 					<div className="flex-1 max-w-md mx-4 md:flex-none md:mx-0 md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full">
-						<Suspense fallback={<p className="text-white text-sm">Loading...</p>}>
+						<Suspense
+							fallback={
+								<p className="text-white text-sm">Loading...</p>
+							}
+						>
 							<SearchBar
 								setIsRedirectLoading={setIsRedirectLoading}
 							/>
@@ -74,13 +98,17 @@ export default function DashboardLayout({
 							<Link href="/posts/create-category">
 								<Button className="group bg-transparent text-white hover:bg-white/10 flex items-center gap-2 cursor-pointer transition-all">
 									<CirclePlus className="w-5 h-5" />
-									<span className="hidden lg:inline group-hover:underline">Category</span>
+									<span className="hidden lg:inline group-hover:underline">
+										Category
+									</span>
 								</Button>
 							</Link>
 							<Link href="/posts/create">
 								<Button className="group bg-transparent text-white hover:bg-white/10 flex items-center gap-2 cursor-pointer transition-all">
 									<CirclePlus className="w-5 h-5" />
-									<span className="hidden lg:inline group-hover:underline">Post</span>
+									<span className="hidden lg:inline group-hover:underline">
+										Post
+									</span>
 								</Button>
 							</Link>
 						</div>
@@ -95,7 +123,7 @@ export default function DashboardLayout({
 						<ProfileDropDown />
 					</div>
 				</div>
-				
+
 				{/* Mobile Search Bar (Visible below header on very small screens if needed, or just keep hidden for now/use a search icon to expand) 
 				    For now, let's keep it hidden on mobile or add a search icon toggle if requested. 
 					But the plan said "Implement a responsive header". 
