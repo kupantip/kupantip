@@ -1,5 +1,6 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
@@ -29,11 +30,14 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
+	AlertDialogAction
 } from '@/components/ui/alert-dialog';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, LogIn } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 
 export default function CreatePostPage() {
+	const { status } = useSession(); 
+
 	const [tab, setTab] = useState<'text' | 'media'>('text');
 	const [formData, setFormData] = useState({
 		title: '',
@@ -89,6 +93,7 @@ export default function CreatePostPage() {
 
 		try {
 			await fetchCreatePost({ ...formData, url: postUrl });
+
 			router.push(`/posts/category/${formData.category_id}`);
 		} catch (err: unknown) {
 			console.error('Failed to create post: ', err);
@@ -123,6 +128,10 @@ export default function CreatePostPage() {
 			offset: 80,
 		});
 	}, []);
+
+	// if (status === 'unauthenticated') {
+	// 	router.push('/login');
+	// }
 
 	return (
 		<div
@@ -302,11 +311,9 @@ export default function CreatePostPage() {
 					)}
 
 					<div className="flex justify-end gap-2">
-						<Link href={`/posts`}>
-							<Button className="bg-gray-200 text-black rounded-lg hover:bg-gray-300 hover:shadow-md hover:scale-105 cursor-pointer">
-								Cancel
-							</Button>
-						</Link>
+						<Button onClick={() => router.back()} className="bg-gray-200 text-black rounded-lg hover:bg-gray-300 hover:shadow-md hover:scale-105 cursor-pointer">
+							Cancel
+						</Button>
 						<Button
 							type="submit"
 							disabled={loading}
@@ -359,6 +366,36 @@ export default function CreatePostPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			<AlertDialog open={status === 'unauthenticated'}>
+                <AlertDialogContent className={isSidebarOpen ? 'ml-32' : 'ml-6'}>
+                    <AlertDialogHeader>
+                        <div className="flex gap-2 text-red-500 items-center">
+                            <LogIn className="w-5 h-5" />
+                            <AlertDialogTitle>Authentication Required</AlertDialogTitle>
+                        </div>
+                        <AlertDialogDescription>
+                            You need to act as a member to create a new post. <br/>
+                            Please log in to continue.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel 
+                             onClick={() => router.back()}
+                             className="cursor-pointer"
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction 
+                             onClick={() => router.push('/signup')}
+                             className="bg-emerald-700 hover:bg-emerald-800 cursor-pointer"
+                        >
+                            Log in / Sign up
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
 		</div>
 	);
 }
