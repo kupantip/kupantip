@@ -78,6 +78,14 @@ export default function MyProfilePage() {
 	const firstThreePost = post?.slice(0, 3) || [];
 
 	useEffect(() => {
+		AOS.init({
+			duration: 500,
+			once: true,
+			offset: 80,
+		});
+	}, []);
+
+	useEffect(() => {
 		if (status === 'unauthenticated') {
 			router.push('/login');
 		}
@@ -108,14 +116,6 @@ export default function MyProfilePage() {
 			color: 'bg-purple-100 text-purple-800',
 		},
 	];
-
-	useEffect(() => {
-		AOS.init({
-			duration: 500,
-			once: true,
-			offset: 80,
-		});
-	}, []);
 
 	return (
 		<div
