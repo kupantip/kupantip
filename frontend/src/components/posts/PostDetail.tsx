@@ -12,7 +12,8 @@ import {
 	Loader2,
 	ChevronDown,
 	ArrowBigDown,
-	ArrowBigUp
+	ArrowBigUp,
+	Share2,
 } from 'lucide-react';
 import * as t from '@/types/dashboard/post';
 import { User } from '@/types/dashboard/user';
@@ -408,6 +409,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 
 	const searchParams = useSearchParams();
 	const result = searchParams.get('r');
+	const [copied, setCopied] = useState(false);
 
 	const { data: session } = useSession();
 	const tokenPayload = session?.accessToken
@@ -430,22 +432,6 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		isLoading: loadingComments,
 		refetch: refreshComments,
 	} = useCommentsByPostId(post.id);
-
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				menuRef.current &&
-				!menuRef.current.contains(event.target as Node)
-			) {
-				setMenuOpen(false);
-			}
-		};
-
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside);
-		};
-	}, []);
 
 	const handleUpVote = async (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -541,6 +527,32 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		}
 	};
 
+	const handleSharePost = async () => {
+		try {
+			await navigator.clipboard.writeText(window.location.href);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000); // Reset 'copied' state after 2 seconds
+		} catch (err) {
+			console.error('Failed to copy URL: ', err);
+		}
+	};
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				menuRef.current &&
+				!menuRef.current.contains(event.target as Node)
+			) {
+				setMenuOpen(false);
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
+
 	return (
 		<div className="h-full px-4 md:px-10 py-4 md:py-8 space-y-4 md:space-y-6 rounded-lg bg-gray-50 dark:bg-gray-900">
 			<div className="relative w-full max-w-4xl mx-auto">
@@ -599,26 +611,38 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 											exit={{ opacity: 0 }}
 											transition={{ duration: 0.15 }}
 										>
-											<button
-												className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
+											<Button
+												className="bg-white text-black cursor-pointer flex gap-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg"
+												onClick={handleSharePost}
+												disabled={copied}
+											>
+												<Share2 />
+												<span className="mt-0.5">
+													{copied
+														? 'Copied!'
+														: 'Share'}
+												</span>
+											</Button>
+											<Button
+												className="bg-white text-black cursor-pointer flex gap-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg"
 												onClick={handleEdit}
 											>
-												<Pen className="px-1 mr-2" />
+												<Pen />
 												<span className="mt-0.5">
 													Edit
 												</span>
-											</button>
-											<button
-												className="flex w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-b-lg cursor-pointer"
+											</Button>
+											<Button
+												className="bg-white text-black cursor-pointer flex gap-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg"
 												onClick={() =>
 													setIsDeleting(true)
 												}
 											>
-												<Trash2 className="mr-2" />
+												<Trash2 />
 												<span className="mt-0.5">
 													Delete
 												</span>
-											</button>
+											</Button>
 										</motion.div>
 									)}
 								</AnimatePresence>
@@ -633,15 +657,27 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 											exit={{ opacity: 0 }}
 											transition={{ duration: 0.15 }}
 										>
-											<button
-												className="flex gap-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg cursor-pointer"
+											<Button
+												className="bg-white text-black cursor-pointer flex gap-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg"
+												onClick={handleSharePost}
+												disabled={copied}
+											>
+												<Share2 />
+												<span className="mt-0.5">
+													{copied
+														? 'Copied!'
+														: 'Share'}
+												</span>
+											</Button>
+											<Button
+												className="bg-white text-black cursor-pointer flex gap-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:rounded-t-lg"
 												onClick={handleReportPost}
 											>
 												<Flag />
 												<span className="mt-0.5">
 													Report
 												</span>
-											</button>
+											</Button>
 										</motion.div>
 									)}
 								</AnimatePresence>
