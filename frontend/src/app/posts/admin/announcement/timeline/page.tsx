@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef } from 'react';
 import { ChevronRight, ChevronDown, Megaphone, Loader2 } from 'lucide-react';
-import { useAnnouncement, Announcement } from '@/services/announcement/announcement';
+import { Announcement, useAllAnnouncements } from '@/services/announcement/announcement';
 import Link from 'next/link';
 
 const getDaysDiff = (start: string | Date, end: string | Date) => {
@@ -36,7 +36,7 @@ const PIXELS_PER_DAY = 60;
 const VIEW_BUFFER_DAYS = 2;
 
 export default function AnnouncementTimeline(){
-    const { data: announcements, isLoading, error } = useAnnouncement();
+    const { data: announcements, isLoading, error } = useAllAnnouncements();
     const [isExpanded, setIsExpanded] = useState(true);
 
     const headerRef = useRef<HTMLDivElement>(null);
@@ -99,7 +99,10 @@ export default function AnnouncementTimeline(){
                 <span className='text-center'>Loading Timeline...</span>
             </div>
     );
-    if (error) return <div className="p-10 text-center text-red-500">Error loading data</div>;
+    if (error) { 
+        console.error("Timeline Error:", error);
+        return <div className="p-10 text-center text-red-500">Error loading data</div> 
+    };
 
   return (
         <div className="flex flex-col h-[calc(100vh-100px)] min-h-[500px] w-full bg-white text-sm text-gray-700 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
