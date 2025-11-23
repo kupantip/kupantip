@@ -49,12 +49,12 @@ import { Button } from '../ui/button';
 import Link from 'next/link';
 import { getAISummary } from '@/services/n8n/aiSummary';
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
+	Carousel,
+	CarouselContent,
+	CarouselItem,
+	CarouselNext,
+	CarouselPrevious,
+} from '@/components/ui/carousel';
 
 type PostDetailProps = {
 	post: t.Post;
@@ -133,7 +133,10 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 		} else {
 			try {
 				if (!comment.disliked_by_requesting_user) {
-					await fetchVoteComment({ commentId: comment.id, value: -1 });
+					await fetchVoteComment({
+						commentId: comment.id,
+						value: -1,
+					});
 					console.log('Downvote Comment Success');
 				} else {
 					await fetchDeletevoteComment(comment.id);
@@ -176,7 +179,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 			setIsAuthenAlert(true);
 			return;
 		}
-		
+
 		console.log('Report Comment on', comment.id);
 		setReportingComment(comment);
 		setShowReportCommentDialog(true);
@@ -356,9 +359,7 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 					)}
 
 					<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-						<AlertDialogContent
-							className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900"
-						>
+						<AlertDialogContent className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900">
 							<AlertDialogHeader>
 								<AlertDialogTitle>
 									Delete comment?
@@ -419,27 +420,28 @@ const CommentItem = ({ comment, refreshComments }: CommentProps) => {
 				></ReportModal>
 			)}
 			<AlertDialog open={isAuthenAlert} onOpenChange={setIsAuthenAlert}>
-				<AlertDialogContent 
+				<AlertDialogContent
 					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-sm translate-x-[-50%] translate-y-[-50%] 
 					gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900 md:w-full"
 				>
 					<AlertDialogHeader>
 						<div className="flex gap-2 text-red-500 items-center">
 							<LogIn className="w-5 h-5" />
-							<AlertDialogTitle>Authentication Required</AlertDialogTitle>
+							<AlertDialogTitle>
+								Authentication Required
+							</AlertDialogTitle>
 						</div>
 						<AlertDialogDescription>
-							You need to act as a member to take action on comment. <br/>
+							You need to act as a member to take action on
+							comment. <br />
 							Please log in to continue.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter className="flex flex-row items-center justify-end gap-3 mt-2 sm:mt-0">
-						<AlertDialogCancel
-							className="mt-0 flex-1 sm:flex-none cursor-pointer border-gray-200 hover:bg-gray-100"
-						>
+						<AlertDialogCancel className="mt-0 flex-1 sm:flex-none cursor-pointer border-gray-200 hover:bg-gray-100">
 							Cancel
 						</AlertDialogCancel>
-						<AlertDialogAction 
+						<AlertDialogAction
 							onClick={() => router.push('/signup')}
 							className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer border-0"
 						>
@@ -508,7 +510,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 		e.stopPropagation();
 		console.log('Downvote on');
 		if (status === 'unauthenticated') {
-			setIsAuthenAlert(true)
+			setIsAuthenAlert(true);
 		} else {
 			try {
 				if (!post.disliked_by_requesting_user) {
@@ -670,7 +672,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 									{menuOpen && (
 										<motion.div
 											ref={menuRef}
-											className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg"
+											className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg z-50"
 											initial={{ opacity: 0, x: 0, y: 0 }}
 											animate={{ opacity: 1 }}
 											exit={{ opacity: 0 }}
@@ -716,7 +718,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 									{menuOpen && (
 										<motion.div
 											ref={menuRef}
-											className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg"
+											className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg z-50"
 											initial={{ opacity: 0, x: 0, y: 0 }}
 											animate={{ opacity: 1 }}
 											exit={{ opacity: 0 }}
@@ -751,45 +753,51 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					</div>
 					{/* Post Content */}
 					<h2 className="text-lg font-medium">{post.title}</h2>
-					<div className="w-full bg-gray-200 rounded-xl overflow-hidden border border-gray-800 my-4 relative group">
-						<Carousel className="w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] [&>div]:h-full">
-							<CarouselContent className="h-full ml-0">
-								{post.attachments.map((attachment, index: number) => (
-									<CarouselItem 
-										key={attachment.id} 
-										className="relative h-full w-full flex items-center justify-center p-0 pl-0"
-									>
-										<div className="relative w-full h-full">
-											<Image
-												src={attachment.url.replace(
-													'/uploads/',
-													'/api/proxy/post/attachments/'
-												)}
-												alt={`Attachment ${index + 1}`}
-												fill
-												className="object-contain"
-												sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 1200px"
-												priority={index === 0}
-											/>
-										</div>
-									</CarouselItem>
-								))}
-							</CarouselContent>
+					{post.attachments.length > 0 && (
+						<div className="w-full bg-gray-200 rounded-xl overflow-hidden border border-gray-800 my-4 relative group">
+							<Carousel className="w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] [&>div]:h-full">
+								<CarouselContent className="h-full ml-0">
+									{post.attachments.map(
+										(attachment, index: number) => (
+											<CarouselItem
+												key={attachment.id}
+												className="relative h-full w-full flex items-center justify-center p-0 pl-0"
+											>
+												<div className="relative w-full h-full">
+													<Image
+														src={attachment.url.replace(
+															'/uploads/',
+															'/api/proxy/post/attachments/'
+														)}
+														alt={`Attachment ${
+															index + 1
+														}`}
+														fill
+														className="object-contain"
+														sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 1200px"
+														priority={index === 0}
+													/>
+												</div>
+											</CarouselItem>
+										)
+									)}
+								</CarouselContent>
 
-							{hasMultipleImages && (
-								<>
-									<CarouselPrevious 
-										className="left-4 h-10 w-10 bg-black/50 border-none text-white hover:bg-black/80 cursor-pointer
-												opacity-0 group-hover:opacity-100 transition-opacity duration-200 sm:flex hidden z-20" 
-									/>
-									<CarouselNext 
-										className="right-4 h-10 w-10 bg-black/50 border-none text-white hover:bg-black/80 cursor-pointer
-												opacity-0 group-hover:opacity-100 transition-opacity duration-200 sm:flex hidden z-20" 
-									/>
-								</>
-							)}
-						</Carousel>
-					</div>
+								{hasMultipleImages && (
+									<>
+										<CarouselPrevious
+											className="left-4 h-10 w-10 bg-black/50 border-none text-white hover:bg-black/80 cursor-pointer
+													opacity-0 group-hover:opacity-100 transition-opacity duration-200 sm:flex hidden z-20"
+										/>
+										<CarouselNext
+											className="right-4 h-10 w-10 bg-black/50 border-none text-white hover:bg-black/80 cursor-pointer
+													opacity-0 group-hover:opacity-100 transition-opacity duration-200 sm:flex hidden z-20"
+										/>
+									</>
+								)}
+							</Carousel>
+						</div>
+					)}
 					<div>{post.body_md}</div>
 					{/* AI Summary Section */}
 					<div className="mt-4">
@@ -964,9 +972,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 				></ReportModal>
 			)}
 			<AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-				<AlertDialogContent
-					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900"
-				>
+				<AlertDialogContent className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900">
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete post?</AlertDialogTitle>
 						<AlertDialogDescription>
@@ -992,29 +998,29 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-
 			<AlertDialog open={isAuthenAlert} onOpenChange={setIsAuthenAlert}>
-				<AlertDialogContent 
+				<AlertDialogContent
 					className="fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-sm translate-x-[-50%] translate-y-[-50%] 
 					gap-4 border bg-white p-6 shadow-lg duration-200 rounded-xl dark:bg-gray-900 md:w-full"
 				>
 					<AlertDialogHeader>
 						<div className="flex gap-2 text-red-500 items-center">
 							<LogIn className="w-5 h-5" />
-							<AlertDialogTitle>Authentication Required</AlertDialogTitle>
+							<AlertDialogTitle>
+								Authentication Required
+							</AlertDialogTitle>
 						</div>
 						<AlertDialogDescription>
-							You need to act as a member to take action on post. <br/>
+							You need to act as a member to take action on post.{' '}
+							<br />
 							Please log in to continue.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter className="flex flex-row items-center justify-end gap-3 mt-2 sm:mt-0">
-						<AlertDialogCancel
-							className="mt-0 flex-1 sm:flex-none cursor-pointer border-gray-200 hover:bg-gray-100"
-						>
+						<AlertDialogCancel className="mt-0 flex-1 sm:flex-none cursor-pointer border-gray-200 hover:bg-gray-100">
 							Cancel
 						</AlertDialogCancel>
-						<AlertDialogAction 
+						<AlertDialogAction
 							onClick={() => router.push('/signup')}
 							className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer border-0"
 						>
