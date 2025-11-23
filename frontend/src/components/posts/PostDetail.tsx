@@ -672,7 +672,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 									{menuOpen && (
 										<motion.div
 											ref={menuRef}
-											className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg"
+											className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg z-50"
 											initial={{ opacity: 0, x: 0, y: 0 }}
 											animate={{ opacity: 1 }}
 											exit={{ opacity: 0 }}
@@ -718,7 +718,7 @@ export default function PostDetail({ post, refresh }: PostDetailProps) {
 									{menuOpen && (
 										<motion.div
 											ref={menuRef}
-											className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg"
+											className="absolute mt-2 w-24 right-0 bg-white shadow-md rounded-lg z-50"
 											initial={{ opacity: 0, x: 0, y: 0 }}
 											animate={{ opacity: 1 }}
 											exit={{ opacity: 0 }}
